@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { ChevronUp } from "lucide-react"
 import {ChevronDown} from "@/shared/icons";
 
 type FilterOption = {

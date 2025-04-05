@@ -23,6 +23,8 @@ export default function RatingDisplay() {
         },
     })
 
+    console.log(setRatingData)
+
     const maxCount = Math.max(...Object.values(ratingData.distribution))
 
     return (
