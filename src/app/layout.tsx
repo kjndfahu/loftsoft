@@ -6,7 +6,6 @@ import {Footer} from "@/features/footer/container/footer";
 
 const manrope = Manrope({
     subsets: ["latin"],
-    variable: "--font-manrope",
     display: "swap",
 })
 
@@ -23,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${manrope.variable} antialiased`}
+        className={`${manrope.className} antialiased`}
       >
       <Header/>
         {children}

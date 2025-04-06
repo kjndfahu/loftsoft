@@ -9,7 +9,7 @@ import {RecomendationList} from "@/features/product-page/ui/recomendation-list";
 export default function CartPage() {
     return (
         <div className="flex flex-col pt-[150px] px-[250px] gap-10">
-            <BreadcrumbNav/>
+            <BreadcrumbNav title="Корзина"/>
             <CartBtns/>
             <div className="flex gap-[80px]">
                 <div className="flex flex-col w-full gap-[20px]">

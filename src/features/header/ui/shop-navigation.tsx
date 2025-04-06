@@ -14,10 +14,12 @@ export const ShopNavigation = () => {
                 <BoxLogo/>
                 Заказы
             </div>
-            <div className="flex items-center cursor-pointer flex-col gap-1">
-                <CartLogo/>
-                Корзина
-            </div>
+            <Link href="/cart">
+                <div className="flex items-center cursor-pointer flex-col gap-1">
+                    <CartLogo/>
+                    Корзина
+                </div>
+            </Link>
         </div>
     )
 }

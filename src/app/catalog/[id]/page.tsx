@@ -6,7 +6,7 @@ import {Reviews} from "@/features/product-page/container/reviews";
 export default function ItemPage() {
     return (
         <div className="flex flex-col pt-[150px] px-[250px] gap-10">
-            <BreadcrumbNav/>
+            <BreadcrumbNav title="Каталог"/>
             <ProductContainer/>
             <RecomendationList/>
             <Reviews/>

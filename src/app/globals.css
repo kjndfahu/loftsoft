@@ -7,6 +7,14 @@
   --foreground: #171717;
 }
 
+:root {
+  --font-manrope: "Manrope", sans-serif;
+}
+
+body {
+  font-family: var(--font-manrope);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #ffffff;
@@ -17,7 +25,10 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+.info {
+  background: linear-gradient(126.44deg, #516DEB -1.33%, #D6DDFF 100%);
 }
 
 @layer utilities {

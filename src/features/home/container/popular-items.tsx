@@ -4,9 +4,9 @@ import {Items} from "@/features/home/ui/item";
 
 export const PopularItems = () => {
     return (
-        <div className="flex flex-col items-center px-[250px] gap-10">
+        <div className="flex flex-col items-center gap-10">
             <TitleDesc title="Популярные товары" description="Выберите нужный товар"/>
-            <div className="flex flex-wrap gap-4">
+            <div className="grid grid-cols-4 gap-6 w-full">
                 <Items/>
                 <Items/>
                 <Items/>
