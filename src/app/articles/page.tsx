@@ -1,19 +1,26 @@
 import {BreadcrumbNav} from "@/shared/breadcrumb-nav";
-import {ArticleBlock} from "@/features/home/ui/article-block";
+
+import {Article} from "@/features/articles/ui/article";
+import {BigArticle} from "@/features/articles/ui/big-article";
 
 export default function ArticlesPage() {
     return (
         <div className="flex flex-col pt-[150px] px-[250px] gap-10">
             <BreadcrumbNav title="Статьи"/>
-            <div className="flex flex-wrap gap-6">
-                <ArticleBlock/>
-                <ArticleBlock/>
-                <ArticleBlock/>
-                <ArticleBlock/>
-                <ArticleBlock/>
-                <ArticleBlock/>
-                <ArticleBlock/>
-                <ArticleBlock/>
+            <BigArticle/>
+            <div className="grid grid-cols-4 gap-6 w-full">
+                <Article/>
+                <Article/>
+                <Article/>
+                <Article/>
+                <Article/>
+                <Article/>
+                <Article/>
+                <Article/>
+                <Article/>
+                <Article/>
+                <Article/>
+                <Article/>
             </div>
         </div>
     );

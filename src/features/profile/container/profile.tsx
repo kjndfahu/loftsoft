@@ -6,6 +6,7 @@ import {ProfileInfo} from "@/features/profile/ui/profile-info";
 import {ProfileSettings} from "@/features/profile/ui/profile-settings";
 import {useState} from "react";
 import {OrderList} from "@/features/profile/container/order-list";
+import {RefProgram} from "@/features/profile/ui/ref-program";
 
 export const Profile = () => {
     const [tab, setTab] = useState('profile')
@@ -15,8 +16,9 @@ export const Profile = () => {
             <ProfileSections tab={tab} setTab={setTab}/>
             {tab === 'profile' ? (
                 <div className="flex flex-col flex-1 gap-6">
-                    <BlockWrapper title="О ПРОФИЛЕ" form={ <ProfileInfo/> }/>
-                    <BlockWrapper title="НАСТРОЙКИ" form={ <ProfileSettings/> }/>
+                    <BlockWrapper title="О ПРОФИЛЕ" form={<ProfileInfo/>}/>
+                    <BlockWrapper title="РЕФЕРАЛЬНАЯ ПРОГРАММА" form={<RefProgram/>}/>
+                    <BlockWrapper title="НАСТРОЙКИ" form={<ProfileSettings/>}/>
                 </div>
             ) : (
                 <OrderList/>
