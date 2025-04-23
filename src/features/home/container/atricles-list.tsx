@@ -4,7 +4,7 @@ import {ArticleBlock} from "@/features/home/ui/article-block";
 
 export const ArticlesList = () => {
     return (
-        <div className="flex flex-col items-center gap-10">
+        <div className="flex flex-col items-center mds:gap-10 gap-6">
             <TitleDesc title="Статьи" description="Выберите нужную категорию"/>
             <div className="grid grid-cols-3 gap-6 w-full">
                 <ArticleBlock/>

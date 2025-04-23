@@ -22,7 +22,7 @@ export const FooterLinks = () => {
                         <h4 className="font-semibold">{item.title}</h4>
                         <ul className="flex flex-col font-medium gap-3 text-[14px] leading-[18px]">
                             {item.links.map((itemLink) => (
-                                <li className="ml-[18px] list-disc" key={itemLink}>{itemLink}</li>
+                                <li className="ml-[18px] z-[3] list-disc" key={itemLink}>{itemLink}</li>
                             ))}
                         </ul>
                     </div>

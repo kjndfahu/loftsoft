@@ -1,6 +1,13 @@
+'use client'
+
 import {ReviewStar} from "@/shared/icons";
+import {useState} from "react";
+import {Modal} from "@/shared/modal";
+import {ReviewModal} from "@/features/reviews/ui/review-modal";
 
 export const ReviewInfo = () => {
+    const [isModal, setIsModal] = useState(false);
+
     return (
         <div className="flex w-[65%] flex-col gap-6">
             <div className="flex items-center gap-4">
@@ -17,12 +24,16 @@ export const ReviewInfo = () => {
                 как назвать папку юзера. Пришлось создать другой локальный аккаунт на компьютере и удалять тот, что
                 Windows сделал при инсталляции. Пляски с бубном.</p>
             <div className="flex gap-4">
-                <div style={{aspectRatio: 1 / 1}} className="w-[64px] h-[64px] bg-gray-400 rounded-[12px]"/>
-                <div style={{aspectRatio: 1 / 1}} className="w-[64px] h-[64px] bg-gray-400 rounded-[12px]"/>
-                <div style={{aspectRatio: 1 / 1}} className="w-[64px] h-[64px] bg-gray-400 rounded-[12px]"/>
-                <div style={{aspectRatio: 1 / 1}} className="w-[64px] h-[64px] bg-gray-400 rounded-[12px]"/>
-                <div style={{aspectRatio: 1 / 1}} className="w-[64px] h-[64px] bg-gray-400 rounded-[12px]"/>
+                <div onClick={() => setIsModal(true)} style={{aspectRatio: 1 / 1}} className="w-[64px] h-[64px] bg-gray-400 rounded-[12px]"/>
+                <div onClick={() => setIsModal(true)} style={{aspectRatio: 1 / 1}} className="w-[64px] h-[64px] bg-gray-400 rounded-[12px]"/>
+                <div onClick={() => setIsModal(true)} style={{aspectRatio: 1 / 1}} className="w-[64px] h-[64px] bg-gray-400 rounded-[12px]"/>
+                <div onClick={() => setIsModal(true)} style={{aspectRatio: 1 / 1}} className="w-[64px] h-[64px] bg-gray-400 rounded-[12px]"/>
+                <div onClick={() => setIsModal(true)} style={{aspectRatio: 1 / 1}} className="w-[64px] h-[64px] bg-gray-400 rounded-[12px]"/>
             </div>
+
+            {isModal && (
+                <Modal form={ <ReviewModal/> }/>
+            )}
         </div>
     )
 }

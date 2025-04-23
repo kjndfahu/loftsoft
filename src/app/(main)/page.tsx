@@ -5,7 +5,7 @@ import {InfoBlock} from "@/features/profile/ui/info-block";
 
 export default function Home() {
   return (
-    <div className="flex flex-col pt-[150px] px-[250px] gap-20">
+    <div className="flex flex-col mds:pt-[150px] pt-[80px] xxl:px-[250px] xl:px-[150px] mdbvp:px-[100px] sml:px-[50px] px-[20px] gap-20">
       <Categories/>
       <PopularItems/>
        <InfoBlock/>

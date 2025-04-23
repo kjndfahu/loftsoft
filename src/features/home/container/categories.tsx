@@ -1,22 +1,27 @@
 import { TitleDesc } from "@/shared/title-desc"
 import { CategoryBlock } from "@/features/home/ui/category-block"
 import { NavBtn } from "@/features/home/ui/nav-btn"
-import {DesigningImg, ElaborationImg, GraphImg, MicrosoftImg, OfficeImg, SecurityImg} from "@/shared/catalog-images";
+import {getCategories} from "@/enteties/category/category";
 
-export const Categories = () => {
+
+export const Categories = async () => {
+
+    const categories = await getCategories()
+
     return (
-        <div className="flex flex-col items-center gap-10">
+        <div className="flex flex-col items-center mds:gap-10 gap-6">
             <TitleDesc title="Категории товаров" description="Выберите нужную категорию" />
-            <div className="grid grid-cols-3 gap-6 w-full">
-                <CategoryBlock logo={ <DesigningImg className="absolute bottom-0" /> }/>
-                <CategoryBlock logo={ <ElaborationImg className="absolute bottom-0" /> }/>
-                <CategoryBlock logo={ <GraphImg className="absolute bottom-0" /> }/>
-                <CategoryBlock logo={ <MicrosoftImg className="absolute bottom-0" /> }/>
-                <CategoryBlock logo={ <OfficeImg className="absolute bottom-0" /> }/>
-                <CategoryBlock logo={ <SecurityImg className="absolute bottom-0" /> }/>
+            <div className="grid md:grid-cols-3 mds:grid-cols-2 grid-cols-1 gap-6 justify-between w-full">
+                {categories.map((category) => (
+                    <CategoryBlock
+                        key={category.id}
+                        title={category.title}
+                        description={category.description}
+                        photo={category.photo}
+                    />
+                ))}
             </div>
             <NavBtn text="Все категории" />
         </div>
     )
 }
-

@@ -31,6 +31,10 @@ body {
   background: linear-gradient(126.44deg, #516DEB -1.33%, #D6DDFF 100%);
 }
 
+.about-us-bg{
+  background: linear-gradient(97.64deg, #2652C2 15.41%, #0E0F17 84.59%);
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

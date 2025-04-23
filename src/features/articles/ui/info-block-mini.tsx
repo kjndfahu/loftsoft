@@ -1,4 +1,4 @@
-import { InfoGlass } from "@/shared/catalog-images";
+
 import {ReviewStar} from "@/shared/icons";
 
 export const InfoBlockMini = () => {
@@ -31,8 +31,8 @@ export const InfoBlockMini = () => {
                 </div>
             </div>
 
-            <InfoGlass className="absolute h-[200px] w-[100px] top-[-50px] right-0 rounded-l-[36px]"/>
-            <InfoGlass className="absolute h-[200px] w-[100px] top-0 left-0 -scale-x-100 rounded-r-[36px]"/>
+            {/*<InfoGlass className="absolute h-[200px] w-[100px] top-[-50px] right-0 rounded-l-[36px]"/>*/}
+            {/*<InfoGlass className="absolute h-[200px] w-[100px] top-0 left-0 -scale-x-100 rounded-r-[36px]"/>*/}
         </div>
     )
 }

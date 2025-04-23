@@ -28,8 +28,8 @@ export default function RatingDisplay() {
     const maxCount = Math.max(...Object.values(ratingData.distribution))
 
     return (
-        <div className="bg-white rounded-xl p-4 border-[1px] border-[#DBDEEF] w-[368px]">
-            <div className="flex items-center gap-2 mb-4">
+        <div className="bg-white rounded-xl p-4 border-[1px] border-[#DBDEEF] h-[211px] w-[368px]">
+            <div className="flex items-center gap-2 mb-5">
                 <span className="text-2xl font-bold text-amber-500">{ratingData.average}</span>
                 <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -39,10 +39,10 @@ export default function RatingDisplay() {
                 <span className="text-gray-500 text-sm">{ratingData.totalReviews} отзыва</span>
             </div>
 
-            <div className="space-y-2">
+            <div className="flex flex-col gap-[7px]">
                 {[5, 4, 3, 2, 1].map((rating) => (
-                    <div key={rating} className="flex items-center gap-2">
-                        <span className="w-3 text-gray-600">{rating}</span>
+                    <div key={rating} className="flex items-center gap-3">
+                        <span className="text-[12px] text-gray-600">{rating}</span>
                         <div className="relative h-2 flex-grow bg-gray-100 rounded-full overflow-hidden">
                             <div
                                 className={`absolute top-0 left-0 h-full rounded-full ${getBarColor(rating)}`}

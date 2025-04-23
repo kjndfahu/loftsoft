@@ -2,8 +2,8 @@ export const SumBlock = () => {
     return (
         <div className="flex flex-col rounded-[20px] gap-5 p-6 bg-[#F5F7FF]">
             <div className="flex items-center justify-between">
-                <h5 className="text-[22px] text-[#161616]">Итого</h5>
-                <h4 className="text-[36px] text-[#161616]">14599<span className="text-[18px]">₽</span> </h4>
+                <h5 className="text-[22px] font-semibold text-[#161616]">Итого</h5>
+                <h4 className="text-[36px] font-bold text-[#161616]">14599<span className="text-[18px]">₽</span> </h4>
             </div>
             <div className="flex flex-col gap-1">
                 <div className="flex items-center justify-between text-[16px] text-[#6A6B75]">

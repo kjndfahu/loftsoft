@@ -7,7 +7,11 @@ export default function CatalogPage() {
         <div className="flex flex-col pt-[150px] px-[250px] gap-10">
             <BreadcrumbNav title="Каталог"/>
             <CategoryFilter/>
-            <div className="flex flex-wrap gap-[19px]">
+            <div className="grid grid-cols-4 gap-6 w-full">
+                <Items/>
+                <Items/>
+                <Items/>
+                <Items/>
                 <Items/>
                 <Items/>
                 <Items/>
