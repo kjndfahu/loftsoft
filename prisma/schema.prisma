@@ -26,13 +26,41 @@ model User {
 }
 
 model Item {
-  id    Int    @id @default(autoincrement())
-  name  String
-  price String
-  photo String
-  type  Type[]
+  id          Int         @id @default(autoincrement())
+  name        String
+  price       String
+  photo       String
+  description String?
+  categoryId  Int?
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  type        Type[]
+  licenseType LicenseType @default(PERPETUAL)
 
-  questions QuestionAnswer[]
+  characteristics Characteristic[]
+  distributives   Distributive[]
+  questions       QuestionAnswer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Characteristic {
+  id     Int    @id @default(autoincrement())
+  title  String
+  value  String
+  itemId Int
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Distributive {
+  id          Int    @id @default(autoincrement())
+  displayName String
+  fileUrl     String
+  itemId      Int
+  item        Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -69,6 +97,7 @@ model Category {
   photo       String
   title       String @unique
   description String
+  items       Item[]
 
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt
@@ -120,6 +149,14 @@ enum Type {
   KEY
   SUBSCRIPTION
   ACCOUNT
+}
+
+enum LicenseType {
+  PERPETUAL
+  ONE_MONTH
+  THREE_MONTHS
+  SIX_MONTHS
+  ONE_YEAR
 }
 
 model WithdrawRequest {

@@ -25,6 +25,7 @@ const config: Config = {
       },
       backgroundImage: {
         footer: "linear-gradient(126.44deg, #516DEB -1.33%, #D6DDFF 100%)",
+        banner2: "url('/img/banner-2.png')"
       },
     },
   },

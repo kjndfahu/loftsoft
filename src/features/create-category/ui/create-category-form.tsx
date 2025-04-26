@@ -42,7 +42,6 @@ export const CreateCategoryForm: FC<Props> = ({ setIsOpen }) => {
         e.preventDefault()
         setError(null)
 
-        // Validation
         if (!title.trim()) {
             setError("Название категории обязательно")
             return
