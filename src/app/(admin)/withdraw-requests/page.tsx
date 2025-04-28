@@ -19,7 +19,15 @@ export default async function WithdrawRequestsPage() {
 
             <div className="flex items-center flex-row gap-5 flex-wrap">
                 {success &&
-                    withdrawRequests?.map((request, index) => (
+                    withdrawRequests?.map((request: {
+                                               id: number
+                                               userEmail: string | null
+                                               name: string
+                                               bank: string
+                                               phone: number
+                                               sum: string
+                                           },
+                                           index: number,) => (
                         <WithdrawRequestBlock
                             key={request.id}
                             id={request.id}

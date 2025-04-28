@@ -1,9 +1,16 @@
 "use client"
 
-import type { Category } from "@prisma/client"
+
 
 interface CatalogBarProps {
-    categories: Category[]
+    categories: {
+        id: number;
+        photo: string;
+        title: string;
+        description: string;
+        createdAt: Date;
+        updateAt: Date;
+    }[]
     onCategorySelect: (categoryId: number) => void
     selectedCategoryId: number | null
 }

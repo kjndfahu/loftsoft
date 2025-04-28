@@ -4,7 +4,6 @@ import { motion } from "framer-motion"
 import { CatalogBar } from "@/features/header/ui/catalog-bar"
 import { useMemo } from "react"
 import Link from "next/link"
-import type { Category } from "@prisma/client"
 
 interface Product {
     id: number
@@ -23,7 +22,14 @@ interface Product {
 }
 
 interface OpenSearchBarProps {
-    categories: Category[]
+    categories: {
+        id: number
+        photo: string
+        title: string
+        description: string
+        createdAt: Date
+        updateAt: Date
+    }[]
     allProducts: Product[]
     isLoading: boolean
     selectedCategoryId: number | null

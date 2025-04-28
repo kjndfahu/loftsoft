@@ -12,7 +12,14 @@ export const Categories = async () => {
         <div className="flex flex-col items-center mds:gap-10 gap-6">
             <TitleDesc title="Категории товаров" description="Выберите нужную категорию" />
             <div className="grid md:grid-cols-3 mds:grid-cols-2 grid-cols-1 gap-6 justify-between w-full">
-                {categories.map((category) => (
+                {categories.map((category:{
+                    id: number;
+                    photo: string;
+                    title: string;
+                    description: string;
+                    createdAt: Date;
+                    updateAt: Date;
+                }) => (
                     <CategoryBlock
                         key={category.id}
                         title={category.title}

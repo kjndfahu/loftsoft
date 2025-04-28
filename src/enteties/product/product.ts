@@ -1,17 +1,17 @@
 "use server"
 
-import { PrismaClient, type Type, type LicenseType } from "@prisma/client"
 
-const prisma = new PrismaClient()
 
-// Interface for product creation
+import {LicenseType, TYPE} from "@/kernel/types";
+import {prisma} from "../../../prisma/prisma-client";
+
 interface CreateProductData {
     name: string
     price: string
     photo: string
     description?: string
     categoryId: number
-    type: Type
+    type: TYPE
     licenseType: LicenseType
     characteristics?: { title: string; value: string }[]
     distributives?: { displayName: string; fileUrl: string }[]
@@ -139,7 +139,6 @@ export async function getProductsByCategory(categoryId?: number | null) {
     }
 }
 
-// Function for sorting products
 export async function getSortedProducts(categoryId?: number | null, sortBy = "price_asc") {
     try {
         let orderBy: any = {}

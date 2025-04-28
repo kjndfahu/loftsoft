@@ -16,13 +16,13 @@ interface Category {
 }
 
 interface CategoryPopupProps {
-    onSelect: (category: Category) => void
-    selectedCategory: Category | null
+    onSelect: (category: any) => void
+    selectedCategory: any | null
 }
 
 export const CategoryPopup: React.FC<CategoryPopupProps> = ({ onSelect, selectedCategory }) => {
     const [isOpen, setIsOpen] = useState(false)
-    const [categories, setCategories] = useState<Category[]>([])
+    const [categories, setCategories] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const popupRef = useRef<HTMLDivElement>(null)
 

@@ -1,8 +1,15 @@
 import Image from "next/image"
-import type { Category } from "@prisma/client"
+
 
 interface CategoryBlockProps {
-    category: Category
+    category: {
+        id: number
+        photo: string
+        title: string
+        description: string
+        createdAt: Date
+        updateAt: Date
+    }
 }
 
 export const CategoryBlock = ({ category }: CategoryBlockProps) => {

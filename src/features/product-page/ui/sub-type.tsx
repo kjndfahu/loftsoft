@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { Item, LicenseType } from "@prisma/client"
+
 
 type SubTypeProps = {
-    availableTypes: Item["type"]
-    licenseType?: LicenseType
+    availableTypes: any["type"]
+    licenseType?: any
 }
 
 export const SubType = ({ availableTypes, licenseType }: SubTypeProps) => {

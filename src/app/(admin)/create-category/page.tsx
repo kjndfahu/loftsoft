@@ -21,7 +21,12 @@ export default async function CreateCategoryPage() {
                 </div>
             ) : (
                 <div className="flex flex-wrap gap-5">
-                    {categories.map((category) => (
+                    {categories.map((category: {id: number
+                        photo: string
+                        title: string
+                        description: string
+                        createdAt: Date
+                        updateAt: Date}) => (
                         <CategoryBlock key={category.id} category={category} />
                     ))}
                 </div>

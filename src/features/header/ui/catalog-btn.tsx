@@ -5,13 +5,19 @@ import { useState, useEffect } from "react"
 import { OpenSearchBar } from "@/features/header/ui/open-search-bar"
 import { AnimatePresence, motion } from "framer-motion"
 
-import type { Category } from "@prisma/client"
 import {getCategories} from "@/enteties/category/category";
 import {getProductsByCategory} from "@/enteties/product/product";
 
 export const CatalogBtn = () => {
     const [isOpen, setIsOpen] = useState(false)
-    const [categories, setCategories] = useState<Category[]>([])
+    const [categories, setCategories] = useState<{
+        id: number;
+        photo: string;
+        title: string;
+        description: string;
+        createdAt: Date;
+        updateAt: Date;
+    }[]>([])
     const [allProducts, setAllProducts] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)

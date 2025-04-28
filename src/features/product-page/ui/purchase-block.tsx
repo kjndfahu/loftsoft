@@ -1,7 +1,7 @@
 import { SubType } from "@/features/product-page/ui/sub-type"
 import { PriceBlock } from "@/features/product-page/ui/price-block"
 import { PostBlock } from "@/features/product-page/ui/post-block"
-import type { Item } from "@prisma/client"
+
 
 type PurchaseBlockProps = {
     id?: string
@@ -9,8 +9,8 @@ type PurchaseBlockProps = {
     price: string
     oldPrice?: string
     photo?: string
-    type?: Item["type"]
-    licenseType?: Item["licenseType"]
+    type?: any["type"]
+    licenseType?: any["licenseType"]
 }
 
 export const PurchaseBlock = ({ id, name, price, oldPrice, photo, type, licenseType }: PurchaseBlockProps) => {

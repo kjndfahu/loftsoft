@@ -1,8 +1,7 @@
 import Link from "next/link"
-import type { Characteristic } from "@prisma/client"
 
 type ProductSpecificationsProps = {
-    characteristics: Characteristic[]
+    characteristics: any[]
 }
 
 export default function ProductSpecifications({ characteristics }: ProductSpecificationsProps) {

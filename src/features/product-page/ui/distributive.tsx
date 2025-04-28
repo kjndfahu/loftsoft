@@ -1,11 +1,9 @@
 "use client"
 
-import type { Distributive as DistributiveType } from "@prisma/client"
 import { Download } from "lucide-react"
 
-
 type DistributiveProps = {
-    distributives: DistributiveType[]
+    distributives: any[]
 }
 
 export const Distributive = ({ distributives }: DistributiveProps) => {

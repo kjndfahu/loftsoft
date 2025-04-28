@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react"
 import {getCurrentUser} from "@/enteties/auth/auth-actions";
-import {Role} from "@prisma/client";
+import {ROLE} from "@/kernel/types";
 
 
 export function useUser() {
-    const [user, setUser] = useState<{ id: number; email: string; role: Role; referralCode: string } | null>(null)
+    const [user, setUser] = useState<{ id: number; email: string; role: ROLE; referralCode: string } | null>(null)
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {

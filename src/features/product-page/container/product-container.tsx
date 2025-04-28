@@ -5,12 +5,11 @@ import ProductSpecifications from "@/features/product-page/ui/product-specificat
 import { Distributive } from "@/features/product-page/ui/distributive"
 import { PurchaseBlock } from "@/features/product-page/ui/purchase-block"
 import Image from "next/image"
-import type { Item, Characteristic, Distributive as DistributiveType } from "@prisma/client"
 
 type ProductContainerProps = {
-    item: Item & {
-        characteristics: Characteristic[]
-        distributives: DistributiveType[]
+    item: any & {
+        characteristics: any[]
+        distributives: any[]
     }
 }
 
