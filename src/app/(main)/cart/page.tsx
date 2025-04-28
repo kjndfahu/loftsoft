@@ -4,6 +4,7 @@ import {ItemType} from "@/features/cart/ui/item-type";
 import {CartBlock} from "@/features/cart/ui/cart-block";
 import {RecomendationList} from "@/features/product-page/ui/recomendation-list";
 import {CartResultInfo} from "@/features/cart/container/cart-result-info";
+import {CartItemsList} from "@/features/cart/ui/cart-items-list";
 
 export default function CartPage() {
     return (
@@ -11,13 +12,7 @@ export default function CartPage() {
             <BreadcrumbNav title="Корзина"/>
             <CartBtns/>
             <div className="flex gap-[80px]">
-                <div className="flex flex-col w-full gap-[20px]">
-                    <ItemType/>
-                    <CartBlock/>
-                    <CartBlock/>
-                    <ItemType/>
-                    <CartBlock/>
-                </div>
+                <CartItemsList/>
                 <CartResultInfo/>
             </div>
             <RecomendationList/>

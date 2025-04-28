@@ -1,7 +1,74 @@
-import { motion } from "framer-motion"
-import {CatalogBar} from "@/features/header/ui/catalog-bar";
+"use client"
 
-export const OpenSearchBar = () => {
+import { motion } from "framer-motion"
+import { CatalogBar } from "@/features/header/ui/catalog-bar"
+import { useMemo } from "react"
+import Link from "next/link"
+import type { Category } from "@prisma/client"
+
+interface Product {
+    id: number
+    name: string
+    price: string
+    photo: string
+    description: string
+    categoryId: number
+    type: string[]
+    licenseType: string
+    createdAt: Date
+    updatedAt: Date
+    category?: {
+        title: string
+    }
+}
+
+interface OpenSearchBarProps {
+    categories: Category[]
+    allProducts: Product[]
+    isLoading: boolean
+    selectedCategoryId: number | null
+    onCategorySelect: (categoryId: number) => void
+}
+
+export const OpenSearchBar = ({
+                                  categories,
+                                  allProducts,
+                                  isLoading,
+                                  selectedCategoryId,
+                                  onCategorySelect,
+                              }: OpenSearchBarProps) => {
+    // Get the current category title
+    const categoryTitle = useMemo(() => {
+        if (!selectedCategoryId) return ""
+        const category = categories.find((c) => c.id === selectedCategoryId)
+        return category ? category.title : ""
+    }, [selectedCategoryId, categories])
+
+    // Filter products by selected category
+    const filteredProducts = useMemo(() => {
+        if (!selectedCategoryId) return []
+        return allProducts.filter((product) => product.categoryId === selectedCategoryId)
+    }, [selectedCategoryId, allProducts])
+
+    // Function to distribute products into columns with vertical flow
+    const productColumns = useMemo(() => {
+        if (filteredProducts.length === 0) return [[], [], []]
+
+        const columnHeight = Math.ceil(filteredProducts.length / 3)
+        const columns: Product[][] = [[], [], []]
+
+        // Fill columns vertically first
+        filteredProducts.forEach((product, index) => {
+            const columnIndex = Math.floor(index / columnHeight)
+            // Ensure we don't exceed 3 columns
+            if (columnIndex < 3) {
+                columns[columnIndex].push(product)
+            }
+        })
+
+        return columns
+    }, [filteredProducts])
+
     const slideVariants = {
         hidden: {
             opacity: 0,
@@ -41,33 +108,42 @@ export const OpenSearchBar = () => {
             variants={slideVariants}
         >
             <div className="flex p-8">
-                <CatalogBar/>
-                <div className="flex flex-col gap-6 py-2 px-8">
-                    <h2 className="text-[#161616] text-[27px] font-medium">Майкрософт</h2>
-                    <div className="flex gap-[144px]">
-                        <div className="flex flex-col gap-4">
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows 11</p>
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows 10</p>
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows Server 2025</p>
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows Server 2019</p>
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows Server 2012</p>
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Microsoft SQL Server</p>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows 8</p>
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows 7</p>
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows Server 2022</p>
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows Server 2016</p>
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows Server RDS</p>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows 8</p>
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows 7</p>
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows Server 2022</p>
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows Server 2016</p>
-                            <p className="text-[16px] text-[#4E4F56] cursor-pointer font-medium">Windows Server RDS</p>
-                        </div>
-                    </div>
+                <CatalogBar
+                    categories={categories}
+                    onCategorySelect={onCategorySelect}
+                    selectedCategoryId={selectedCategoryId}
+                />
+
+                <div className="flex flex-col gap-6 py-2 px-8 flex-1">
+                    {isLoading ? (
+                        <div className="text-center py-8">Загрузка данных...</div>
+                    ) : !selectedCategoryId ? (
+                        <div className="text-center text-[#6A6B75] py-12">Выберите категорию для просмотра товаров</div>
+                    ) : (
+                        <>
+                            <h2 className="text-[#161616] text-[27px] font-medium">{categoryTitle}</h2>
+
+                            {filteredProducts.length === 0 ? (
+                                <div className="text-center py-8">В данной категории нет товаров</div>
+                            ) : (
+                                <div className="flex gap-[144px]">
+                                    {productColumns.map((column, columnIndex) => (
+                                        <div key={columnIndex} className="flex flex-col gap-4">
+                                            {column.map((product) => (
+                                                <Link
+                                                    key={product.id}
+                                                    href={`/products/${product.id}`}
+                                                    className="text-[16px] text-[#4E4F56] cursor-pointer font-medium hover:text-[#5069E8] transition-colors"
+                                                >
+                                                    {product.name}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
             </div>
         </motion.div>

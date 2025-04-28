@@ -42,9 +42,7 @@ export function CategoryFilter({ categories, onProductsChange }: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [selectedFilter, setSelectedFilter] = useState<string>("price_asc")
 
-    // Используем useRef для отслеживания первого рендера
     const isFirstRender = useRef(true)
-    // Используем useRef для хранения предыдущих значений для дебаунса
     const prevCategoryId = useRef<number | null>(null)
     const prevFilter = useRef<string>("price_asc")
 
@@ -59,9 +57,8 @@ export function CategoryFilter({ categories, onProductsChange }: Props) {
     // Мемоизируем функцию для получения товаров
     const fetchProducts = useCallback(
         async (categoryId: number | null, filter: string) => {
-            // Проверяем, изменились ли параметры
             if (categoryId === prevCategoryId.current && filter === prevFilter.current) {
-                return // Если параметры не изменились, не делаем запрос
+                return
             }
 
             prevCategoryId.current = categoryId

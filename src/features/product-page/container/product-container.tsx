@@ -43,7 +43,15 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                 <ProductSpecifications characteristics={item.characteristics} />
                 <Distributive distributives={item.distributives} />
             </div>
-            <PurchaseBlock price={item.price} type={item.type} licenseType={item.licenseType} />
+            <PurchaseBlock
+                id={item.id}
+                name={item.name}
+                price={item.price}
+                oldPrice={item.price || undefined}
+                photo={item.photo || undefined}
+                type={item.type}
+                licenseType={item.licenseType}
+            />
         </div>
     )
 }
