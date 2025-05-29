@@ -1,46 +1,62 @@
-"use client"
+"use client";
 
-import type React from "react"
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { getCurrentUser } from "@/enteties/auth/auth-actions";
+import { ROLE } from "@/kernel/types";
 
-import { createContext, useContext, useEffect, useState } from "react"
-import { getCurrentUser, logout } from "./auth-actions"
-
-type User = { email: string } | null
-
-interface AuthContextType {
-    user: User
-    isLoading: boolean
-    logout: () => Promise<void>
+interface User {
+    id: number;
+    email: string;
+    role: ROLE;
+    referralCode: string;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+interface AuthContextType {
+    user: User | null;
+    isLoading: boolean;
+    refreshUser: () => Promise<void>;
+    handleLogout: () => void;
+}
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User>(null)
-    const [isLoading, setIsLoading] = useState(true)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+    const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const refreshUser = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const currentUser = await getCurrentUser();
+            setUser(currentUser);
+        } catch (error) {
+            console.error("Ошибка при загрузке пользователя:", error);
+            setUser(null);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    const handleLogout = useCallback(() => {
+        setUser(null);
+        setIsLoading(false);
+    }, []);
 
     useEffect(() => {
-        async function loadUser() {
-            try {
-                const currentUser = await getCurrentUser()
-                setUser(currentUser)
-            } catch (error) {
-                console.error("Ошибка при загрузке пользователя:", error)
-            } finally {
-                setIsLoading(false)
-            }
-        }
+        refreshUser();
+    }, [refreshUser]);
 
-        loadUser()
-    }, [])
-
-    return <AuthContext.Provider value={{ user, isLoading, logout }}>{children}</AuthContext.Provider>
+    return (
+        <AuthContext.Provider value={{ user, isLoading, refreshUser, handleLogout }}>
+            {children}
+        </AuthContext.Provider>
+    );
 }
 
 export function useAuth() {
-    const context = useContext(AuthContext)
+    const context = useContext(AuthContext);
     if (context === undefined) {
-        throw new Error("useAuth must be used within an AuthProvider")
+        throw new Error("useAuth must be used within an AuthProvider");
     }
-    return context
+    return context;
 }

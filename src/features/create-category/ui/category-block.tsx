@@ -14,8 +14,8 @@ interface CategoryBlockProps {
 
 export const CategoryBlock = ({ category }: CategoryBlockProps) => {
     return (
-        <div className="flex flex-col border-[1px] w-[440px] rounded-[20px] p-5 gap-8">
-            <div className="relative w-[400px] h-[150px] rounded-[10px] overflow-hidden">
+        <div className="flex flex-col relative border-[1px] sml:w-[440px] w-[350px] rounded-[20px] sml:p-5 p-3 gap-8">
+            <div className="relative w-full h-[150px] rounded-[10px] overflow-hidden">
                 <Image
                     src={category.photo || "/placeholder.svg"}
                     alt={category.title}

@@ -17,10 +17,10 @@ const SUBSCRIPTION_TYPES: SubscriptionType[] = [
 
 interface SubscriptionTypePopupProps {
     onSelect: (subscriptionType: SubscriptionType) => void
-    selectedType: SubscriptionType | null
+    selectedTypes: SubscriptionType[]
 }
 
-export const SubscriptionTypePopup: React.FC<SubscriptionTypePopupProps> = ({ onSelect, selectedType }) => {
+export const SubscriptionTypePopup: React.FC<SubscriptionTypePopupProps> = ({ onSelect, selectedTypes }) => {
     const [isOpen, setIsOpen] = useState(false)
     const popupRef = useRef<HTMLDivElement>(null)
 
@@ -43,7 +43,11 @@ export const SubscriptionTypePopup: React.FC<SubscriptionTypePopupProps> = ({ on
                 className="flex w-full h-[46px] items-center justify-between px-4 border-[1px] border-[#B9BCCB] rounded-[20px] cursor-pointer"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <span className="truncate">{selectedType ? selectedType.title : "Вид подписки"}</span>
+                <span className="truncate">
+                    {selectedTypes.length > 0
+                        ? selectedTypes.map((type) => type.title).join(", ")
+                        : "Вид подписки"}
+                </span>
                 <ChevronDown className={`w-5 h-5 transition-transform ${isOpen ? "transform rotate-180" : ""}`} />
             </div>
 
@@ -55,11 +59,12 @@ export const SubscriptionTypePopup: React.FC<SubscriptionTypePopupProps> = ({ on
                             className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between"
                             onClick={() => {
                                 onSelect(type)
-                                setIsOpen(false)
                             }}
                         >
                             <span className="truncate">{type.title}</span>
-                            {selectedType?.id === type.id && <Check className="w-4 h-4 text-[#161616]" />}
+                            {selectedTypes.some((selected) => selected.id === type.id) && (
+                                <Check className="w-4 h-4 text-[#161616]" />
+                            )}
                         </div>
                     ))}
                 </div>

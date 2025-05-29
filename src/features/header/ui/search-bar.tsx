@@ -1,39 +1,64 @@
 "use client"
 
+import type React from "react"
 import { SearchLogo } from "@/shared/icons"
-import {FC, useState} from "react"
-import {SearchResults} from "@/features/header/ui/search-results";
+import { FC, useState } from "react"
+import { SearchResults } from "@/features/header/ui/search-results"
+import {useCatalog} from "@/features/header/catalog-context";
 
-interface Props{
-    categories: {
-        id: number;
-        photo: string;
-        title: string;
-        description: string;
-        createdAt: Date;
-        updateAt: Date;
-    }[];
+interface Category {
+    id: number
+    photo: string
+    title: string
+    description: string
+    createdAt: Date
+    updateAt: Date
 }
 
-export const SearchBar:FC<Props> = ({categories}) => {
+interface Props {
+    categories: Category[]
+}
+
+export const SearchBar: FC<Props> = () => {
     const [isOpen, setIsOpen] = useState(false)
+    const { filteredCategories, filteredProducts, isLoading, searchQuery, setSearchQuery, fetchData } = useCatalog()
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value)
+        if (e.target.value.trim() !== "") {
+            setIsOpen(true)
+        }
+    }
+
+    const handleInputFocus = () => {
+        setIsOpen(true)
+        if (filteredProducts.length === 0 && !isLoading) {
+            fetchData()
+        }
+    }
 
     return (
         <div className="relative">
-            <div
-                className="flex items-center justify-between mdbvp:w-[666px] md:w-[400px] w-[260px] border-[1px] border-[#DBDEEF] text-[16px] rounded-full py-3 md:px-6 px-3 relative z-50"
-                onClick={() => setIsOpen(true)}
-            >
+            <div className="flex items-center justify-between mdbvp:w-[666px] md:w-[400px] mds:w-[260px] w-full border-[1px] border-[#DBDEEF] mds:text-[16px] text-[12px] rounded-full mds:py-3 py-2 md:px-6 px-2 relative z-50">
                 <input
                     placeholder="Искать тут.."
                     className="text-[#4E4F56] w-full outline-0"
                     type="text"
-                    onFocus={() => setIsOpen(true)}
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    onFocus={handleInputFocus}
                 />
                 <SearchLogo />
             </div>
 
-            <SearchResults categories={categories} isOpen={isOpen} setIsOpen={setIsOpen} />
+            <SearchResults
+                categories={filteredCategories}
+                products={filteredProducts}
+                isOpen={isOpen}
+                setIsOpen={setIsOpen}
+                isLoading={isLoading}
+                searchQuery={searchQuery}
+            />
         </div>
     )
 }

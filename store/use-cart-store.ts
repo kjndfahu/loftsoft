@@ -8,8 +8,9 @@ export type CartItem = {
     oldPrice?: number
     quantity: number
     photo?: string
-    type?: string[]
+    type?: string
     licenseType?: string
+    deviceCount?: number
 }
 
 type CartStore = {

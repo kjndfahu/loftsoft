@@ -54,7 +54,7 @@ export const ChangePasswordForm: FC<Props> = ({ setIsClicked }) => {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-[360px] pt-4 pb-7 px-6 bg-white rounded-[16px]">
+        <form onSubmit={handleSubmit} className=" flex flex-col gap-4 sm:w-[360px] w-full pt-4 pb-7 px-6 bg-white rounded-[16px]">
             <div className="flex items-center justify-between">
                 <h3 className="text-[22px] font-bold text-[#161616]">Смена пароля</h3>
                 <div onClick={() => setIsClicked(false)}>

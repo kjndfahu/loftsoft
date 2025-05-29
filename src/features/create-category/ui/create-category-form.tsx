@@ -1,14 +1,12 @@
 "use client"
 
 import type React from "react"
-
 import { CrossLogo } from "@/shared/icons"
 import type { FC, FormEvent } from "react"
 import { useState, useRef } from "react"
 import Image from "next/image"
 import { UploadIcon } from "lucide-react"
-import {createCategory} from "@/enteties/category/category";
-
+import { createCategory } from "@/enteties/category/category"
 
 interface Props {
     setIsOpen: (arg: boolean) => void
@@ -16,6 +14,7 @@ interface Props {
 
 export const CreateCategoryForm: FC<Props> = ({ setIsOpen }) => {
     const [image, setImage] = useState<string | null>(null)
+    const [imageFile, setImageFile] = useState<File | null>(null)
     const [isHovering, setIsHovering] = useState(false)
     const [title, setTitle] = useState("")
     const [description, setDescription] = useState("")
@@ -23,18 +22,42 @@ export const CreateCategoryForm: FC<Props> = ({ setIsOpen }) => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
+    // Cloudinary configuration
+    const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL
+    const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+
     const handleImageClick = () => {
         fileInputRef.current?.click()
     }
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
-            const reader = new FileReader()
-            reader.onload = (event) => {
-                setImage(event.target?.result as string)
+            setImageFile(file)
+            try {
+                const formData = new FormData()
+                if (!CLOUDINARY_UPLOAD_PRESET || !CLOUDINARY_UPLOAD_URL) {
+                    throw new Error("Cloudinary configuration is missing")
+                }
+
+                formData.append("file", file)
+                formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
+
+                const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+                    method: "POST",
+                    body: formData,
+                })
+
+                const data = await response.json()
+                if (data.secure_url) {
+                    setImage(data.secure_url)
+                } else {
+                    setError("Ошибка при загрузке изображения")
+                }
+            } catch (error) {
+                console.error("Ошибка при загрузке изображения:", error)
+                setError("Не удалось загрузить изображение")
             }
-            reader.readAsDataURL(file)
         }
     }
 
@@ -63,7 +86,7 @@ export const CreateCategoryForm: FC<Props> = ({ setIsOpen }) => {
             await createCategory({
                 title,
                 description,
-                photo: image,
+                photo: image, // Now a Cloudinary URL
             })
 
             setIsOpen(false)
@@ -99,7 +122,7 @@ export const CreateCategoryForm: FC<Props> = ({ setIsOpen }) => {
             >
                 {image ? (
                     <>
-                        <Image src={image || "/placeholder.svg"} alt="Category image" fill style={{ objectFit: "cover" }} />
+                        <Image src={image} alt="Category image" fill style={{ objectFit: "cover" }} />
                         <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
                             <div className="bg-white p-2 rounded-full opacity-0 hover:opacity-100 transition-all duration-200">
                                 <UploadIcon className="w-6 h-6 text-[#161616]" />
@@ -113,7 +136,13 @@ export const CreateCategoryForm: FC<Props> = ({ setIsOpen }) => {
                         <p className="text-xs opacity-70 mt-1">Рекомендуемый размер: 424x133px</p>
                     </div>
                 )}
-                <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageChange}
+                    accept="image/*"
+                    className="hidden"
+                />
             </div>
 
             {error && <div className="text-red-500 text-sm">{error}</div>}
@@ -132,12 +161,12 @@ export const CreateCategoryForm: FC<Props> = ({ setIsOpen }) => {
 
             <div className="flex items-center gap-3">
                 <div className="px-[15px] w-full py-[10px] border-[1px] border-[#B9BCCB] rounded-[10px]">
-          <textarea
-              className="bg-transparent w-full outline-0 text-[#161616]"
-              placeholder="Введите описание категории"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-          />
+                    <textarea
+                        className="bg-transparent w-full outline-0 text-[#161616]"
+                        placeholder="Введите описание категории"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                    />
                 </div>
             </div>
 
@@ -152,7 +181,9 @@ export const CreateCategoryForm: FC<Props> = ({ setIsOpen }) => {
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`text-[16px] w-[122px] h-[42px] font-semibold text-[#ffffff] border-[1px] border-[#DBDEEF] rounded-full bg-[#161616] ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
+                    className={`text-[16px] w-[122px] h-[42px] font-semibold text-[#ffffff] border-[1px] border-[#DBDEEF] rounded-full bg-[#161616] ${
+                        isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                    }`}
                 >
                     {isSubmitting ? "Создание..." : "Создать"}
                 </button>

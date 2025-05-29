@@ -1,11 +1,9 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
-
 import { EyeIcon, EyeOffIcon } from "lucide-react"
-import {RegisterFormData} from "@/enteties/auth/auth-actions";
+import { RegisterFormData } from "@/enteties/auth/auth-actions"
 
 interface SignUpInputsProps {
     formData: RegisterFormData
@@ -20,11 +18,18 @@ export const SignUpInputs = ({ formData, errors, handleChange }: SignUpInputsPro
     return (
         <div className="flex flex-col pt-[24px] gap-4">
             <div className="flex flex-col gap-1">
-                <label className="text-[12px] text-[#A4A8BA]" htmlFor="email">
+                <label
+                    className={`text-[12px] ${errors.email || errors.general?.includes("Пользователь с таким email уже существует") ? "text-red-500" : "text-[#A4A8BA]"}`}
+                    htmlFor="email"
+                >
                     Email
                 </label>
                 <div
-                    className={`rounded-full border-[1px] ${errors.email ? "border-red-500" : "border-[#B9BCCB]"} px-[15px] py-[10px]`}
+                    className={`rounded-full border-[1px] ${
+                        errors.email || errors.general?.includes("Пользователь с таким email уже существует")
+                            ? "border-red-500"
+                            : "border-[#B9BCCB]"
+                    } px-[15px] py-[10px]`}
                 >
                     <input
                         id="email"
@@ -36,14 +41,23 @@ export const SignUpInputs = ({ formData, errors, handleChange }: SignUpInputsPro
                         type="email"
                     />
                 </div>
-                {errors.email && <p className="text-red-500 text-[12px] mt-1">{errors.email}</p>}
+                {(errors.email || errors.general?.includes("Пользователь с таким email уже существует")) && (
+                    <p className="text-red-500 text-[12px] mt-1">
+                        {errors.email || errors.general}
+                    </p>
+                )}
             </div>
             <div className="flex flex-col gap-1">
-                <label className="text-[12px] text-[#A4A8BA]" htmlFor="password">
+                <label
+                    className={`text-[12px] ${errors.password ? "text-red-500" : "text-[#A4A8BA]"}`}
+                    htmlFor="password"
+                >
                     Пароль
                 </label>
                 <div
-                    className={`flex items-center justify-between rounded-full border-[1px] ${errors.password ? "border-red-500" : "border-[#B9BCCB]"} px-[15px] py-[10px]`}
+                    className={`flex items-center justify-between rounded-full border-[1px] ${
+                        errors.password || errors.confirmPassword ? "border-red-500" : "border-[#B9BCCB]"
+                    } px-[15px] py-[10px]`}
                 >
                     <input
                         id="password"
@@ -61,11 +75,16 @@ export const SignUpInputs = ({ formData, errors, handleChange }: SignUpInputsPro
                 {errors.password && <p className="text-red-500 text-[12px] mt-1">{errors.password}</p>}
             </div>
             <div className="flex flex-col gap-1">
-                <label className="text-[12px] text-[#A4A8BA]" htmlFor="confirmPassword">
+                <label
+                    className={`text-[12px] ${errors.confirmPassword ? "text-red-500" : "text-[#A4A8BA]"}`}
+                    htmlFor="confirmPassword"
+                >
                     Повторите пароль
                 </label>
                 <div
-                    className={`flex items-center justify-between rounded-full border-[1px] ${errors.confirmPassword ? "border-red-500" : "border-[#B9BCCB]"} px-[15px] py-[10px]`}
+                    className={`flex items-center justify-between rounded-full border-[1px] ${
+                        errors.password || errors.confirmPassword ? "border-red-500" : "border-[#B9BCCB]"
+                    } px-[15px] py-[10px]`}
                 >
                     <input
                         id="confirmPassword"
@@ -84,7 +103,9 @@ export const SignUpInputs = ({ formData, errors, handleChange }: SignUpInputsPro
                         {showConfirmPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
                     </button>
                 </div>
-                {errors.confirmPassword && <p className="text-red-500 text-[12px] mt-1">{errors.confirmPassword}</p>}
+                {errors.confirmPassword && (
+                    <p className="text-red-500 text-[12px] mt-1">{errors.confirmPassword}</p>
+                )}
             </div>
         </div>
     )

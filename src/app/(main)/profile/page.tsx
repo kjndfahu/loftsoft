@@ -1,11 +1,7 @@
-import {BreadcrumbNav} from "@/shared/breadcrumb-nav";
-import {Profile} from "@/features/profile/container/profile";
+import {ProfileWrapper} from "@/features/profile/container/profile-wrapper";
 
 export default function ProfilePage() {
     return (
-        <div className="flex flex-col pt-[150px] px-[250px] gap-10">
-            <BreadcrumbNav title="Профиль"/>
-            <Profile/>
-        </div>
-    );
+        <ProfileWrapper/>
+    )
 }

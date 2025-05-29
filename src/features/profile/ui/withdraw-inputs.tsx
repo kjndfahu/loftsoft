@@ -12,7 +12,7 @@ export type WithdrawFormData = {
 interface WithdrawInputsProps {
     formData: WithdrawFormData
     setFormData: (data: WithdrawFormData) => void
-    availableSum: string
+    availableSum: number
 }
 
 export const WithdrawInputs = ({ formData, setFormData, availableSum }: WithdrawInputsProps) => {

@@ -12,11 +12,11 @@ export const ProfileSettings = () => {
     const [isDelete, setIsDelete] = useState<boolean>(false)
 
     return (
-        <div className="flex items-center justify-between">
-            <Button onClick={() => setIsClicked(true)} text="Сменить пароль" />
+        <div className="flex mds:flex-row flex-col mds:gap-0 gap-6 items-center justify-between">
+            <Button className="mds:w-auto w-full justify-center" onClick={() => setIsClicked(true)} text="Сменить пароль" />
             <div
                 onClick={() => setIsDelete(true)}
-                className="flex cursor-pointer text-[16px] text-[#161616] gap-2 items-center"
+                className="flex cursor-pointer text-[16px] text-[#161616] mds:gap-2 gap-1 items-center"
             >
                 <CrossLogo />
                 Удалить аккаунт

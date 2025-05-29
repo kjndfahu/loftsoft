@@ -22,7 +22,7 @@ export const InfoBlockMini = () => {
                     className="flex border-[1px] bg-[#FFFFFF0F] rounded-[16px] border-[#FFFFFF40] items-center py-3 px-6 gap-2">
                     <div className="w-[40px] h-[40px] rounded-[12px] bg-red-500"/>
                     <div className="flex flex-col ">
-                        <h5 className="text-[16px] leading-5 font-medium">Яндекс</h5>
+                        <h5 className="text-[16px] leading-5 font-medium">Avito</h5>
                         <div className="flex items-center gap-1">
                             <ReviewStar/>
                             <p className="text-[10px] leading-[14px] text-white">5.0 | 2350 отзывов</p>

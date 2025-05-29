@@ -7,7 +7,7 @@ type ProductSpecificationsProps = {
 export default function ProductSpecifications({ characteristics }: ProductSpecificationsProps) {
     return (
         <div className="">
-            <h1 className="text-[14px] text-[#161616] mb-[12px]">Характеристики товара:</h1>
+            <h1 className="mdbvp:text-[14px] text-[13px] text-[#161616] mb-[12px]">Характеристики товара:</h1>
 
             <div className="space-y-4">
                 {characteristics.map((characteristic) => (

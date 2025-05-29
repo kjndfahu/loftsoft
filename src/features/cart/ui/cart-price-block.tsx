@@ -28,10 +28,10 @@ export const CartPriceBlock = ({
     return (
         <div className="flex flex-col gap-6">
             <div className="flex flex-col">
-                <h4 className="text-[24px] font-medium text-[#161616]">{price}₽</h4>
-                {oldPrice && <p className="text-[14px] text-[#858692] line-through">{oldPrice}₽</p>}
+                <h4 className="md:text-[24px] text-[18px] font-medium text-[#161616]">{price}₽</h4>
+                {oldPrice && <p className="md:text-[14px] text-[12px] text-[#858692] line-through">{oldPrice}₽</p>}
             </div>
-            <div className="flex text-[16px] text-[#161616] font-semibold gap-6 px-[18px] py-[11px] rounded-full border-[1px] border-[#DBDEEF]">
+            <div className="flex md:text-[16px] text-[13px] text-[#161616] font-semibold gap-6 px-[18px] py-[11px] rounded-full border-[1px] border-[#DBDEEF]">
         <span className="cursor-pointer" onClick={handleDecrease}>
           -
         </span>

@@ -42,9 +42,9 @@ export function CategoryTabs({ tabs, activeTab, onChange }: CategoryTabsProps) {
                     <button
                         key={tab.id}
                         onClick={() => onChange(tab.title)}
-                        className={`flex items-center overflow-hidden gap-2 rounded-full text-sm font-medium transition-colors ${activeTab === tab.title ? `bg-[#5069E8] text-white` : `bg-[#F5F7FF] text-black`}`}
+                        className={`flex items-center overflow-hidden gap-2 rounded-full text-sm font-medium transition-colors pr-4 ${activeTab === tab.title ? `bg-[#5069E8] text-white` : `bg-[#F5F7FF] text-black`}`}
                     >
-                        <Image className="mr-[80px] mt-[10px]" height={64} width={64} alt="tab" src={tab.photo}/>
+                        <Image className=" mt-[12px]" height={64} width={64} alt="tab" src={tab.photo}/>
                         <span>{tab.title}</span>
                     </button>
                 ))}

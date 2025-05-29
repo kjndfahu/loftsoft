@@ -16,10 +16,10 @@ export const ChangePassInputs: React.FC<ChangePassInputsProps> = ({ error }) => 
     return (
         <div className="flex flex-col pt-[24px] gap-4">
             <div className="flex flex-col gap-1">
-                <label className="text-[12px] text-[#A4A8BA]" htmlFor="currentPassword">
+                <label className={`text-[12px] ${error ? 'text-[#E71730]' : 'text-[#A4A8BA]'}`} htmlFor="currentPassword">
                     Текущий пароль
                 </label>
-                <div className="flex items-center justify-between rounded-full border-[1px] border-[#B9BCCB] px-[15px] py-[10px]">
+                <div className={`flex items-center justify-between rounded-full border-[1px] ${error ? 'border-[#E71730]' : 'border-[#B9BCCB]'} px-[15px] py-[10px]`}>
                     <input
                         id="currentPassword"
                         name="currentPassword"
@@ -37,10 +37,10 @@ export const ChangePassInputs: React.FC<ChangePassInputsProps> = ({ error }) => 
                 </div>
             </div>
             <div className="flex flex-col gap-1">
-                <label className="text-[12px] text-[#A4A8BA]" htmlFor="newPassword">
+                <label className={`text-[12px] ${error ? 'text-[#E71730]' : 'text-[#A4A8BA]'}`} htmlFor="newPassword">
                     Новый пароль
                 </label>
-                <div className="flex items-center justify-between rounded-full border-[1px] border-[#B9BCCB] px-[15px] py-[10px]">
+                <div className={`flex items-center justify-between rounded-full border-[1px] ${error ? 'border-[#E71730]' : 'border-[#B9BCCB]'} px-[15px] py-[10px]`}>
                     <input
                         id="newPassword"
                         name="newPassword"
@@ -54,10 +54,10 @@ export const ChangePassInputs: React.FC<ChangePassInputsProps> = ({ error }) => 
                 </div>
             </div>
             <div className="flex flex-col gap-1">
-                <label className="text-[12px] text-[#A4A8BA]" htmlFor="confirmPassword">
+                <label className={`text-[12px] ${error ? 'text-[#E71730]' : 'text-[#A4A8BA]'}`} htmlFor="confirmPassword">
                     Повторите пароль
                 </label>
-                <div className="flex items-center justify-between rounded-full border-[1px] border-[#B9BCCB] px-[15px] py-[10px]">
+                <div className={`flex items-center justify-between rounded-full border-[1px] ${error ? 'border-[#E71730]' : 'border-[#B9BCCB]'} px-[15px] py-[10px]`}>
                     <input
                         id="confirmPassword"
                         name="confirmPassword"
@@ -70,7 +70,7 @@ export const ChangePassInputs: React.FC<ChangePassInputsProps> = ({ error }) => 
                     </button>
                 </div>
             </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && <p className="text-[#E71730] text-sm">{error}</p>}
         </div>
     )
 }

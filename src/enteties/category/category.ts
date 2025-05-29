@@ -11,10 +11,31 @@ interface CreateCategoryParams {
     photo: string
 }
 
+function isValidUrl(url: string): boolean {
+    try {
+        new URL(url)
+        return true
+    } catch {
+        return false
+    }
+}
+
+
 export async function createCategory(params: CreateCategoryParams) {
     try {
         const { title, description, photo } = params
 
+        // Validate required fields
+        if (!title || !description || !photo) {
+            throw new Error("Все поля обязательны")
+        }
+
+        // Validate photo URL
+        if (!isValidUrl(photo)) {
+            throw new Error("Недействительный URL изображения")
+        }
+
+        // Check for existing category
         const existingCategory = await prisma.category.findUnique({
             where: { title },
         })
@@ -22,6 +43,8 @@ export async function createCategory(params: CreateCategoryParams) {
         if (existingCategory) {
             throw new Error("Категория с таким названием уже существует")
         }
+
+        // Create new category
         const newCategory = await prisma.category.create({
             data: {
                 title,
@@ -29,6 +52,7 @@ export async function createCategory(params: CreateCategoryParams) {
                 photo,
             },
         })
+
         revalidatePath("/categories")
 
         return newCategory
@@ -38,7 +62,7 @@ export async function createCategory(params: CreateCategoryParams) {
     }
 }
 
-export async function getCategories() {
+export async function  getCategories() {
     try {
         const categories = await prisma.category.findMany({
             orderBy: { createdAt: "desc" },

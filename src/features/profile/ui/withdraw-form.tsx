@@ -12,7 +12,7 @@ import { createWithdrawRequest } from "@/enteties/user/create-withdraw-request"
 interface Props {
     setIsClicked: (arg: boolean) => void
     userEmail: string
-    availableSum: string
+    availableSum: number
 }
 
 export const WithdrawForm: FC<Props> = ({ setIsClicked, userEmail, availableSum }) => {
@@ -20,7 +20,7 @@ export const WithdrawForm: FC<Props> = ({ setIsClicked, userEmail, availableSum 
         phone: 0,
         bank: "",
         name: "",
-        sum: availableSum,
+        sum: String(availableSum),
     })
     const [isLoading, setIsLoading] = useState(false)
     const [showSuccess, setShowSuccess] = useState(false)
@@ -53,7 +53,7 @@ export const WithdrawForm: FC<Props> = ({ setIsClicked, userEmail, availableSum 
                 phone: formData.phone,
                 bank: formData.bank,
                 name: formData.name,
-                sum: availableSum,
+                sum: String(availableSum),
                 userEmail,
             })
 

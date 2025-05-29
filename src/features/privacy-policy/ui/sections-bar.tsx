@@ -1,10 +1,15 @@
-interface Props{
-    sectionRefs:any;
-    activeSection: string | null;
-    setActiveSection: (arg: string | null) => void;
+"use client"
+
+import type React from "react"
+
+interface Props {
+    sectionRefs: React.MutableRefObject<{ [key: string]: HTMLElement | null }>
+    contentRef: React.MutableRefObject<HTMLDivElement | null>
+    activeSection: string | null
+    setActiveSection: (arg: string | null) => void
 }
 
-export const SectionsBar:React.FC<Props> = ({sectionRefs, setActiveSection, activeSection}) => {
+export const SectionsBar: React.FC<Props> = ({ sectionRefs, contentRef, setActiveSection, activeSection }) => {
     const sections = [
         { id: "01", title: "Основные правила" },
         { id: "02", title: "Определение терминов" },
@@ -22,15 +27,20 @@ export const SectionsBar:React.FC<Props> = ({sectionRefs, setActiveSection, acti
 
     const scrollToSection = (id: string) => {
         const element = sectionRefs.current[id]
-        if (element) {
-            element.scrollIntoView({ behavior: "smooth" })
+        const container = contentRef.current
+        if (element && container) {
+            const offsetTop = element.offsetTop - 200 // Отступ для видимости заголовка
+            // Проверяем, нужно ли скроллить
+            if (Math.abs(container.scrollTop - offsetTop) > 10) { // Допуск 10px
+                container.scrollTo({ top: offsetTop, behavior: "smooth" })
+            }
             setActiveSection(id)
         }
     }
 
     return (
-        <div className="w-1/3 pt-[150px] border-r border-gray-200 fixed top-[100px] left-[250px] h-screen">
-            <h2 className="text-xl font-bold mb-4">Оглавление</h2>
+        <div className="mds:flex hidden flex-col items-start z-[1] bg-white sticky top-[150px] w-1/5 pr-6">
+            <h2 className="text-[16px] text-[#161616] font-bold mb-4">Оглавление</h2>
             <ul className="space-y-2">
                 {sections.map((section) => (
                     <li key={section.id}>
@@ -40,8 +50,8 @@ export const SectionsBar:React.FC<Props> = ({sectionRefs, setActiveSection, acti
                                 e.preventDefault()
                                 scrollToSection(section.id)
                             }}
-                            className={`block py-1 hover:text-purple-600 transition-colors ${
-                                activeSection === section.id ? "text-purple-600 font-medium" : "text-gray-700"
+                            className={`block py-1 hover:text-[#5069E8] transition-colors ${
+                                activeSection === section.id ? "text-[#5069E8] font-medium" : "text-[#6A6B75]"
                             }`}
                         >
                             {section.id}. {section.title}

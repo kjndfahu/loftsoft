@@ -90,9 +90,9 @@ export function useRegisterForm(onSuccess: () => void) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
-        setGeneralError(null)
 
-        const newErrors: { [key: string]: string } = {}
+        // Only clear errors if we intend to re-validate
+        const newErrors: { [key: string]: string } = { ...errors } // Preserve existing errors
         if (!formData.email) newErrors.email = "Email обязателен"
         if (!formData.password) newErrors.password = "Пароль обязателен"
         if (!formData.confirmPassword) newErrors.confirmPassword = "Подтверждение пароля обязательно"
@@ -109,12 +109,17 @@ export function useRegisterForm(onSuccess: () => void) {
             return
         }
 
+        setErrors({})
+
         try {
             const result = await register(formData)
             if (result.success) {
                 onSuccess()
             } else {
                 setGeneralError(result.error || "Произошла ошибка при регистрации")
+                if (result.error.includes("Пользователь с таким email уже существует")) {
+                    setErrors((prev) => ({ ...prev, general: result.error }))
+                }
             }
         } catch (error) {
             setGeneralError("Произошла ошибка при регистрации")

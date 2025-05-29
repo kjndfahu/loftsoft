@@ -34,13 +34,13 @@ export const LogoList = () => {
         },
     ]
     return (
-        <div className="flex items-center pt-6 gap-6">
+        <div className="flex z-[3] items-center pt-6 sml:gap-6 gap-3">
             {data.map((item) => (
                 <div
                     key={item.id}
-                    className="flex flex-col w-[200px] h-[123px] border-[1px] border-[#DBDEEF] rounded-[16px] items-center py-6 justify-between">
+                    className="flex flex-col sml:w-[200px] w-[130px] bg-white sml:h-[123px] h-[75px] border-[1px] border-[#DBDEEF] sml:rounded-[16px] rounded-[12px] items-center sml:py-6 py-3 justify-between">
                     {item.img}
-                    <h5 className="text-[16px] font-medium text-[#161616]">{item.title}</h5>
+                    <h5 className="sml:text-[16px] text-[14px] font-medium text-[#161616]">{item.title}</h5>
                 </div>
             ))}
         </div>

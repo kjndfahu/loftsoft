@@ -43,30 +43,25 @@ export const OpenSearchBar = ({
                                   selectedCategoryId,
                                   onCategorySelect,
                               }: OpenSearchBarProps) => {
-    // Get the current category title
     const categoryTitle = useMemo(() => {
         if (!selectedCategoryId) return ""
         const category = categories.find((c) => c.id === selectedCategoryId)
         return category ? category.title : ""
     }, [selectedCategoryId, categories])
 
-    // Filter products by selected category
     const filteredProducts = useMemo(() => {
         if (!selectedCategoryId) return []
         return allProducts.filter((product) => product.categoryId === selectedCategoryId)
     }, [selectedCategoryId, allProducts])
 
-    // Function to distribute products into columns with vertical flow
     const productColumns = useMemo(() => {
         if (filteredProducts.length === 0) return [[], [], []]
 
         const columnHeight = Math.ceil(filteredProducts.length / 3)
         const columns: Product[][] = [[], [], []]
 
-        // Fill columns vertically first
         filteredProducts.forEach((product, index) => {
             const columnIndex = Math.floor(index / columnHeight)
-            // Ensure we don't exceed 3 columns
             if (columnIndex < 3) {
                 columns[columnIndex].push(product)
             }
@@ -107,7 +102,7 @@ export const OpenSearchBar = ({
 
     return (
         <motion.div
-            className="absolute top-full w-[1450px] h-[357px] left-[-300px] bg-white rounded-b-lg shadow-lg mt-1 z-50 overflow-hidden"
+            className="absolute top-full xl:w-[1450px] lg:w-[1200px] mdbvp:w-[1100px] md:w-[1000px] w-[700px] h-[357px] xl:left-[-300px] lg:left-[-150px] mdbvp:left-[-100px] md:left-[-200px] left-[-170px] bg-white rounded-b-lg shadow-lg z-50 overflow-hidden"
             initial="hidden"
             animate="visible"
             exit="exit"
@@ -138,7 +133,7 @@ export const OpenSearchBar = ({
                                             {column.map((product) => (
                                                 <Link
                                                     key={product.id}
-                                                    href={`/products/${product.id}`}
+                                                    href={`/catalog/${product.id}`}
                                                     className="text-[16px] text-[#4E4F56] cursor-pointer font-medium hover:text-[#5069E8] transition-colors"
                                                 >
                                                     {product.name}

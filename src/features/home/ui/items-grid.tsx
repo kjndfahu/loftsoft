@@ -1,19 +1,30 @@
-import {Items} from "@/features/home/ui/item";
+import { Items } from "@/features/home/ui/item";
+
+export interface Category {
+    id: number;
+    photo: string;
+    title: string;
+    description: string;
+    createdAt: Date;
+    updateAt: Date;
+}
 
 export interface Product {
-    id: number
-    name: string
-    price: string
-    photo: string
-    description?: string | null
-    categoryId?: number | null
-    type: string[]
-    licenseType: string
-    createdAt: Date
-    updatedAt: Date
-    category?: any
-    characteristics: any[]
-    distributives: any[]
+    id: number;
+    name: string;
+    price: string;
+    photo: string;
+    description?: string | null;
+    categoryId?: number | null;
+    type: string[];
+    licenseType: string;
+    createdAt: Date;
+    updatedAt: Date;
+    category?: Category | null;
+    characteristics: any[];
+    distributives: any[];
+    averageRating: number;
+    purchaseCount: number;
 }
 
 export const ItemsGrid = ({ products }: { products: Product[] }) => {
@@ -28,5 +39,5 @@ export const ItemsGrid = ({ products }: { products: Product[] }) => {
                 products.map((product) => <Items key={product.id} product={product} />)
             )}
         </>
-    )
-}
+    );
+};

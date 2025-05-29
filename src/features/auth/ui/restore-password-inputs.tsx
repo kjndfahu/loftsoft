@@ -4,7 +4,7 @@ import type React from "react"
 
 export const RestorePasswordInputs = () => {
     return (
-        <div className="flex flex-col pt-[24px] gap-4">
+        <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
                 <label className="text-[12px] text-[#A4A8BA]" htmlFor="email">
                     Email

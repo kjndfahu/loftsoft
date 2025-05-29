@@ -1,20 +1,23 @@
 import {AdminBtn} from "@/features/admin-navbar/ui/admin-btn";
 import {
     BanknoteArrowDown,
-    ChartColumnStacked,
+    ChartColumnStacked, FileQuestion,
     FolderCode,
     Home,
     ListOrdered,
     Newspaper,
     ShoppingBasket,
-    Star
+    Star, StretchHorizontal
 } from "lucide-react";
 import Link from "next/link";
 
 export const AdminNavbar = () => {
     return (
-        <div className="flex flex-col min-h-screen fixed left-[50px] w-auto pt-[200px] items-center gap-5">
-            <AdminBtn title="Главная" logo={ <Home color="#000000"/> }/>
+        <div className="flex flex-col min-h-screen fixed mds:left-[50px] sml:left-[30px] left-[10px] w-auto mds:pt-[120px] pt-[90px] items-center gap-5">
+            <Link href="/admin-main">
+                <AdminBtn title="Главная" logo={ <Home color="#000000"/> }/>
+            </Link>
+
             <Link href="/create-category">
                 <AdminBtn title="Создать категорию" logo={ <ChartColumnStacked color="#000000"/> }/>
             </Link>
@@ -33,8 +36,14 @@ export const AdminNavbar = () => {
             <Link href="/admin-articles">
                 <AdminBtn title="Статьи" logo={ <Newspaper color="#000000"/> }/>
             </Link>
-            <Link href="/orders">
+            <Link href="/admin-orders">
                 <AdminBtn title="Заказы" logo={ <ListOrdered color="#000000"/> }/>
+            </Link>
+            <Link href="/popular-products">
+                <AdminBtn title="Популярные товары" logo={ <StretchHorizontal color="#000000"/> }/>
+            </Link>
+            <Link href="/admin-knowledge-base">
+                <AdminBtn title="Ответы на вопросы" logo={ <FileQuestion  color="#000000"/> }/>
             </Link>
         </div>
     )

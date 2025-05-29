@@ -7,7 +7,7 @@ import {Banners} from "@/features/home/ui/banners";
 
 export default function Home() {
   return (
-    <div className="flex flex-col mds:pt-[150px] pt-[80px] xxl:px-[250px] xl:px-[150px] mdbvp:px-[100px] sml:px-[50px] px-[20px] gap-20">
+    <div className="flex flex-col pb-20 mds:pt-[150px] pt-[80px] xxl:px-[250px] xl:px-[150px] mdbvp:px-[100px] sml:px-[50px] px-[20px] gap-20">
         <Banners/>
       <Categories/>
       <PopularItems/>

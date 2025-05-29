@@ -15,14 +15,18 @@ const LICENSE_DURATIONS: LicenseDuration[] = [
     { id: "3months", title: "3 месяца" },
     { id: "6months", title: "6 месяцев" },
     { id: "1year", title: "1 год" },
+    { id: "2years", title: "2 года" },
+    { id: "3years", title: "3 года" },
+    { id: "4years", title: "4 года" },
+    { id: "5years", title: "5 лет" },
 ]
 
 interface LicenseDurationPopupProps {
     onSelect: (duration: LicenseDuration) => void
-    selectedDuration: LicenseDuration | null
+    selectedDurations: LicenseDuration[]
 }
 
-export const LicenseDurationPopup: React.FC<LicenseDurationPopupProps> = ({ onSelect, selectedDuration }) => {
+export const LicenseDurationPopup: React.FC<LicenseDurationPopupProps> = ({ onSelect, selectedDurations }) => {
     const [isOpen, setIsOpen] = useState(false)
     const popupRef = useRef<HTMLDivElement>(null)
 
@@ -45,7 +49,11 @@ export const LicenseDurationPopup: React.FC<LicenseDurationPopupProps> = ({ onSe
                 className="flex w-full h-[46px] items-center justify-between px-4 border-[1px] border-[#B9BCCB] rounded-[20px] cursor-pointer"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <span className="truncate">{selectedDuration ? selectedDuration.title : "Срок лицензии"}</span>
+                <span className="truncate">
+                    {selectedDurations.length > 0
+                        ? selectedDurations.map((duration) => duration.title).join(", ")
+                        : "Срок лицензии"}
+                </span>
                 <ChevronDown className={`w-5 h-5 transition-transform ${isOpen ? "transform rotate-180" : ""}`} />
             </div>
 
@@ -57,11 +65,12 @@ export const LicenseDurationPopup: React.FC<LicenseDurationPopupProps> = ({ onSe
                             className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between"
                             onClick={() => {
                                 onSelect(duration)
-                                setIsOpen(false)
                             }}
                         >
                             <span className="truncate">{duration.title}</span>
-                            {selectedDuration?.id === duration.id && <Check className="w-4 h-4 text-[#161616]" />}
+                            {selectedDurations.some((selected) => selected.id === duration.id) && (
+                                <Check className="w-4 h-4 text-[#161616]" />
+                            )}
                         </div>
                     ))}
                 </div>

@@ -11,19 +11,20 @@ interface LoginInputsProps {
     formData: LoginFormData
     errors: { [key: string]: string }
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+    generalError?: string
 }
 
-export const LoginInputs = ({ formData, errors, handleChange }: LoginInputsProps) => {
+export const LoginInputs = ({ formData, errors, handleChange, generalError }: LoginInputsProps) => {
     const [showPassword, setShowPassword] = useState(false)
 
     return (
         <div className="flex flex-col pt-[24px] gap-4">
             <div className="flex flex-col gap-1">
-                <label className="text-[12px] text-[#A4A8BA]" htmlFor="email">
+                <label className={`text-[12px] ${generalError ? 'text-[#E71730]' : 'text-[#A4A8BA]'}`} htmlFor="email">
                     Email
                 </label>
                 <div
-                    className={`rounded-full border-[1px] ${errors.email ? "border-red-500" : "border-[#B9BCCB]"} px-[15px] py-[10px]`}
+                    className={`rounded-full border-[1px] ${generalError ? "border-[#E71730]" : "border-[#B9BCCB]"} px-[15px] py-[10px]`}
                 >
                     <input
                         id="email"
@@ -35,14 +36,13 @@ export const LoginInputs = ({ formData, errors, handleChange }: LoginInputsProps
                         type="email"
                     />
                 </div>
-                {errors.email && <p className="text-red-500 text-[12px] mt-1">{errors.email}</p>}
             </div>
             <div className="flex flex-col gap-1">
-                <label className="text-[12px] text-[#A4A8BA]" htmlFor="password">
+                <label className={`text-[12px] ${generalError ? 'text-[#E71730]' : 'text-[#A4A8BA]'} `} htmlFor="password">
                     Пароль
                 </label>
                 <div
-                    className={`flex items-center justify-between rounded-full border-[1px] ${errors.password ? "border-red-500" : "border-[#B9BCCB]"} px-[15px] py-[10px]`}
+                    className={`flex items-center justify-between rounded-full border-[1px] ${generalError ? "border-[#E71730]" : "border-[#B9BCCB]"} px-[15px] py-[10px]`}
                 >
                     <input
                         id="password"
@@ -57,7 +57,6 @@ export const LoginInputs = ({ formData, errors, handleChange }: LoginInputsProps
                         {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
                     </button>
                 </div>
-                {errors.password && <p className="text-red-500 text-[12px] mt-1">{errors.password}</p>}
             </div>
         </div>
     )
