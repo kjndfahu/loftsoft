@@ -1,15 +1,39 @@
-import Link from "next/link"
-import {getCategories} from "@/enteties/knowledge-base/knowledge-base";
-import {CategoryEditor} from "@/features/knowledge-base/ui/category-editor";
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { getCategories } from "@/enteties/knowledge-base/knowledge-base";
+import { CategoryEditor } from "@/features/knowledge-base/ui/category-editor";
 
 
-export const metadata = {
-    title: "Управление базой знаний",
-    description: "Административная панель для управления базой знаний",
-}
+export default function AdminKnowledgeBasePage() {
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-export default async function AdminKnowledgeBasePage() {
-    const { categories = [] } = await getCategories()
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                setLoading(true);
+                const { categories = [] } = await getCategories();
+                setCategories(categories);
+            } catch (err) {
+                setError("Ошибка при загрузке категорий");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCategories();
+    }, []); // Пустой массив зависимостей, чтобы запрос выполнялся один раз при монтировании
+
+    if (loading) {
+        return <div className="flex justify-center items-center h-screen">Загрузка...</div>;
+    }
+
+    if (error) {
+        return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
+    }
 
     return (
         <div className="flex flex-col mds:py-[150px] py-[90px] mds:pl-[350px] sml:pl-[100px] pl-[55px] mds:pr-[100px] sm:pr-[20px] w-full">
@@ -30,7 +54,6 @@ export default async function AdminKnowledgeBasePage() {
 
                 <div className="bg-white border border-[#DBDEEF] rounded-lg p-6">
                     <h2 className="text-xl font-semibold mb-6">Статьи по категориям</h2>
-
                     {categories.length === 0 ? (
                         <p className="text-gray-500">Нет категорий. Создайте категорию, чтобы добавить статьи.</p>
                     ) : (
@@ -41,13 +64,15 @@ export default async function AdminKnowledgeBasePage() {
                                         <span className="mr-2">{category.emoji}</span>
                                         {category.name}
                                     </h3>
-
                                     {category.articles.length === 0 ? (
                                         <p className="text-gray-500 text-sm pl-6">Нет статей в этой категории</p>
                                     ) : (
                                         <ul className="space-y-2 sml:pl-6">
                                             {category.articles.map((article) => (
-                                                <li key={article.id} className="flex sml:gap-0 gap-2 sml:flex-row flex-col sml:items-center justify-between">
+                                                <li
+                                                    key={article.id}
+                                                    className="flex sml:gap-0 gap-2 sml:flex-row flex-col sml:items-center justify-between"
+                                                >
                                                     <div className="flex items-center">
                                                         {article.emoji && <span className="mr-2">{article.emoji}</span>}
                                                         <span>{article.title}</span>
@@ -78,5 +103,5 @@ export default async function AdminKnowledgeBasePage() {
                 </div>
             </div>
         </div>
-    )
+    );
 }
