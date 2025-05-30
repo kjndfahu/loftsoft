@@ -46,7 +46,7 @@ export const CatalogBtn = () => {
                 {isOpen && (
                     <>
                         <motion.div
-                            className="fixed top-[125px] inset-0 bg-black/50 z-40"
+                            className="fixed top-[130px] inset-0 bg-black/50 z-40"
                             initial={{opacity: 0}}
                             animate={{opacity: 1}}
                             exit={{opacity: 0}}

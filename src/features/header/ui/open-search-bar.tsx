@@ -70,29 +70,23 @@ export const OpenSearchBar = ({
         return columns
     }, [filteredProducts])
 
-    const slideVariants = {
+    const clipVariants = {
         hidden: {
-            opacity: 0,
-            y: -20,
-            height: 0,
+            clipPath: "inset(0 0 100% 0 round 0 0 8px 8px)",
             transition: {
                 duration: 0.3,
                 ease: "easeInOut",
             },
         },
         visible: {
-            opacity: 1,
-            y: 0,
-            height: "auto",
+            clipPath: "inset(0 0 0 0 round 0 0 8px 8px)",
             transition: {
-                duration: 0.4,
-                ease: "easeOut",
+                duration: 0.3,
+                ease: "easeInOut",
             },
         },
         exit: {
-            opacity: 0,
-            y: -10,
-            height: 0,
+            clipPath: "inset(0 0 100% 0 round 0 0 8px 8px)",
             transition: {
                 duration: 0.3,
                 ease: "easeInOut",
@@ -101,14 +95,21 @@ export const OpenSearchBar = ({
     }
 
     return (
-        <motion.div
-            className="absolute top-full xl:w-[1450px] lg:w-[1200px] mdbvp:w-[1100px] md:w-[1000px] w-[700px] h-[357px] xl:left-[-300px] lg:left-[-150px] mdbvp:left-[-100px] md:left-[-200px] left-[-170px] bg-white rounded-b-lg shadow-lg z-50 overflow-hidden"
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={slideVariants}
-        >
-            <div className="flex p-8">
+        <div className="absolute top-[55px] xl:w-[1450px] lg:w-[1200px] mdbvp:w-[1100px] md:w-[1000px] w-[700px] h-[357px] xl:left-[-300px] lg:left-[-150px] mdbvp:left-[-100px] md:left-[-200px] left-[-170px] rounded-b-lg z-50 overflow-hidden">
+            <motion.div
+                className="absolute inset-0 bg-white"
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={clipVariants}
+            />
+            <motion.div
+                className="relative flex p-8 h-full"
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={clipVariants}
+            >
                 <CatalogBar
                     categories={categories}
                     onCategorySelect={onCategorySelect}
@@ -146,7 +147,7 @@ export const OpenSearchBar = ({
                         </>
                     )}
                 </div>
-            </div>
-        </motion.div>
+            </motion.div>
+        </div>
     )
 }

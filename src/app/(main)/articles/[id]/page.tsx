@@ -140,9 +140,12 @@ export default async function ArticleDetailPage({ params }: ArticleDetailPagePro
                                                     </h3>
                                                 </div>
                                             </div>
-                                            <div className="justify-end cursor-pointer sml:w-[212px] w-[145px] block bg-[#5069E8] text-white px-4 sml:py-2 py-1 rounded-full sml:text-[16px] text-[14px] font-semibold text-center">
-                                                Купить
-                                            </div>
+                                            <Link href={`/catalog/${block.content?.id}`}>
+                                                <div
+                                                    className="justify-end cursor-pointer sml:w-[212px] w-[145px] block bg-[#5069E8] text-white px-4 sml:py-2 py-1 rounded-full sml:text-[16px] text-[14px] font-semibold text-center">
+                                                    Купить
+                                                </div>
+                                            </Link>
                                         </div>
                                     </div>
                                 );
