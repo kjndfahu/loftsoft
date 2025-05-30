@@ -1,9 +1,27 @@
+'use client'
+
 import { CreateCategoryBtn } from "@/features/create-category/ui/create-category-btn"
 import { CategoryBlock } from "@/features/create-category/ui/category-block"
 import {getCategories} from "@/enteties/category/category";
+import {useEffect, useState} from "react";
+import {Category} from "@/features/home/ui/items-grid";
 
-export default async function CreateCategoryPage() {
-    const categories = await getCategories()
+export default function CreateCategoryPage() {
+    const [categories, setCategories] = useState<Category[]>([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const categoriesData = await getCategories();
+                setCategories(categoriesData);
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     return (
         <div className="flex flex-col mds:py-[150px] py-[90px] mds:pl-[350px] sml:pl-[100px] pl-[55px] mds:pr-[100px] sm:pr-[20px] w-full gap-5">

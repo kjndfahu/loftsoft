@@ -72,7 +72,7 @@ export const SearchResults: FC<Props> = ({ isOpen, setIsOpen, categories, produc
                                             <h3 className="font-bold text-[18px] mb-2">Категории</h3>
                                             <div className="mb-4">
                                                 {categories.map((category) => (
-                                                    <Link href={`/category/${category.id}`} key={category.id} onClick={() => setIsOpen(false)}>
+                                                    <Link href={`/catalog`} key={category.id} onClick={() => setIsOpen(false)}>
                                                         <p className="py-2 hover:bg-gray-50 text-[16px] font-medium cursor-pointer">
                                                             {category.title}
                                                         </p>
@@ -135,7 +135,7 @@ export const SearchResults: FC<Props> = ({ isOpen, setIsOpen, categories, produc
                                                     <h3 className="font-bold text-[18px] mb-2">Товары</h3>
                                                     <div className="space-y-2">
                                                         {products.map((product) => (
-                                                            <Link href={`/product/${product.id}`} key={product.id} onClick={() => setIsOpen(false)}>
+                                                            <Link href={`/catalog/${product.id}`} key={product.id} onClick={() => setIsOpen(false)}>
                                                                 <div className="flex items-center gap-2 py-2 hover:bg-gray-50 cursor-pointer">
                                                                     <div className="w-10 h-10 flex-shrink-0 relative overflow-hidden rounded-sm">
                                                                         <Image

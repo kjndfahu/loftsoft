@@ -16,7 +16,7 @@ export default function SuccessfulPaymentPage() {
                     странице «заказы».</p>
             </div>
             <div className="flex gap-[10px]">
-                <Link href="/catalog">
+                <Link href="/orders">
                     <button className="text-[16px] text-white font-semibold rounded-full px-6 py-3 bg-[#5069E8]">Перейти в заказы
                     </button>
                 </Link>
