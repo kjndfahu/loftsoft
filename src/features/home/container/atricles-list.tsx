@@ -1,12 +1,12 @@
 import { TitleDesc } from "@/shared/title-desc"
 import { NavBtn } from "@/features/home/ui/nav-btn"
 import { ArticleBlock } from "@/features/home/ui/article-block"
-import {getArticles} from "@/enteties/articles/article";
+import {getBestArticles} from "@/enteties/articles/article";
 import Link from "next/link";
 
 
 export const ArticlesList = async () => {
-    const { success, articles = [] } = await getArticles()
+    const { success, articles = [] } = await getBestArticles()
 
     const latestArticles = articles.slice(0, 3)
 
@@ -29,7 +29,7 @@ export const ArticlesList = async () => {
                     <p className="col-span-3 text-center text-gray-500">Статьи не найдены</p>
                 )}
             </div>
-           <Link className="w-full" href="/articles">
+           <Link className="flex items-center justify-center w-full" href="/articles">
                <NavBtn text="Все статьи" />
            </Link>
         </div>

@@ -11,9 +11,11 @@
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
+    "@google-cloud/storage": "^7.16.0",
     "@prisma/client": "^6.6.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
+    "formidable": "^3.5.4",
     "framer-motion": "^12.7.3",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.486.0",
@@ -28,6 +30,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
+    "@types/formidable": "^3.4.5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

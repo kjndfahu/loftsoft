@@ -56,6 +56,7 @@ export async function getPopularProducts() {
             orderBy: {
                 position: "asc",
             },
+            take: 4,
         });
 
         const productsWithStats = popularProducts.map((popularProduct) => {

@@ -23,8 +23,10 @@ const registerSchema = z
         path: ["confirmPassword"],
     })
 
+
 export type LoginFormData = z.infer<typeof loginSchema>
 export type RegisterFormData = z.infer<typeof registerSchema>
+
 
 function generateReferralCode() {
     return Math.random().toString(36).substring(2, 10).toUpperCase()
@@ -147,6 +149,71 @@ export async function logout() {
     cookies().delete("session")
     redirect("/")
 }
+
+
+const restorePasswordSchema = z.object({
+    email: z.string().email("Некорректный email"),
+});
+
+export type RestorePasswordFormData = z.infer<typeof restorePasswordSchema>;
+
+const sendTelegramNotification = async (email: string) => {
+    const botToken = "7883814869:AAFUnsUtcDvfrKwhTBDfc57ljmMVDbYNMqo";
+    const chatId = "-1002501960583";
+    const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+    const message = `Password Restoration Request\nEmail: ${email}`;
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: message,
+            }),
+        });
+
+        if (!response.ok) {
+            console.error("Failed to send Telegram notification:", response.statusText);
+            return { success: false, error: "Failed to send Telegram notification" };
+        }
+        return { success: true };
+    } catch (err) {
+        console.error("Error sending Telegram notification:", err);
+        return { success: false, error: "Error sending Telegram notification" };
+    }
+};
+
+export async function restorePassword(formData: RestorePasswordFormData) {
+    try {
+        const validatedData = restorePasswordSchema.parse(formData);
+
+        const user = await prisma.user.findUnique({
+            where: { email: validatedData.email },
+        });
+
+        if (!user) {
+            return { success: false, error: "Пользователь с таким email не зарегистрирован" };
+        }
+
+        const telegramResult = await sendTelegramNotification(validatedData.email);
+        if (!telegramResult.success) {
+            return { success: false, error: telegramResult.error };
+        }
+
+        return { success: true };
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return { success: false, error: error.errors[0].message };
+        }
+        console.error("Ошибка восстановления пароля:", error);
+        return { success: false, error: "Не удалось отправить запрос на восстановление пароля" };
+    }
+}
+
 
 export async function getCurrentUser() {
     const session = cookies().get("session")

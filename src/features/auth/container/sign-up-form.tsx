@@ -12,7 +12,7 @@ import {showToast} from "@/shared/custom-toast";
 export const SignUpForm = ({
                                setIsRegistration,
                                handleLoginClick,
-                               refreshUser, // Add refreshUser to props
+                               refreshUser,
                            }: {
     setIsRegistration: (arg: boolean) => void;
     handleLoginClick: () => void;

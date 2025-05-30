@@ -3,22 +3,6 @@
 import { prisma } from "../../../prisma/prisma-client"
 
 // Function to create a new product
-interface CreateProductData {
-    name: string
-    price: string
-    newPrice?: string
-    photo: string
-    description?: string
-    categoryId: number
-    type: string[]
-    licenseType: string[]
-    deviceCounts: number[]
-    characteristics?: { title: string; value: string }[]
-    questions?: { question: string; answer: string }[]
-    distributives?: { displayName: string; fileUrl: string }[]
-    relatedProductIds?: number[]
-    autorelease: boolean // New field for autorelease
-}
 
 interface FindProduct {
     id: number
@@ -120,6 +104,23 @@ export async function fetchProduct(id: number): Promise<Product | null> {
     }
 }
 
+interface CreateProductData {
+    name: string
+    price: string
+    newPrice?: string
+    photo: string
+    description?: string
+    categoryId: number
+    type: string[]
+    licenseType: string[]
+    deviceCounts: number[]
+    characteristics?: { title: string; value: string }[]
+    questions?: { question: string; answer: string }[]
+    distributives?: { displayName: string; fileUrl: string }[]
+    relatedProductIds?: number[]
+    autorelease: boolean
+}
+
 function isValidUrl(url: string): boolean {
     try {
         new URL(url)
@@ -131,7 +132,7 @@ function isValidUrl(url: string): boolean {
 
 export async function createProduct(data: CreateProductData) {
     try {
-        // Валидация обязательных полей
+        // Validation of required fields
         if (
             !data.name ||
             !data.price ||
@@ -144,31 +145,35 @@ export async function createProduct(data: CreateProductData) {
             return { success: false, error: "Missing required fields" }
         }
 
-        // Валидация URL изображения
+        // Validate photo URL
         if (!isValidUrl(data.photo)) {
             return { success: false, error: "Invalid photo URL" }
         }
 
-        // Валидация URL дистрибутивов
+        // Validate distributive URLs and ensure they are GCS URLs
         if (data.distributives) {
             for (const dist of data.distributives) {
                 if (!isValidUrl(dist.fileUrl)) {
                     return { success: false, error: `Invalid URL for distributive: ${dist.displayName}` }
                 }
+                // Validate that the URL is from the configured GCS bucket
+                if (!dist.fileUrl.includes(`storage.googleapis.com/${process.env.GOOGLE_CLOUD_BUCKET_NAME}`)) {
+                    return { success: false, error: `Distributive URL must be from the configured GCS bucket: ${dist.displayName}` }
+                }
             }
         }
 
-        // Создание продукта
+        // Create product
         const product = await prisma.item.create({
             data: {
                 name: data.name,
                 price: data.price,
                 newPrice: data.newPrice,
-                photo: data.photo, // Теперь это URL
+                photo: data.photo,
                 description: data.description || "",
                 categoryId: data.categoryId,
                 type: data.type,
-                licenseType: data.licenseType,
+                licenseType: data.type,
                 deviceCounts: data.deviceCounts,
                 autorelease: data.autorelease,
                 characteristics: {

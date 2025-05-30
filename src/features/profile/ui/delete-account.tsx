@@ -2,10 +2,10 @@
 
 import { useState } from "react"
 import { CrossLogo } from "@/shared/icons"
-
 import { useRouter } from "next/navigation"
 import type { FC } from "react"
-import {deleteAccount} from "@/enteties/user/delete-me";
+import { deleteAccount } from "@/enteties/user/delete-me"
+import { useAuth } from "@/enteties/auth/auth-provider"
 
 interface Props {
     setIsDelete: (arg: boolean) => void
@@ -15,6 +15,7 @@ export const DeleteAccountForm: FC<Props> = ({ setIsDelete }) => {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
+    const { refreshUser } = useAuth() // Add useAuth to access refreshUser
 
     const handleDeleteAccount = async () => {
         setIsLoading(true)
@@ -23,8 +24,9 @@ export const DeleteAccountForm: FC<Props> = ({ setIsDelete }) => {
         const result = await deleteAccount()
 
         if (result.success) {
-            // Redirect to home page after successful deletion
-            router.push("/")
+            await refreshUser() // Call refreshUser to update the auth state
+            setIsDelete(false) // Close the modal
+            router.push("/") // Redirect to home page
         } else {
             setError(result.error || "Произошла ошибка при удалении аккаунта")
             setIsLoading(false)

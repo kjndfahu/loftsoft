@@ -58,6 +58,29 @@ export async function getArticles() {
     }
 }
 
+export async function getBestArticles() {
+    try {
+        const articles = await prisma.article.findMany({
+            orderBy: {
+                createdAt: "desc",
+            },
+            select: {
+                id: true,
+                title: true,
+                photo: true,
+                text: true,
+                createdAt: true,
+            },
+            take: 3,
+        })
+
+        return { success: true, articles }
+    } catch (error) {
+        console.error("Error fetching articles:", error)
+        return { success: false, error: "Failed to fetch articles", articles: [] }
+    }
+}
+
 // Function to get a single article by ID
 export async function getArticleById(id: number) {
     try {

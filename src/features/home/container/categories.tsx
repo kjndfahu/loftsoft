@@ -1,13 +1,13 @@
 import { TitleDesc } from "@/shared/title-desc"
 import { CategoryBlock } from "@/features/home/ui/category-block"
 import { NavBtn } from "@/features/home/ui/nav-btn"
-import {getCategories} from "@/enteties/category/category";
+import {getLastCategories} from "@/enteties/category/category";
 import Link from "next/link";
 
 
 export const Categories = async () => {
 
-    const categories = await getCategories()
+    const categories = await getLastCategories()
 
     return (
         <div className="flex flex-col items-center mds:gap-10 gap-6">

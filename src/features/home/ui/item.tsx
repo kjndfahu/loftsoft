@@ -34,6 +34,11 @@ export const Items = ({ product }: ItemsProps) => {
         return src.startsWith("data:image") || src.startsWith("data:img");
     };
 
+    const isRemoteUrl = (src: string) => {
+        if (!src) return false;
+        return src.startsWith("http://") || src.startsWith("https://");
+    };
+
     const renderImage = () => {
         if (!product.photo) {
             return (
@@ -46,26 +51,39 @@ export const Items = ({ product }: ItemsProps) => {
         if (isBase64Image(product.photo)) {
             return (
                 <img
-                    src={product.photo || "/placeholder.svg"}
+                    src={product.photo}
                     alt={product.name}
                     className="object-cover w-full h-full"
                 />
             );
-        } else {
+        }
+
+        if (isRemoteUrl(product.photo)) {
             return (
                 <Image
-                    src={
-                        product.photo.startsWith("/")
-                            ? product.photo
-                            : `/placeholder.svg?height=415&width=312&query=${product.name}`
-                    }
+                    src={product.photo}
                     alt={product.name || "Товар"}
                     fill
                     className="object-cover"
                 />
             );
         }
+
+        return (
+            <Image
+                src={
+                    product.photo.startsWith("/")
+                        ? product.photo
+                        : `/placeholder.svg?height=415&width=312&query=${product.name}`
+                }
+                alt={product.name || "Товар"}
+                fill
+                className="object-cover"
+            />
+        );
     };
+
+    console.log(product.photo);
 
     return (
         <Link

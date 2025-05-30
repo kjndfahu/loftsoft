@@ -74,3 +74,17 @@ export async function  getCategories() {
         throw error
     }
 }
+
+export async function getLastCategories() {
+    try {
+        const categories = await prisma.category.findMany({
+            orderBy: { createdAt: "desc" },
+            take: 3,
+        })
+
+        return categories
+    } catch (error) {
+        console.error("Error fetching categories:", error)
+        throw error
+    }
+}

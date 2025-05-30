@@ -20,7 +20,7 @@ export const RefProgram: FC<Props> = ({ refCode, userEmail, availableSum, totalR
     const [isClicked, setIsClicked] = useState(false)
 
     const handleCopy = () => {
-        const referralLink = `loftsoft.com/${refCode}`
+        const referralLink = `loftsoft.store?ref=${refCode}`
         navigator.clipboard.writeText(referralLink).then(() => {
             showToast("Ссылка скопирована", "success", {
                 secondaryMessage: "Ссылка была скопирована в буфер обмена",
@@ -54,7 +54,7 @@ export const RefProgram: FC<Props> = ({ refCode, userEmail, availableSum, totalR
                         className="flex items-center cursor-pointer flex-shrink-0 gap-[6px] text-right text-[14px] font-medium text-[#5069E8]"
                         onClick={handleCopy}
                     >
-                        loftsoft.com/{refCode}
+                        loftsoft.store?ref={refCode}
                         <CopyLogo />
                     </div>
                 </div>

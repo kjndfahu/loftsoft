@@ -1,59 +1,61 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { CrossLogo } from "@/shared/icons"
-import type { FC } from "react"
-import { useState, useRef, useEffect } from "react"
-import Image from "next/image"
-import { UploadIcon, Plus, Loader2, X } from "lucide-react"
-import { CategoryPopup } from "./category-popup"
-import { SubscriptionTypePopup, type SubscriptionType } from "./subscription-type-popup"
-import { LicenseDurationPopup, type LicenseDuration } from "./license-duration-popup"
-import { CharacteristicItem } from "./characteristic-item"
-import { FileUploadItem } from "./file-upload-item"
-import { QuestionAnswerItem } from "./question-answer-item"
-import { createProduct, findProducts } from "@/enteties/product/product"
+import type React from "react";
+import { CrossLogo } from "@/shared/icons";
+import type { FC } from "react";
+import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
+import { UploadIcon, Plus, Loader2, X } from "lucide-react";
+import { CategoryPopup } from "./category-popup";
+import { SubscriptionTypePopup, type SubscriptionType } from "./subscription-type-popup";
+import { LicenseDurationPopup, type LicenseDuration } from "./license-duration-popup";
+import { CharacteristicItem } from "./characteristic-item";
+import { FileUploadItem } from "./file-upload-item";
+import { QuestionAnswerItem } from "./question-answer-item";
+import { createProduct, findProducts } from "@/enteties/product/product";
+import {uploadDistributive} from "@/enteties/auth/upload-distributive";
+
 
 interface Props {
-    setIsOpen: (arg: boolean) => void
+    setIsOpen: (arg: boolean) => void;
 }
 
 interface Category {
-    id: string
-    title: string
-    description: string
-    photo: string
-    createdAt: Date
+    id: string;
+    title: string;
+    description: string;
+    photo: string;
+    createdAt: Date;
 }
 
 interface Characteristic {
-    title: string
-    value: string
+    title: string;
+    value: string;
 }
 
 interface QuestionAnswer {
-    question: string
-    answer: string
+    question: string;
+    answer: string;
 }
 
 interface DistributiveFile {
-    file: File | null
-    displayName: string
-    fileUrl?: string
+    file: File | null;
+    displayName: string;
+    fileUrl?: string;
 }
 
 interface Product {
-    id: number
-    name: string
-    price: string
-    photo: string
+    id: number;
+    name: string;
+    price: string;
+    photo: string;
 }
 
 const subscriptionTypeMap = {
     key: "KEY",
     subscription: "SUBSCRIPTION",
     account: "ACCOUNT",
-} as const
+} as const;
 
 const licenseDurationMap = {
     "1month": "ONE_MONTH",
@@ -64,267 +66,265 @@ const licenseDurationMap = {
     "3years": "THREE_YEARS",
     "4years": "FOUR_YEARS",
     "5years": "FIVE_YEARS",
-} as const
+} as const;
 
-const deviceCountOptions = [1, 2, 3, 4, 5]
+const deviceCountOptions = [1, 2, 3, 4, 5];
 
 export const CreateProductForm: FC<Props> = ({ setIsOpen }) => {
-    const [image, setImage] = useState<string | null>(null)
-    const [imageFile, setImageFile] = useState<File | null>(null)
-    const [isHovering, setIsHovering] = useState(false)
-    const [title, setTitle] = useState("")
-    const [description, setDescription] = useState("")
-    const [price, setPrice] = useState("")
-    const [newPrice, setNewPrice] = useState("")
-    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
-    const [selectedSubscriptionTypes, setSelectedSubscriptionTypes] = useState<SubscriptionType[]>([])
-    const [selectedLicenseDurations, setSelectedLicenseDurations] = useState<LicenseDuration[]>([])
-    const [selectedDeviceCounts, setSelectedDeviceCounts] = useState<number[]>([])
-    const [characteristics, setCharacteristics] = useState<Characteristic[]>([{ title: "", value: "" }])
-    const [questions, setQuestions] = useState<QuestionAnswer[]>([{ question: "", answer: "" }])
-    const [distributiveFiles, setDistributiveFiles] = useState<DistributiveFile[]>([{ file: null, displayName: "", fileUrl: "" }])
-    const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
-    const [availableProducts, setAvailableProducts] = useState<Product[]>([])
-    const [searchTerm, setSearchTerm] = useState("")
-    const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [error, setError] = useState<string | null>(null)
-    const [autorelease, setAutorelease] = useState(false)
-    const fileInputRef = useRef<HTMLInputElement>(null)
+    const [image, setImage] = useState<string | null>(null);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [isHovering, setIsHovering] = useState(false);
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [price, setPrice] = useState("");
+    const [newPrice, setNewPrice] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+    const [selectedSubscriptionTypes, setSelectedSubscriptionTypes] = useState<SubscriptionType[]>([]);
+    const [selectedLicenseDurations, setSelectedLicenseDurations] = useState<LicenseDuration[]>([]);
+    const [selectedDeviceCounts, setSelectedDeviceCounts] = useState<number[]>([]);
+    const [characteristics, setCharacteristics] = useState<Characteristic[]>([{ title: "", value: "" }]);
+    const [questions, setQuestions] = useState<QuestionAnswer[]>([{ question: "", answer: "" }]);
+    const [distributiveFiles, setDistributiveFiles] = useState<DistributiveFile[]>([{ file: null, displayName: "", fileUrl: "" }]);
+    const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+    const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [autorelease, setAutorelease] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Cloudinary configuration
-    const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL
-    const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+    const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
+    const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
-    // Fetch available products for related products selection
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const products = await findProducts(searchTerm)
-                setAvailableProducts(products)
-                setFilteredProducts(products)
+                const products = await findProducts(searchTerm);
+                setAvailableProducts(products);
+                setFilteredProducts(products);
             } catch (error) {
-                console.error("Error fetching products:", error)
+                console.error("Error fetching products:", error);
             }
-        }
-        fetchProducts()
-    }, [searchTerm])
+        };
+        fetchProducts();
+    }, [searchTerm]);
 
     const handleImageClick = () => {
-        fileInputRef.current?.click()
-    }
+        fileInputRef.current?.click();
+    };
 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
+        const file = e.target.files?.[0];
         if (file) {
-            setImageFile(file)
+            setImageFile(file);
             try {
-                const formData = new FormData()
-                // Ensure the variable is defined, or throw an error
-                const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
-                const uploadUrl = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL
+                const formData = new FormData();
+                const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+                const uploadUrl = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
 
                 if (!uploadPreset || !uploadUrl) {
-                    throw new Error("Cloudinary configuration is missing")
+                    throw new Error("Cloudinary configuration is missing");
                 }
 
-                formData.append("file", file)
-                formData.append("upload_preset", uploadPreset)
+                formData.append("file", file);
+                formData.append("upload_preset", uploadPreset);
 
                 const response = await fetch(uploadUrl, {
                     method: "POST",
                     body: formData,
-                })
+                });
 
-                const data = await response.json()
+                const data = await response.json();
                 if (data.secure_url) {
-                    setImage(data.secure_url)
+                    setImage(data.secure_url);
                 } else {
-                    setError("Ошибка при загрузке изображения")
+                    setError("Ошибка при загрузке изображения");
                 }
             } catch (error) {
-                console.error("Ошибка при загрузке изображения:", error)
-                setError("Не удалось загрузить изображение")
+                console.error("Ошибка при загрузке изображения:", error);
+                setError("Не удалось загрузить изображение");
             }
         }
-    }
+    };
 
     const handleCategorySelect = (category: Category) => {
-        setSelectedCategory(category)
-    }
+        setSelectedCategory(category);
+    };
 
     const handleSubscriptionTypeSelect = (subscriptionType: SubscriptionType) => {
         setSelectedSubscriptionTypes((prev) =>
             prev.some((type) => type.id === subscriptionType.id)
                 ? prev.filter((type) => type.id !== subscriptionType.id)
                 : [...prev, subscriptionType]
-        )
-    }
+        );
+    };
 
     const handleLicenseDurationSelect = (duration: LicenseDuration) => {
         setSelectedLicenseDurations((prev) =>
             prev.some((d) => d.id === duration.id)
                 ? prev.filter((d) => d.id !== duration.id)
                 : [...prev, duration]
-        )
-    }
+        );
+    };
 
     const handleDeviceCountSelect = (count: number) => {
         setSelectedDeviceCounts((prev) =>
             prev.includes(count) ? prev.filter((c) => c !== count) : [...prev, count]
-        )
-    }
+        );
+    };
 
     const handleAddCharacteristic = () => {
-        setCharacteristics([...characteristics, { title: "", value: "" }])
-    }
+        setCharacteristics([...characteristics, { title: "", value: "" }]);
+    };
 
     const handleRemoveCharacteristic = (index: number) => {
-        const newCharacteristics = [...characteristics]
-        newCharacteristics.splice(index, 1)
-        setCharacteristics(newCharacteristics)
-    }
+        const newCharacteristics = [...characteristics];
+        newCharacteristics.splice(index, 1);
+        setCharacteristics(newCharacteristics);
+    };
 
     const handleChangeCharacteristic = (index: number, title: string, value: string) => {
-        const newCharacteristics = [...characteristics]
-        newCharacteristics[index] = { title, value }
-        setCharacteristics(newCharacteristics)
-    }
+        const newCharacteristics = [...characteristics];
+        newCharacteristics[index] = { title, value };
+        setCharacteristics(newCharacteristics);
+    };
 
     const handleAddQuestion = () => {
-        setQuestions([...questions, { question: "", answer: "" }])
-    }
+        setQuestions([...questions, { question: "", answer: "" }]);
+    };
 
     const handleRemoveQuestion = (index: number) => {
-        const newQuestions = [...questions]
-        newQuestions.splice(index, 1)
-        setQuestions(newQuestions)
-    }
+        const newQuestions = [...questions];
+        newQuestions.splice(index, 1);
+        setQuestions(newQuestions);
+    };
 
     const handleChangeQuestion = (index: number, question: string, answer: string) => {
-        const newQuestions = [...questions]
-        newQuestions[index] = { question, answer }
-        setQuestions(newQuestions)
-    }
+        const newQuestions = [...questions];
+        newQuestions[index] = { question, answer };
+        setQuestions(newQuestions);
+    };
 
     const handleAddFile = () => {
-        setDistributiveFiles([...distributiveFiles, { file: null, displayName: "", fileUrl: "" }])
-    }
+        setDistributiveFiles([...distributiveFiles, { file: null, displayName: "", fileUrl: "" }]);
+    };
 
     const handleRemoveFile = (index: number) => {
-        const newFiles = [...distributiveFiles]
-        newFiles.splice(index, 1)
-        setDistributiveFiles(newFiles)
-    }
+        const newFiles = [...distributiveFiles];
+        newFiles.splice(index, 1);
+        setDistributiveFiles(newFiles);
+    };
 
     const handleChangeFile = async (index: number, file: File | null, displayName: string) => {
-        const newFiles = [...distributiveFiles]
+        const newFiles = [...distributiveFiles];
         if (file) {
+            if (!file.name.endsWith(".exe")) {
+                setError("Только .exe файлы разрешены");
+                return;
+            }
+
             try {
-                const formData = new FormData()
-                const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
-                const uploadUrl = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL
+                console.log("Starting file upload:", file.name, "Size:", file.size);
+                const formData = new FormData();
+                formData.append("file", file);
+                console.log("FormData prepared:", Array.from(formData.entries()));
 
-                if (!uploadPreset || !uploadUrl) {
-                    throw new Error("Cloudinary configuration is missing")
+                const result = await Promise.race([
+                    uploadDistributive(formData),
+                    new Promise((_, reject) => {
+                        setTimeout(() => reject(new Error("Upload timed out after 60 seconds")), 60_000);
+                    }),
+                ]);
+                console.log("Upload result:", result);
+
+                if ("error" in result) {
+                    throw new Error(result.error);
                 }
 
-                formData.append("file", file)
-                formData.append("upload_preset", uploadPreset)
-
-                const response = await fetch(uploadUrl.replace("/image/upload", "/raw/upload"), {
-                    method: "POST",
-                    body: formData,
-                })
-
-                const data = await response.json()
-                if (data.secure_url) {
-                    newFiles[index] = { file, displayName, fileUrl: data.secure_url }
-                    setDistributiveFiles(newFiles)
-                } else {
-                    setError("Ошибка при загрузке дистрибутива")
-                }
-            } catch (error) {
-                console.error("Ошибка при загрузке дистрибутива:", error)
-                setError("Не удалось загрузить дистрибутив")
+                newFiles[index] = { file, displayName, fileUrl: result.fileUrl };
+                setDistributiveFiles(newFiles);
+                console.log("File upload successful, updated state:", newFiles);
+            } catch (error: any) {
+                console.error("Ошибка при загрузке дистрибутива:", error);
+                setError(error.message || "Не удалось загрузить дистрибутив");
             }
         } else {
-            newFiles[index] = { file: null, displayName, fileUrl: "" }
-            setDistributiveFiles(newFiles)
+            newFiles[index] = { file: null, displayName, fileUrl: "" };
+            setDistributiveFiles(newFiles);
         }
-    }
+    };
 
     const handleRelatedProductSelect = (product: Product) => {
         if (relatedProducts.length >= 4) {
-            setError("Можно выбрать только 4 связанных товара")
-            return
+            setError("Можно выбрать только 4 связанных товара");
+            return;
         }
         setRelatedProducts((prev) =>
             prev.some((p) => p.id === product.id)
                 ? prev.filter((p) => p.id !== product.id)
                 : [...prev, product]
-        )
-    }
+        );
+    };
 
     const handleRemoveRelatedProduct = (productId: number) => {
-        setRelatedProducts((prev) => prev.filter((p) => p.id !== productId))
-    }
+        setRelatedProducts((prev) => prev.filter((p) => p.id !== productId));
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
+        e.preventDefault();
 
-        // Form validation
         if (!title) {
-            setError("Введите название товара")
-            return
+            setError("Введите название товара");
+            return;
         }
 
         if (!price) {
-            setError("Введите цену товара")
-            return
+            setError("Введите цену товара");
+            return;
         }
 
         if (!selectedCategory) {
-            setError("Выберите категорию товара")
-            return
+            setError("Выберите категорию товара");
+            return;
         }
 
         if (selectedSubscriptionTypes.length === 0) {
-            setError("Выберите хотя бы один тип подписки")
-            return
+            setError("Выберите хотя бы один тип подписки");
+            return;
         }
 
         if (selectedLicenseDurations.length === 0) {
-            setError("Выберите хотя бы один срок лицензии")
-            return
+            setError("Выберите хотя бы один срок лицензии");
+            return;
         }
 
         if (selectedDeviceCounts.length === 0) {
-            setError("Выберите хотя бы одно количество устройств")
-            return
+            setError("Выберите хотя бы одно количество устройств");
+            return;
         }
 
         if (!image) {
-            setError("Загрузите изображение товара")
-            return
+            setError("Загрузите изображение товара");
+            return;
         }
 
         try {
-            setIsSubmitting(true)
-            setError(null)
+            setIsSubmitting(true);
+            setError(null);
 
             const uploadedDistributives = distributiveFiles
                 .filter((dist) => dist.fileUrl && dist.displayName)
                 .map((dist) => ({
                     displayName: dist.displayName,
                     fileUrl: dist.fileUrl!,
-                }))
+                }));
 
             const result = await createProduct({
                 name: title,
                 price,
                 newPrice: newPrice || undefined,
-                photo: image, // Теперь это URL
+                photo: image,
                 description,
                 categoryId: Number.parseInt(selectedCategory.id),
                 type: selectedSubscriptionTypes.map(
@@ -339,20 +339,20 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen }) => {
                 distributives: uploadedDistributives,
                 relatedProductIds: relatedProducts.map((p) => p.id),
                 autorelease,
-            })
+            });
 
             if (result.success) {
-                setIsOpen(false)
+                setIsOpen(false);
             } else {
-                throw new Error(result.error || "Ошибка при создании товара")
+                throw new Error(result.error || "Ошибка при создании товара");
             }
         } catch (error: any) {
-            console.error("Error creating product:", error)
-            setError(error.message || "Произошла ошибка при создании товара")
+            console.error("Error creating product:", error);
+            setError(error.message || "Произошла ошибка при создании товара");
         } finally {
-            setIsSubmitting(false)
+            setIsSubmitting(false);
         }
-    }
+    };
 
     return (
         <form
@@ -369,7 +369,6 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen }) => {
             {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg">{error}</div>}
 
             <div className="flex sml:flex-row flex-col gap-6">
-                {/* Left column - main information */}
                 <div className="flex flex-col gap-4 sml:w-1/2 w-full">
                     <div
                         className={`relative h-[250px] rounded-[16px] overflow-hidden ${image ? "" : "bg-[#B9BCCB]"} cursor-pointer transition-all duration-200 ${isHovering && !image ? "bg-[#A4A8BA]" : ""} flex items-center justify-center`}
@@ -471,19 +470,17 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen }) => {
 
                     <div className="flex items-center gap-3">
                         <div className="px-[15px] w-full py-[10px] border-[1px] border-[#B9BCCB] rounded-[10px]">
-                            <textarea
-                                className="bg-transparent w-full outline-0 text-[#161616] min-h-[100px]"
-                                placeholder="Введите описание товара"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                            />
+              <textarea
+                  className="bg-transparent w-full outline-0 text-[#161616] min-h-[100px]"
+                  placeholder="Введите описание товара"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+              />
                         </div>
                     </div>
                 </div>
 
-                {/* Right column - characteristics, questions, distributives, and related products */}
                 <div className="flex flex-col gap-6 sml:w-1/2 w-full">
-                    {/* Characteristics */}
                     <div>
                         <div className="flex items-center justify-between mb-2">
                             <h4 className="text-[16px] font-semibold text-[#161616]">Характеристики товара:</h4>
@@ -509,7 +506,6 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen }) => {
                         </div>
                     </div>
 
-                    {/* Questions and Answers */}
                     <div>
                         <div className="flex items-center justify-between mb-2">
                             <h4 className="text-[16px] font-semibold text-[#161616]">Вопросы и ответы:</h4>
@@ -535,7 +531,6 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen }) => {
                         </div>
                     </div>
 
-                    {/* Distributives */}
                     <div>
                         <div className="flex items-center justify-between mb-2">
                             <h4 className="text-[16px] font-semibold text-[#161616]">Дистрибутивы:</h4>
@@ -560,7 +555,6 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen }) => {
                         </div>
                     </div>
 
-                    {/* Related Products */}
                     <div>
                         <div className="flex items-center justify-between mb-2">
                             <h4 className="text-[16px] font-semibold text-[#161616]">Связанные товары (до 4):</h4>
@@ -636,5 +630,5 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen }) => {
                 </button>
             </div>
         </form>
-    )
-}
+    );
+};

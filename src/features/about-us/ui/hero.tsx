@@ -30,7 +30,7 @@ export const Hero = () => {
                 </Link>
             </div>
             <LogoList/>
-            <Image className="absolute min-w-[1650px] w-full z-[1] top-[0px]" alt="frame" src={frame}/>
+            <Image className="absolute w-[1600px] z-[1] xl:top-[0px] lg:top-[70px] md:top-[120px] top-[250px]" alt="frame" src={frame}/>
         </div>
     )
 }
