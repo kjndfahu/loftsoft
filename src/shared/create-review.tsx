@@ -4,6 +4,7 @@ import type React from "react";
 import { useState, useCallback } from "react";
 import { X, Star } from "lucide-react";
 import { createReview } from "@/enteties/review/review";
+import {useUser} from "@/enteties/auth/use-user";
 
 interface CreateReviewProps {
     setIsReview: (arg: boolean) => void;
@@ -70,6 +71,8 @@ export const CreateReview = ({ setIsReview, orderId }: CreateReviewProps) => {
         setPhotos((prev) => prev.filter((_, i) => i !== index));
     };
 
+    const { user } = useUser();
+
     const handleSubmit = async () => {
         setError(null);
         setIsSubmitting(true);
@@ -78,6 +81,7 @@ export const CreateReview = ({ setIsReview, orderId }: CreateReviewProps) => {
             formData.append("orderId", orderId.toString());
             formData.append("rating", rating.toString());
             formData.append("comment", comment);
+            formData.append("userId", user?.id?.toString() || ""); // Pass userId
             photos.forEach((photo) => {
                 if (photo && photo.startsWith("data:image/")) {
                     formData.append("photos", photo);

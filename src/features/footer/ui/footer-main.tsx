@@ -5,12 +5,12 @@ import { Modal } from "@/shared/modal"
 import { LoginForm } from "@/features/auth/container/login-form"
 import { SignUpForm } from "@/features/auth/container/sign-up-form"
 import { RestorePasswordForm } from "@/features/auth/container/restore-password-form"
-import { useUser } from "@/enteties/auth/use-user"
+import { useAuth } from "@/enteties/auth/auth-provider"
 import { useRouter } from "next/navigation"
-import Link from "next/link";
+import Link from "next/link"
 
 export const FooterMain = () => {
-    const { user } = useUser()
+    const { user, refreshUser } = useAuth()
     const router = useRouter()
     const [isAuth, setIsAuth] = useState(false)
     const [isRegistration, setIsRegistration] = useState(false)
@@ -47,10 +47,10 @@ export const FooterMain = () => {
                 <p className="text-[14px] font-medium leading-[19px]">Покупайте ключи выгодно.</p>
             </div>
             <button
-                className="py-[10px] font-semibold w-[84px] text-[#161616] text-[16px] bg-white rounded-full"
+                className="py-[10px] font-semibold  px-4 text-[#161616] text-[16px] bg-white rounded-full"
                 onClick={handleLoginClick}
             >
-                Войти
+                {user ? "Профиль" : "Войти"}
             </button>
             {user?.role === "ADMIN" && (
                 <Link href="/admin-main">
@@ -68,19 +68,31 @@ export const FooterMain = () => {
                             handleRegistrationClick={handleRegistrationClick}
                             handleRestoreClick={handleRestoreClick}
                             setIsAuth={setIsAuth}
+                            refreshUser={refreshUser}
                         />
                     }
                 />
             )}
             {isRegistration && (
                 <Modal
-                    form={<SignUpForm handleLoginClick={handleLoginClick} setIsRegistration={setIsRegistration}/>}
+                    form={
+                        <SignUpForm
+                            handleLoginClick={handleLoginClick}
+                            setIsRegistration={setIsRegistration}
+                            refreshUser={refreshUser}
+                        />
+                    }
                 />
             )}
             {forgotPassword && (
                 <Modal
-                    form={<RestorePasswordForm handleLoginClick={handleLoginClick}
-                                               setForgotPassword={setForgotPassword}/>}
+                    form={
+                        <RestorePasswordForm
+                            handleLoginClick={handleLoginClick}
+                            setForgotPassword={setForgotPassword}
+                            refreshUser={refreshUser}
+                        />
+                    }
                 />
             )}
         </div>

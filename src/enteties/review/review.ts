@@ -3,21 +3,25 @@
 import { Prisma } from "@prisma/client"
 import { prisma } from "../../../prisma/prisma-client"
 
+function isValidUrl(url: string): boolean {
+    try {
+        new URL(url)
+        return true
+    } catch {
+        return false
+    }
+}
+
 export async function createReview(formData: FormData): Promise<{
-    success: boolean
-    review?: any
-    error?: string
+    success: boolean;
+    review?: any;
+    error?: string;
 }> {
     try {
-        const rating = Number(formData.get("rating"))
-        const comment = formData.get("comment") as string
-
-        // Get all photos from FormData
-        // Important: This is the key change - we're getting all entries with the name "photos"
-        const photos = formData.getAll("photos") as string[]
-
-        const userId = Number(1) // Hardcoded; replace with authenticated user ID
-        const itemId = 1 // Hardcoded; replace with actual item ID
+        const rating = Number(formData.get("rating"));
+        const comment = formData.get("comment") as string;
+        const photos = formData.getAll("photos") as string[];
+        const userId = Number(formData.get("userId")); // Get userId from formData (passed from component)
 
         // Log received FormData for debugging
         console.log("Received formData:", {
@@ -25,87 +29,109 @@ export async function createReview(formData: FormData): Promise<{
             comment,
             photoCount: photos.length,
             userId,
-            itemId,
-        })
+        });
 
         // Validate rating
         if (isNaN(rating) || rating < 1 || rating > 5) {
-            console.error("Validation error: Invalid rating", { rating })
+            console.error("Validation error: Invalid rating", { rating });
             return {
                 success: false,
                 error: "Рейтинг должен быть от 1 до 5.",
-            }
+            };
         }
 
         // Validate comment
         if (!comment || comment.trim().length === 0) {
-            console.error("Validation error: Comment is empty")
+            console.error("Validation error: Comment is empty");
             return {
                 success: false,
                 error: "Комментарий обязателен.",
-            }
+            };
         }
 
-        // Validate photos
+        // Validate photos and upload to Cloudinary
+        let photoUrls: string[] = [];
         if (photos.length > 0) {
+            const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
+            const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+            if (!CLOUDINARY_UPLOAD_URL || !CLOUDINARY_UPLOAD_PRESET) {
+                throw new Error("Cloudinary configuration is missing");
+            }
+
             for (const [index, photo] of photos.entries()) {
-                if (!photo || photo === "") {
-                    console.error(`Validation error: Empty photo at index ${index}`)
-                    return {
-                        success: false,
-                        error: `Изображение ${index + 1} пустое.`,
-                    }
-                }
-                if (!photo.match(/^data:image\/(png|jpeg|jpg|gif);base64,/)) {
-                    console.error(`Validation error: Invalid photo format at index ${index}`)
+                if (!photo || !photo.startsWith("data:image/")) {
+                    console.error(`Validation error: Invalid photo format at index ${index}`);
                     return {
                         success: false,
                         error: `Неверный формат изображения ${index + 1}.`,
-                    }
+                    };
                 }
-                // Approximate size check for base64 (base64 is ~33% larger than raw)
-                if (photo.length > (10 * 1024 * 1024) / 0.75) {
-                    console.error(`Validation error: Photo at index ${index} is too large`)
+
+                // Convert base64 to Blob and prepare FormData for Cloudinary
+                const byteString = atob(photo.split(",")[1]);
+                const mimeString = photo.split(",")[0].match(/:(.*?);/)![1];
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                const blob = new Blob([ab], { type: mimeString });
+                const file = new File([blob], `photo_${index}.jpg`, { type: mimeString });
+
+                const uploadFormData = new FormData();
+                uploadFormData.append("file", file);
+                uploadFormData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+                const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+                    method: "POST",
+                    body: uploadFormData,
+                });
+
+                const data = await response.json();
+                if (data.secure_url && isValidUrl(data.secure_url)) {
+                    photoUrls.push(data.secure_url);
+                } else {
+                    console.error(`Upload error for photo ${index}:`, data);
                     return {
                         success: false,
-                        error: `Изображение ${index + 1} слишком большое (макс. 10MB).`,
-                    }
+                        error: `Ошибка при загрузке изображения ${index + 1}.`,
+                    };
                 }
             }
         }
 
-        // Get the first photo URL or empty string if no photos
-        const photoUrl = photos.length > 0 ? photos[0] : ""
+        // Use the first photo URL or null if no photos
+        const photoUrl = photoUrls.length > 0 ? photoUrls[0] : null;
 
-        // Create the review with all photos
-        console.log("Attempting to create review in database...")
+        // Create the review with the uploaded photo URL
+        console.log("Attempting to create review in database...");
         const review = await prisma.review.create({
             data: {
                 text: comment,
-                photo: JSON.stringify(photos), // Store all photos as JSON string
+                photo: photoUrl ? JSON.stringify(photoUrls) : null, // Store all URLs as JSON string
                 grade: rating,
                 userId,
-                itemId,
+                itemId: 1, // Replace with dynamic itemId if needed
             },
-        })
+        });
 
-        console.log("Review created successfully:", review)
+        console.log("Review created successfully:", review);
         return {
             success: true,
             review,
-        }
+        };
     } catch (error) {
         console.error("Error creating review:", {
             message: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
-        })
+        });
 
-        // Handle unique constraint violation
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
             return {
                 success: false,
                 error: "Вы уже оставили отзыв для этого товара.",
-            }
+            };
         }
 
         return {
@@ -114,9 +140,9 @@ export async function createReview(formData: FormData): Promise<{
                 error instanceof Error
                     ? `Не удалось создать отзыв: ${error.message}`
                     : "Не удалось создать отзыв: неизвестная ошибка",
-        }
+        };
     } finally {
-        await prisma.$disconnect()
+        await prisma.$disconnect();
     }
 }
 

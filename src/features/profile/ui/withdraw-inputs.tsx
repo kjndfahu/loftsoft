@@ -18,7 +18,14 @@ interface WithdrawInputsProps {
 export const WithdrawInputs = ({ formData, setFormData, availableSum }: WithdrawInputsProps) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
-        setFormData({ ...formData, [name]: value })
+        if (name === "phone") {
+            // Allow only integer input
+            if (/^\d*$/.test(value)) {
+                setFormData({ ...formData, [name]: value ? parseInt(value) : 0 })
+            }
+        } else {
+            setFormData({ ...formData, [name]: value })
+        }
     }
 
     return (
@@ -28,6 +35,7 @@ export const WithdrawInputs = ({ formData, setFormData, availableSum }: Withdraw
                     Номер телефона
                 </label>
                 <div className="flex items-center justify-between rounded-full border-[1px] border-[#B9BCCB] px-[15px] py-[10px]">
+                    <span className="text-[14px] text-[#161616] pr-1">+</span>
                     <input
                         id="phone"
                         name="phone"
@@ -36,6 +44,8 @@ export const WithdrawInputs = ({ formData, setFormData, availableSum }: Withdraw
                         placeholder="Введите номер телефона"
                         className="text-[14px] text-[#161616] outline-0 w-full"
                         type="number"
+                        min="0"
+                        step="1"
                     />
                 </div>
             </div>
@@ -52,6 +62,7 @@ export const WithdrawInputs = ({ formData, setFormData, availableSum }: Withdraw
                         placeholder="Например Т-Банк"
                         className="text-[14px] text-[#161616] outline-0 w-full"
                         type="text"
+                        maxLength={50}
                     />
                 </div>
             </div>
@@ -68,6 +79,7 @@ export const WithdrawInputs = ({ formData, setFormData, availableSum }: Withdraw
                         placeholder="Например Марк Майдеров"
                         className="text-[14px] text-[#161616] outline-0 w-full"
                         type="text"
+                        maxLength={100}
                     />
                 </div>
             </div>

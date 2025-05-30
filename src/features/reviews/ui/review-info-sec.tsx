@@ -4,6 +4,7 @@ import {ReviewStar} from "@/shared/icons";
 import avito from "../../../../public/img/avito.avif";
 import shine from "../../../../public/img/shine.avif";
 import spiral from "../../../../public/img/spiral.avif";
+import Link from "next/link";
 
 export const ReviewInfoSec = () => {
     return (
@@ -15,29 +16,35 @@ export const ReviewInfoSec = () => {
                 </h2>
             </div>
             <div className="flex mds:flex-row flex-col z-[5] lg:gap-4 gap-2.5">
-                <div
-                    className="flex border-[1px] bg-[#FFFFFF0F] backdrop-blur-sm md:rounded-[16px] rounded-[10px] border-[#FFFFFF40] items-center justify-center mds:w-auto w-[80vw] md:py-3 py-2 md:px-6 px-1 md:gap-2 gap-1">
-                    <Image className="lg:w-[40px] md:w-[35px] w-[30px] lg:h-[40px] md:h-[35px] h-[30px]" alt="yandex" src={yandex}/>
-                    <div className="flex flex-col ">
-                        <h5 className="md:text-[16px] text-[14px] md:leading-5 leading-4 font-medium">Яндекс</h5>
-                        <div className="flex items-center gap-1">
-                            <ReviewStar className="md:w-[15px] w-[13px] md:h-[14px] h-[12px]"/>
-                            <p className="text-[10px] leading-[14px] text-white">5.0 | 2350 отзывов</p>
+                <Link href="https://yandex.com">
+                    <div
+                        className="flex border-[1px] bg-[#FFFFFF0F] backdrop-blur-sm md:rounded-[16px] rounded-[10px] border-[#FFFFFF40] items-center justify-center mds:w-auto w-[80vw] md:py-3 py-2 md:px-6 px-1 md:gap-2 gap-1">
+                        <Image className="lg:w-[40px] md:w-[35px] w-[30px] lg:h-[40px] md:h-[35px] h-[30px]"
+                               alt="yandex" src={yandex}/>
+                        <div className="flex flex-col ">
+                            <h5 className="md:text-[16px] text-white text-[14px] md:leading-5 leading-4 font-medium">Яндекс</h5>
+                            <div className="flex items-center gap-1">
+                                <ReviewStar className="md:w-[15px] w-[13px] md:h-[14px] h-[12px]"/>
+                                <p className="text-[10px] leading-[14px] text-white">5.0 | 2350 отзывов</p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </Link>
 
-                <div
-                    className="flex border-[1px] bg-[#FFFFFF0F] backdrop-blur-sm md:rounded-[16px] rounded-[10px] border-[#FFFFFF40] items-center justify-center mds:w-auto w-[80vw] md:py-3 py-2 md:px-6 px-1 md:gap-2 gap-1">
-                    <Image className="lg:w-[40px] md:w-[35px] w-[30px] lg:h-[40px] md:h-[35px] h-[30px]" alt="avito" src={avito}/>
-                    <div className="flex flex-col ">
-                        <h5 className="md:text-[16px] text-[14px] md:leading-5 leading-4 font-medium">Avito</h5>
-                        <div className="flex items-center gap-1">
-                            <ReviewStar className="md:w-[15px] w-[13px] md:h-[14px] h-[12px]"/>
-                            <p className="text-[10px] leading-[14px] text-white">5.0 | 2350 отзывов</p>
+                <Link href="https://www.avito.ru">
+                    <div
+                        className="flex border-[1px] bg-[#FFFFFF0F] backdrop-blur-sm md:rounded-[16px] rounded-[10px] border-[#FFFFFF40] items-center justify-center mds:w-auto w-[80vw] md:py-3 py-2 md:px-6 px-1 md:gap-2 gap-1">
+                        <Image className="lg:w-[40px] md:w-[35px] w-[30px] lg:h-[40px] md:h-[35px] h-[30px]" alt="avito"
+                               src={avito}/>
+                        <div className="flex flex-col ">
+                            <h5 className="md:text-[16px] text-[14px] text-white md:leading-5 leading-4 font-medium">Avito</h5>
+                            <div className="flex items-center gap-1">
+                                <ReviewStar className="md:w-[15px] w-[13px] md:h-[14px] h-[12px]"/>
+                                <p className="text-[10px] leading-[14px] text-white">5.0 | 2350 отзывов</p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </Link>
             </div>
 
             <Image width={20} height={20} alt="shine" src={shine}

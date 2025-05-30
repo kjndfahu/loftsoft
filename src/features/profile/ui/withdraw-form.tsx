@@ -30,8 +30,8 @@ export const WithdrawForm: FC<Props> = ({ setIsClicked, userEmail, availableSum 
         e.preventDefault()
 
         // Валидация формы
-        if (!formData.phone) {
-            setError("Пожалуйста, введите номер телефона")
+        if (!Number.isInteger(formData.phone) || formData.phone <= 0) {
+            setError("Пожалуйста, введите корректный номер телефона (целое число)")
             return
         }
 
@@ -42,6 +42,11 @@ export const WithdrawForm: FC<Props> = ({ setIsClicked, userEmail, availableSum 
 
         if (!formData.name) {
             setError("Пожалуйста, введите имя владельца карты")
+            return
+        }
+
+        if (!userEmail) {
+            setError("Email пользователя отсутствует")
             return
         }
 
@@ -65,9 +70,9 @@ export const WithdrawForm: FC<Props> = ({ setIsClicked, userEmail, availableSum 
             } else {
                 setError(result.error || "Произошла ошибка при создании заявки")
             }
-        } catch (err) {
-            setError("Произошла ошибка при отправке формы")
-            console.error(err)
+        } catch (err: any) {
+            setError(`Произошла ошибка при отправке формы: ${err.message || 'Неизвестная ошибка'}`)
+            console.error("Withdraw request error:", err)
         } finally {
             setIsLoading(false)
         }

@@ -58,3 +58,12 @@ body {
     text-wrap: balance;
   }
 }
+
+@media (max-width: 800px) {
+  .navigation {
+    order: 2; /* Move "Навигация" to the second position */
+  }
+  .catalog {
+    order: 1; /* Move "Каталог" to the first position */
+  }
+}

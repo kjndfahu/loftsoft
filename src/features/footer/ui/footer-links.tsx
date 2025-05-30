@@ -2,11 +2,30 @@
 
 import Link from "next/link"
 import { useCatalog } from "@/features/header/catalog-context"
+import { useState, useEffect } from "react"
+
+// Custom hook to detect media query
+const useMediaQuery = (query: string) => {
+    const [matches, setMatches] = useState(false)
+
+    useEffect(() => {
+        const media = window.matchMedia(query)
+        setMatches(media.matches)
+
+        const listener = (e: MediaQueryListEvent) => setMatches(e.matches)
+        media.addEventListener("change", listener)
+
+        return () => media.removeEventListener("change", listener)
+    }, [query])
+
+    return matches
+}
 
 export const FooterLinks = () => {
     const { filteredCategories } = useCatalog()
+    const isAbove800 = useMediaQuery("(min-width: 801px)") // Detect if screen width is greater than 800px
 
-    const data = [
+    const baseData = [
         {
             title: "Навигация",
             links: [
@@ -53,6 +72,11 @@ export const FooterLinks = () => {
             ],
         },
     ]
+
+    // Reorder based on screen width
+    const data = isAbove800
+        ? baseData // "Навигация", "Каталог", "Соглашения" for > 800px
+        : [baseData[1], baseData[0], baseData[2]] // "Каталог", "Навигация", "Соглашения" for <= 800px
 
     return (
         <div className="flex flex-wrap mds:justify-start justify-between lg:gap-16 mds:gap-8 sml:gap-20 sm:gap-10 s:gap-4 gap-8">

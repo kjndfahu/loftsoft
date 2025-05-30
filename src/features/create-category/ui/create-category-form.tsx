@@ -7,12 +7,14 @@ import { useState, useRef } from "react"
 import Image from "next/image"
 import { UploadIcon } from "lucide-react"
 import { createCategory } from "@/enteties/category/category"
+import { Category } from "@/features/home/ui/items-grid"
 
 interface Props {
     setIsOpen: (arg: boolean) => void
+    onCategoryCreated: (category: Category) => void
 }
 
-export const CreateCategoryForm: FC<Props> = ({ setIsOpen }) => {
+export const CreateCategoryForm: FC<Props> = ({ setIsOpen, onCategoryCreated }) => {
     const [image, setImage] = useState<string | null>(null)
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [isHovering, setIsHovering] = useState(false)
@@ -83,10 +85,19 @@ export const CreateCategoryForm: FC<Props> = ({ setIsOpen }) => {
         try {
             setIsSubmitting(true)
 
-            await createCategory({
+            const newCategory = await createCategory({
                 title,
                 description,
                 photo: image, // Now a Cloudinary URL
+            })
+
+            onCategoryCreated({
+                id: newCategory.id || Date.now(), // Use server-provided ID or fallback to timestamp
+                title,
+                description,
+                photo: image,
+                createdAt: new Date(),
+                updateAt: new Date(),
             })
 
             setIsOpen(false)

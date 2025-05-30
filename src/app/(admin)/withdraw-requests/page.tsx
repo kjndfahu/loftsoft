@@ -17,7 +17,7 @@ export default async function WithdrawRequestsPage() {
                 <div className="text-gray-500 text-center py-10">Заявок на вывод пока нет</div>
             )}
 
-            <div className="grid md:grid-cols-3 sml:grid-cols-2 grid-cols-1 w-full">
+            <div className="grid md:grid-cols-3 gap-3 sml:grid-cols-2 grid-cols-1 w-full">
                 {success &&
                     withdrawRequests?.map((request: {
                                                id: number

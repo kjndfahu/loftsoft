@@ -13,11 +13,11 @@ import { CharacteristicItem } from "./characteristic-item";
 import { FileUploadItem } from "./file-upload-item";
 import { QuestionAnswerItem } from "./question-answer-item";
 import { createProduct, findProducts } from "@/enteties/product/product";
-import {uploadDistributive} from "@/enteties/auth/upload-distributive";
-
+import { uploadDistributive } from "@/enteties/auth/upload-distributive";
 
 interface Props {
     setIsOpen: (arg: boolean) => void;
+    refetchProducts: () => Promise<void>;
 }
 
 interface Category {
@@ -70,7 +70,7 @@ const licenseDurationMap = {
 
 const deviceCountOptions = [1, 2, 3, 4, 5];
 
-export const CreateProductForm: FC<Props> = ({ setIsOpen }) => {
+export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => {
     const [image, setImage] = useState<string | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [isHovering, setIsHovering] = useState(false);
@@ -216,45 +216,6 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen }) => {
         setDistributiveFiles(newFiles);
     };
 
-    // const handleChangeFile = async (index: number, file: File | null, displayName: string) => {
-    //     const newFiles = [...distributiveFiles];
-    //     if (file) {
-    //         if (!file.name.endsWith(".exe")) {
-    //             setError("Только .exe файлы разрешены");
-    //             return;
-    //         }
-    //
-    //         try {
-    //             console.log("Starting file upload:", file.name, "Size:", file.size);
-    //             const formData = new FormData();
-    //             formData.append("file", file);
-    //             console.log("FormData prepared:", Array.from(formData.entries()));
-    //
-    //             const result = await Promise.race([
-    //                 uploadDistributive(formData),
-    //                 new Promise((_, reject) => {
-    //                     setTimeout(() => reject(new Error("Upload timed out after 60 seconds")), 60_000);
-    //                 }),
-    //             ]);
-    //             console.log("Upload result:", result);
-    //
-    //             if ("error" in result) {
-    //                 throw new Error(result.error);
-    //             }
-    //
-    //             newFiles[index] = { file, displayName, fileUrl: result.fileUrl };
-    //             setDistributiveFiles(newFiles);
-    //             console.log("File upload successful, updated state:", newFiles);
-    //         } catch (error: any) {
-    //             console.error("Ошибка при загрузке дистрибутива:", error);
-    //             setError(error.message || "Не удалось загрузить дистрибутив");
-    //         }
-    //     } else {
-    //         newFiles[index] = { file: null, displayName, fileUrl: "" };
-    //         setDistributiveFiles(newFiles);
-    //     }
-    // };
-
     const handleRelatedProductSelect = (product: Product) => {
         if (relatedProducts.length >= 4) {
             setError("Можно выбрать только 4 связанных товара");
@@ -342,6 +303,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen }) => {
             });
 
             if (result.success) {
+                await refetchProducts(); // Повторно загружаем товары после успешного создания
                 setIsOpen(false);
             } else {
                 throw new Error(result.error || "Ошибка при создании товара");
@@ -470,12 +432,12 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen }) => {
 
                     <div className="flex items-center gap-3">
                         <div className="px-[15px] w-full py-[10px] border-[1px] border-[#B9BCCB] rounded-[10px]">
-              <textarea
-                  className="bg-transparent w-full outline-0 text-[#161616] min-h-[100px]"
-                  placeholder="Введите описание товара"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-              />
+                            <textarea
+                                className="bg-transparent w-full outline-0 text-[#161616] min-h-[100px]"
+                                placeholder="Введите описание товара"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                            />
                         </div>
                     </div>
                 </div>

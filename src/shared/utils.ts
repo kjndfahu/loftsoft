@@ -1,3 +1,14 @@
+
+type ArticleContentBlock =
+    | { type: "text"; content: string }
+    | { type: "image"; content: string; caption?: string }
+    | { type: "quote"; content: { text: string; author: string } }
+    | { type: "section"; id: string; title: string; content: string }
+    | { type: "link"; content: { url: string; title: string } }
+    | { type: "product"; content: { id: string; name: string; price: number; photo: string } }
+    | { type: "video"; content: { url: string; caption?: string } }
+    | { type: "relatedArticle"; content: { id: number; title: string; photo: string } };
+
 export function formatDate(date: Date): string {
     if (!(date instanceof Date) && typeof date === "string") {
         date = new Date(date)
@@ -21,87 +32,109 @@ export const formatOrderType = (type: string): string => {
         default:
             return type;
     }
-};
-
-type ArticleContentBlock =
-    | { type: "text"; content: string }
-    | { type: "image"; content: string; caption?: string }
-    | { type: "quote"; content: { text: string; author: string } }
-    | { type: "section"; id: string; title: string; content: string }
-    | { type: "link"; content: { url: string; title: string } }
-    | { type: "product"; content: { id: string; name: string; price: number; photo: string } } // Add product type
+}
 
 export function parseArticleContent(text: string): ArticleContentBlock[] {
-    if (!text) return []
+    if (!text) return [];
 
     try {
-        const content = JSON.parse(text)
+        const content = JSON.parse(text);
 
         if (Array.isArray(content)) {
             return content.flatMap((block) => {
                 if (!block || typeof block !== "object") {
-                    return { type: "text", content: String(block || "") }
+                    return { type: "text", content: String(block || "") };
                 }
 
-                if (block.type === "quote") {
-                    return {
-                        type: "quote",
-                        content: {
-                            text: block.content?.text || "Цитата отсутствует",
-                            author: block.content?.author || "",
-                        },
-                    }
-                } else if (block.type === "section") {
-                    return {
-                        type: "section",
-                        id: block.content?.id || `section-${Math.random().toString(36).substr(2, 9)}`,
-                        title: block.content?.title || "Untitled",
-                        content: block.content?.content || "",
-                    }
-                } else if (block.type === "image") {
-                    return {
-                        type: "image",
-                        content: block.content?.url || "/placeholder.svg",
-                        caption: block.content?.caption || "",
-                    }
-                } else if (block.type === "link") {
-                    return {
-                        type: "link",
-                        content: {
-                            url: block.content?.url || "#",
-                            title: block.content?.title || "Link",
-                        },
-                    }
-                } else if (block.type === "product") {
-                    return {
-                        type: "product",
-                        content: {
-                            id: block.content?.id || "",
-                            name: block.content?.name || "Product",
-                            price: block.content?.price || 0,
-                            photo: block.content?.photo || "/placeholder.svg",
-                        },
-                    }
-                } else if (block.type === "tableOfContents") {
-                    const sections = block.content?.sections || []
-                    return sections.map((section: { id: string; title: string; content: string }) => ({
-                        type: "section",
-                        id: section.id || `section-${Math.random().toString(36).substr(2, 9)}`,
-                        title: section.title || "Untitled",
-                        content: section.content || "",
-                    }))
+                switch (block.type) {
+                    case "quote":
+                        return {
+                            type: "quote",
+                            content: {
+                                text: block.content?.text || "Цитата отсутствует",
+                                author: block.content?.author || "",
+                            },
+                        };
+                    case "section":
+                        return {
+                            type: "section",
+                            id: block.id || `section-${Math.random().toString(36).substr(2, 9)}`,
+                            title: block.content?.title || "Untitled",
+                            content: block.content?.content || "",
+                        };
+                    case "image":
+                        const imageUrl =
+                            block.content && typeof block.content === "object" && block.content.url
+                                ? block.content.url
+                                : typeof block.content === "string"
+                                    ? block.content
+                                    : "/placeholder.svg";
+                        return {
+                            type: "image",
+                            content: imageUrl,
+                            caption:
+                                block.content && typeof block.content === "object" ? block.content.caption || "" : "",
+                        };
+                    case "link":
+                        return {
+                            type: "link",
+                            content: {
+                                url: block.content?.url || "#",
+                                title: block.content?.title || "Link",
+                            },
+                        };
+                    case "product":
+                        return {
+                            type: "product",
+                            content: {
+                                id: block.content?.id || "",
+                                name: block.content?.name || "Product",
+                                price: block.content?.price || 0,
+                                photo: block.content?.photo || "/placeholder.svg",
+                            },
+                        };
+                    case "tableOfContents":
+                        const sections = block.content?.sections || [];
+                        return sections.map((section: { id: string; title: string; content: string }) => ({
+                            type: "section",
+                            id: section.id || `section-${Math.random().toString(36).substr(2, 9)}`,
+                            title: section.title || "Untitled",
+                            content: section.content || "",
+                        }));
+                    case "video":
+                        return {
+                            type: "video",
+                            content: {
+                                url: block.content?.url || "/placeholder.mp4",
+                                caption: block.content?.caption || "",
+                            },
+                        };
+                    case "relatedArticle":
+                        return {
+                            type: "relatedArticle",
+                            content: {
+                                id: block.content?.id || 0,
+                                title: block.content?.title || "Related Article",
+                                photo: block.content?.photo || "/placeholder.svg",
+                            },
+                        };
+                    case "text":
+                        return {
+                            type: "text",
+                            content: typeof block.content === "string" ? block.content : String(block.content || ""),
+                        };
+                    default:
+                        return {
+                            type: "text",
+                            content: block.content ? String(block.content) : "",
+                        };
                 }
-                return {
-                    type: "text",
-                    content: block.content || "",
-                }
-            })
+            });
         }
 
-        // If content is not an array, convert it to string
-        return [{ type: "text", content: typeof content === "object" ? JSON.stringify(content) : String(content) }]
+        return [{ type: "text", content: typeof content === "object" ? JSON.stringify(content) : String(content) }];
     } catch (e) {
-        // If parsing fails, ensure we return a string
-        return [{ type: "text", content: String(text) }]
+        console.error("Error parsing article content:", e);
+        return [{ type: "text", content: String(text) }];
     }
 }
