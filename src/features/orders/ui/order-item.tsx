@@ -21,8 +21,9 @@ export const OrderItem = ({ item }: OrderItemProps) => {
         }).format(date);
     };
 
+
     return (
-        <div className="flex md:flex-row flex-col gap-3 py-4 border-t-[1px] border-[#DBDEEF] last:border-b-[1px] items-start justify-between">
+        <div className="flex md:flex-row flex-col gap-3 pt-4 border-t-[1px] border-[#DBDEEF] items-start justify-between">
             <div className="flex gap-4 items-start">
                 <img
                     src={item.photo}

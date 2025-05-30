@@ -1,12 +1,9 @@
-// admin-review.tsx
 "use client";
 
 import { ReviewUserInfo } from "@/features/product-page/ui/review-user-info";
 import { ReviewInfo } from "@/features/product-page/ui/review-info";
 import { TrashLogo } from "@/shared/icons";
-import { useRouter } from "next/navigation";
-import {deleteReview} from "@/enteties/review/review";
-
+import { deleteReview } from "@/enteties/review/review";
 
 interface Props {
     reviewId: number;
@@ -16,18 +13,21 @@ interface Props {
     photos: string[];
     user?: { id: number; email: string } | null;
     item?: { id: number; name: string } | null;
+    onDelete: (reviewId: number) => void;
 }
 
-export const AdminReview = ({ reviewId, text, grade, createdAt, photos, user, item }: Props) => {
-    const router = useRouter();
-
+export const AdminReview = ({ reviewId, text, grade, createdAt, photos, user, item, onDelete }: Props) => {
     const handleDelete = async () => {
-        if (confirm("Are you sure you want to delete this review?")) {
-            const result = await deleteReview(reviewId);
-            if (result.success) {
-                router.refresh(); // Refresh the page to reflect changes
-            } else {
-                console.error( "Failed to delete review");
+        if (confirm("Вы уверены, что хотите удалить этот отзыв?")) {
+            try {
+                const result = await deleteReview(reviewId);
+                if (result.success) {
+                    onDelete(reviewId); // Notify parent to update reviews state
+                } else {
+                    console.error("Не удалось удалить отзыв");
+                }
+            } catch (err) {
+                console.error("Ошибка при удалении отзыва:", err);
             }
         }
     };
@@ -47,10 +47,7 @@ export const AdminReview = ({ reviewId, text, grade, createdAt, photos, user, it
                 />
             </div>
             <div onClick={handleDelete}>
-                <TrashLogo
-                    className="sml:w-[32px] w-[20px] sml:h-[32px] h-[20px] cursor-pointer"
-
-                />
+                <TrashLogo className="sml:w-[32px] w-[20px] sml:h-[32px] h-[20px] cursor-pointer" />
             </div>
         </div>
     );

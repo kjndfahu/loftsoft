@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { OrderBlock } from "@/features/profile/ui/order-block";
 import { getUserOrders } from "@/enteties/orders/orders";
 import { Order } from "@/kernel/types";
@@ -12,34 +12,33 @@ export const OrderList = () => {
     const [error, setError] = useState<string | null>(null);
     const { user } = useUser();
 
+    const fetchOrders = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+
+        if (!user || !user.id) {
+            setError("User is not authenticated");
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const response = await getUserOrders(user.id);
+            if (response.success && response.orders) {
+                setOrders(response.orders);
+            } else {
+                setError(response.error || "Failed to load orders");
+            }
+        } catch (err) {
+            setError("Failed to load orders");
+        } finally {
+            setLoading(false);
+        }
+    }, [user]);
+
     useEffect(() => {
-        const fetchOrders = async () => {
-            setLoading(true);
-            setError(null); // Reset error state before fetching
-
-            // Only fetch if user and user.id exist
-            if (!user || !user.id) {
-                setError("User is not authenticated");
-                setLoading(false);
-                return;
-            }
-
-            try {
-                const response = await getUserOrders(user.id);
-                if (response.success && response.orders) {
-                    setOrders(response.orders);
-                } else {
-                    setError(response.error || "Failed to load orders");
-                }
-            } catch (err) {
-                setError("Failed to load orders");
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchOrders();
-    }, [user]); // Re-run when user changes
+    }, [fetchOrders]);
 
     if (loading) {
         return (
@@ -60,7 +59,7 @@ export const OrderList = () => {
             {orders.length === 0 ? (
                 <p>На данный момент у вас нет заказов :(</p>
             ) : (
-                orders.map((order) => <OrderBlock key={order.id} order={order} />)
+                orders.map((order) => <OrderBlock key={order.id} order={order} refetchOrders={fetchOrders} />)
             )}
         </div>
     );

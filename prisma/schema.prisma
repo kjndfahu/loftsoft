@@ -110,7 +110,7 @@ model Review {
   userId    Int
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   itemId    Int
-  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade) // Relation to Item
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt
 }

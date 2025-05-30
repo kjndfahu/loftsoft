@@ -7,7 +7,6 @@ import { Loader2 } from "lucide-react";
 import AdminResponseForm from "@/features/admin-orders/ui/admin-response-form";
 
 
-// Define the Order interface based on the original usage
 interface Order {
     id: number;
     email: string | null;

@@ -21,14 +21,15 @@ export async function createReview(formData: FormData): Promise<{
         const rating = Number(formData.get("rating"));
         const comment = formData.get("comment") as string;
         const photos = formData.getAll("photos") as string[];
-        const userId = Number(formData.get("userId")); // Get userId from formData (passed from component)
+        const userId = Number(formData.get("userId"));
+        const orderId = Number(formData.get("orderId")); // Assuming orderId is passed
 
-        // Log received FormData for debugging
         console.log("Received formData:", {
             rating,
             comment,
             photoCount: photos.length,
             userId,
+            orderId,
         });
 
         // Validate rating
@@ -101,18 +102,15 @@ export async function createReview(formData: FormData): Promise<{
             }
         }
 
-        // Use the first photo URL or null if no photos
-        const photoUrl = photoUrls.length > 0 ? photoUrls[0] : null;
-
-        // Create the review with the uploaded photo URL
+        // Create the review with the uploaded photo URLs
         console.log("Attempting to create review in database...");
         const review = await prisma.review.create({
             data: {
                 text: comment,
-                photo: photoUrl ? JSON.stringify(photoUrls) : null, // Store all URLs as JSON string
+                photo: photoUrls.length > 0 ? JSON.stringify(photoUrls) : null,
                 grade: rating,
                 userId,
-                itemId: 1, // Replace with dynamic itemId if needed
+                itemId: orderId, // Use orderId as itemId, adjust if needed
             },
         });
 
@@ -126,13 +124,6 @@ export async function createReview(formData: FormData): Promise<{
             message: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
         });
-
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-            return {
-                success: false,
-                error: "Вы уже оставили отзыв для этого товара.",
-            };
-        }
 
         return {
             success: false,

@@ -12,12 +12,12 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface OrderBlockProps {
     order: Order;
+    refetchOrders: () => Promise<void>;
 }
 
-export const OrderBlock = ({ order }: OrderBlockProps) => {
+export const OrderBlock = ({ order, refetchOrders }: OrderBlockProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isReview, setIsReview] = useState(false);
-    console.log(order);
 
     const formatDate = (date: Date) => {
         return new Intl.DateTimeFormat('ru-RU', {
@@ -27,26 +27,6 @@ export const OrderBlock = ({ order }: OrderBlockProps) => {
             hour: '2-digit',
             minute: '2-digit'
         }).format(date);
-    };
-
-    // Animation variants for the OrderOpen component
-    const variants = {
-        open: {
-            opacity: 1,
-            y: 0,
-            transition: {
-                duration: 0.3,
-                ease: "easeOut"
-            }
-        },
-        closed: {
-            opacity: 0,
-            y: -20,
-            transition: {
-                duration: 0.2,
-                ease: "easeIn"
-            }
-        }
     };
 
     return (
@@ -70,7 +50,7 @@ export const OrderBlock = ({ order }: OrderBlockProps) => {
                         >
                             Оставить отзыв
                         </button>
-                        {order.status === "PENDING" && (
+                        {order.status === "PENDING" && !order.text && (
                             <button
                                 className="text-white text-[16px] font-semibold bg-[#5069E8] sml:w-[184px] w-full h-[42px] rounded-full border-[1px] border-[#DBDEEF]"
                             >
@@ -90,9 +70,20 @@ export const OrderBlock = ({ order }: OrderBlockProps) => {
                         initial="closed"
                         animate="open"
                         exit="closed"
-                        variants={variants}
+                        variants={{
+                            open: {
+                                opacity: 1,
+                                y: 0,
+                                transition: { duration: 0.3, ease: "easeOut" }
+                            },
+                            closed: {
+                                opacity: 0,
+                                y: -20,
+                                transition: { duration: 0.2, ease: "easeIn" }
+                            }
+                        }}
                     >
-                        <OrderOpen order={order} />
+                        <OrderOpen order={order} refetchOrders={refetchOrders} />
                     </motion.div>
                 )}
             </AnimatePresence>

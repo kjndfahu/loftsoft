@@ -3,21 +3,26 @@
 import { useState, useTransition } from "react";
 import { OrderItem } from "@/features/orders/ui/order-item";
 import { Order } from "@/kernel/types";
-import {updateOrderText} from "@/enteties/orders/orders";
+import { updateOrderText } from "@/enteties/orders/orders";
 
 interface OrderOpenProps {
     order: Order;
+    refetchOrders: () => Promise<void>;
 }
 
-export const OrderOpen = ({ order }: OrderOpenProps) => {
+export const OrderOpen = ({ order, refetchOrders }: OrderOpenProps) => {
     const [text, setText] = useState("");
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async () => {
         startTransition(async () => {
+            setError(null);
             const response = await updateOrderText(order.id, text);
-            if (!response.success) {
+            if (response.success) {
+                setText(""); // Clear the textarea after successful submission
+                await refetchOrders(); // Trigger refetch of orders
+            } else {
                 setError(response.error || "Failed to submit text");
             }
         });
@@ -74,14 +79,14 @@ export const OrderOpen = ({ order }: OrderOpenProps) => {
                 <p className="text-[14px] text-[#4E4F56]">
                     Способ оплаты:{" "}
                     <span className="text-[14px] font-medium text-[#161616]">
-            Cryptomus
-          </span>
+                        Cryptomus
+                    </span>
                 </p>
                 <p className="text-[14px] text-[#4E4F56]">
                     Сумма заказа:{" "}
                     <span className="text-[14px] font-semibold text-[#161616]">
-            {order.totalAmount}₽
-          </span>
+                        {order.totalAmount}₽
+                    </span>
                 </p>
             </div>
         </div>
