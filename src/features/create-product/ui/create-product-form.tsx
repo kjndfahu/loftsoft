@@ -216,44 +216,44 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen }) => {
         setDistributiveFiles(newFiles);
     };
 
-    const handleChangeFile = async (index: number, file: File | null, displayName: string) => {
-        const newFiles = [...distributiveFiles];
-        if (file) {
-            if (!file.name.endsWith(".exe")) {
-                setError("Только .exe файлы разрешены");
-                return;
-            }
-
-            try {
-                console.log("Starting file upload:", file.name, "Size:", file.size);
-                const formData = new FormData();
-                formData.append("file", file);
-                console.log("FormData prepared:", Array.from(formData.entries()));
-
-                const result = await Promise.race([
-                    uploadDistributive(formData),
-                    new Promise((_, reject) => {
-                        setTimeout(() => reject(new Error("Upload timed out after 60 seconds")), 60_000);
-                    }),
-                ]);
-                console.log("Upload result:", result);
-
-                if ("error" in result) {
-                    throw new Error(result.error);
-                }
-
-                newFiles[index] = { file, displayName, fileUrl: result.fileUrl };
-                setDistributiveFiles(newFiles);
-                console.log("File upload successful, updated state:", newFiles);
-            } catch (error: any) {
-                console.error("Ошибка при загрузке дистрибутива:", error);
-                setError(error.message || "Не удалось загрузить дистрибутив");
-            }
-        } else {
-            newFiles[index] = { file: null, displayName, fileUrl: "" };
-            setDistributiveFiles(newFiles);
-        }
-    };
+    // const handleChangeFile = async (index: number, file: File | null, displayName: string) => {
+    //     const newFiles = [...distributiveFiles];
+    //     if (file) {
+    //         if (!file.name.endsWith(".exe")) {
+    //             setError("Только .exe файлы разрешены");
+    //             return;
+    //         }
+    //
+    //         try {
+    //             console.log("Starting file upload:", file.name, "Size:", file.size);
+    //             const formData = new FormData();
+    //             formData.append("file", file);
+    //             console.log("FormData prepared:", Array.from(formData.entries()));
+    //
+    //             const result = await Promise.race([
+    //                 uploadDistributive(formData),
+    //                 new Promise((_, reject) => {
+    //                     setTimeout(() => reject(new Error("Upload timed out after 60 seconds")), 60_000);
+    //                 }),
+    //             ]);
+    //             console.log("Upload result:", result);
+    //
+    //             if ("error" in result) {
+    //                 throw new Error(result.error);
+    //             }
+    //
+    //             newFiles[index] = { file, displayName, fileUrl: result.fileUrl };
+    //             setDistributiveFiles(newFiles);
+    //             console.log("File upload successful, updated state:", newFiles);
+    //         } catch (error: any) {
+    //             console.error("Ошибка при загрузке дистрибутива:", error);
+    //             setError(error.message || "Не удалось загрузить дистрибутив");
+    //         }
+    //     } else {
+    //         newFiles[index] = { file: null, displayName, fileUrl: "" };
+    //         setDistributiveFiles(newFiles);
+    //     }
+    // };
 
     const handleRelatedProductSelect = (product: Product) => {
         if (relatedProducts.length >= 4) {
@@ -548,7 +548,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen }) => {
                                     key={index}
                                     index={index}
                                     fileName={file.displayName}
-                                    onChange={handleChangeFile}
+                                    // onChange={handleChangeFile}
                                     onRemove={handleRemoveFile}
                                 />
                             ))}
