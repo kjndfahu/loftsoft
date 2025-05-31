@@ -13,6 +13,7 @@ import { FileUploadItem } from "@/features/create-product/ui/file-upload-item";
 import { QuestionAnswerItem } from "@/features/create-product/ui/question-answer-item";
 import { updateProduct } from "@/enteties/product/update-product";
 import { findProducts } from "@/enteties/product/product";
+import { uploadDistributive } from "@/enteties/auth/upload-distributive";
 
 interface Product {
     id: number;
@@ -40,21 +41,20 @@ interface ProductEditModalProps {
 }
 
 const subscriptionTypeMap = {
-    KEY: "key",
-    SUBSCRIPTION: "subscription",
-    ACCOUNT: "account",
+    key: "KEY",
+    subscription: "SUBSCRIPTION",
+    account: "ACCOUNT",
 } as const;
 
 const licenseDurationMap = {
-    PERPETUAL: "perpetual",
-    ONE_MONTH: "1month",
-    THREE_MONTHS: "3months",
-    SIX_MONTHS: "6months",
-    ONE_YEAR: "1year",
-    TWO_YEARS: "2years",
-    THREE_YEARS: "3years",
-    FOUR_YEARS: "4years",
-    FIVE_YEARS: "5years",
+    "1month": "ONE_MONTH",
+    "3months": "THREE_MONTHS",
+    "6months": "SIX_MONTHS",
+    "1year": "ONE_YEAR",
+    "2years": "TWO_YEARS",
+    "3years": "THREE_YEARS",
+    "4years": "FOUR_YEARS",
+    "5years": "FIVE_YEARS",
 } as const;
 
 const deviceCountOptions = [1, 2, 3, 4, 5];
@@ -73,15 +73,18 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
     });
     const [selectedSubscriptionTypes, setSelectedSubscriptionTypes] = useState<SubscriptionType[]>(
         product.type.map((t) => ({
-            id: subscriptionTypeMap[t as keyof typeof subscriptionTypeMap],
+            id: Object.keys(subscriptionTypeMap).find(
+                (key) => subscriptionTypeMap[key as keyof typeof subscriptionTypeMap] === t
+            ) || "key",
             title: t === "KEY" ? "Ключ" : t === "SUBSCRIPTION" ? "Подписка" : "Аккаунт",
         })),
     );
     const [selectedLicenseDurations, setSelectedLicenseDurations] = useState<LicenseDuration[]>(
         product.licenseType.map((t) => {
-            const durationId = licenseDurationMap[t as keyof typeof licenseDurationMap];
+            const durationId = Object.keys(licenseDurationMap).find(
+                (key) => licenseDurationMap[key as keyof typeof licenseDurationMap] === t
+            ) || "1month";
             const titleMap: Record<string, string> = {
-                perpetual: "Бессрочно",
                 "1month": "1 месяц",
                 "3months": "3 месяца",
                 "6months": "6 месяцев",
@@ -124,11 +127,9 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
     const [autorelease, setAutorelease] = useState(product.autorelease || false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Cloudinary configuration
     const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
     const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
-    // Fetch available products for related products selection
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -242,7 +243,9 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
         setDistributiveFiles(newFiles);
     };
 
-    const handleChangeFile = async (index: number, file: File | null, displayName: string) => {
+    const handleChangeFile = async (index
+
+                                        : number, file: File | null, displayName: string) => {
         const newFiles = [...distributiveFiles];
         if (file) {
             try {
@@ -292,7 +295,6 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Form validation
         if (!title) {
             setError("Введите название товара");
             return;
@@ -343,10 +345,10 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                 description,
                 categoryId: Number.parseInt(selectedCategory.id),
                 type: selectedSubscriptionTypes.map(
-                    (type) => subscriptionTypeMap[type.id as keyof typeof subscriptionTypeMap] as TYPE,
+                    (type) => subscriptionTypeMap[type.id as keyof typeof subscriptionTypeMap],
                 ),
                 licenseType: selectedLicenseDurations.map(
-                    (duration) => licenseDurationMap[duration.id as keyof typeof licenseDurationMap] as LicenseType,
+                    (duration) => licenseDurationMap[duration.id as keyof typeof licenseDurationMap],
                 ),
                 deviceCounts: selectedDeviceCounts,
                 characteristics: characteristics.filter((char) => char.title && char.value),
@@ -359,6 +361,7 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
             if (result.success) {
                 setSuccess("Товар успешно обновлен");
                 setTimeout(() => {
+                    onClose();
                     window.location.reload();
                 }, 1000);
             } else {
@@ -378,7 +381,7 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <form
                 onSubmit={handleSubmit}
-                className="flex flex-col w-[800px] pt-4 pb-7 px-6 bg-white rounded-[16px] max-h-[90vh] overflow-y-auto"
+                className="flex flex-col w-[800px] pt-4 pb-7 px-6 bg-white rounded-[16px] max-h-[80vh] overflow-y-auto"
             >
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-[22px] font-bold text-[#161616]">Редактировать товар</h3>
@@ -397,8 +400,7 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                 )}
 
                 <div className="flex sml:flex-row flex-col gap-6">
-                    {/* Left column - main information */}
-                    <div className="flex flex-col gap-4 sml:w-1/2 w-full">
+                    <div className="flex text-black flex-col gap-4 sml:w-1/2 w-full">
                         <div
                             className={`relative h-[250px] rounded-[16px] overflow-hidden ${
                                 image ? "" : "bg-[#B9BCCB]"
@@ -533,9 +535,7 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                         </div>
                     </div>
 
-                    {/* Right column - characteristics, questions, distributives, and related products */}
                     <div className="flex flex-col gap-6 sml:w-1/2 w-full">
-                        {/* Characteristics */}
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <h4 className="text-[16px] font-semibold text-[#161616]">
@@ -563,7 +563,6 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                             </div>
                         </div>
 
-                        {/* Questions and Answers */}
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <h4 className="text-[16px] font-semibold text-[#161616]">
@@ -591,7 +590,6 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                             </div>
                         </div>
 
-                        {/* Distributives */}
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <h4 className="text-[16px] font-semibold text-[#161616]">Дистрибутивы:</h4>
@@ -616,7 +614,6 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                             </div>
                         </div>
 
-                        {/* Related Products */}
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <h4 className="text-[16px] font-semibold text-[#161616]">
