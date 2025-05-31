@@ -11,9 +11,9 @@ import { LicenseDurationPopup, type LicenseDuration } from "@/features/create-pr
 import { CharacteristicItem } from "@/features/create-product/ui/characteristic-item";
 import { FileUploadItem } from "@/features/create-product/ui/file-upload-item";
 import { QuestionAnswerItem } from "@/features/create-product/ui/question-answer-item";
+import { DistributiveDetails } from "@/features/create-product/ui/distributive-item";
 import { updateProduct } from "@/enteties/product/update-product";
 import { findProducts } from "@/enteties/product/product";
-import { uploadDistributive } from "@/enteties/auth/upload-distributive";
 
 interface Product {
     id: number;
@@ -27,7 +27,7 @@ interface Product {
     licenseType: string[];
     deviceCounts: number[];
     characteristics: { id: number; title: string; value: string }[];
-    distributives: { id: number; displayName: string; fileUrl: string }[];
+    distributives: { id: number; displayName: string; fileUrl: string; iconUrl?: string; logoUrl?: string }[];
     questions: { id: number; question: string; answer: string }[];
     relatedProducts: { id: number; name: string; price: string; photo: string }[];
     category: { id: string; title: string };
@@ -58,6 +58,15 @@ const licenseDurationMap = {
 } as const;
 
 const deviceCountOptions = [1, 2, 3, 4, 5];
+
+interface DistributiveFile {
+    file: File | null;
+    displayName: string;
+    fileUrl?: string;
+    iconUrl?: string;
+    logoUrl?: string;
+    customName?: string;
+}
 
 export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalProps) {
     const [image, setImage] = useState<string | null>(product.photo);
@@ -108,14 +117,15 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
             { question: "", answer: "" },
         ],
     );
-    const [distributiveFiles, setDistributiveFiles] = useState<
-        { file: File | null; displayName: string; fileUrl?: string }[]
-    >(
+    const [distributiveFiles, setDistributiveFiles] = useState<DistributiveFile[]>(
         product.distributives?.map((dist) => ({
             file: null,
             displayName: dist.displayName,
             fileUrl: dist.fileUrl,
-        })) || [{ file: null, displayName: "", fileUrl: "" }],
+            iconUrl: dist.iconUrl,
+            logoUrl: dist.logoUrl,
+            customName: dist.displayName,
+        })) || [{ file: null, displayName: "", fileUrl: "", iconUrl: "", logoUrl: "" }],
     );
     const [relatedProducts, setRelatedProducts] = useState<Product[]>(product.relatedProducts || []);
     const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
@@ -234,7 +244,7 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
     };
 
     const handleAddFile = () => {
-        setDistributiveFiles([...distributiveFiles, { file: null, displayName: "", fileUrl: "" }]);
+        setDistributiveFiles([...distributiveFiles, { file: null, displayName: "", fileUrl: "", iconUrl: "", logoUrl: "" }]);
     };
 
     const handleRemoveFile = (index: number) => {
@@ -243,37 +253,30 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
         setDistributiveFiles(newFiles);
     };
 
-    const handleChangeFile = async (index
-
-                                        : number, file: File | null, displayName: string) => {
+    const handleChangeFile = (index: number, file: File | null, displayName: string, fileUrl?: string) => {
         const newFiles = [...distributiveFiles];
-        if (file) {
-            try {
-                const formData = new FormData();
-                if (!CLOUDINARY_UPLOAD_PRESET || !CLOUDINARY_UPLOAD_URL) {
-                    throw new Error("Cloudinary configuration is missing");
-                }
-                formData.append("file", file);
-                formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-                const response = await fetch(CLOUDINARY_UPLOAD_URL.replace("/image/upload", "/raw/upload"), {
-                    method: "POST",
-                    body: formData,
-                });
-                const data = await response.json();
-                if (data.secure_url) {
-                    newFiles[index] = { file, displayName, fileUrl: data.secure_url };
-                    setDistributiveFiles(newFiles);
-                } else {
-                    setError("Ошибка при загрузке дистрибутива");
-                }
-            } catch (error) {
-                console.error("Ошибка при загрузке дистрибутива:", error);
-                setError("Не удалось загрузить дистрибутив");
-            }
-        } else {
-            newFiles[index] = { file: null, displayName, fileUrl: newFiles[index].fileUrl || "" };
+        newFiles[index] = { ...newFiles[index], file, displayName, fileUrl };
+        setDistributiveFiles(newFiles);
+    };
+
+    const handleUploadSuccess = (index: number, fileUrl: string) => {
+        const newFiles = [...distributiveFiles];
+        if (!newFiles[index].fileUrl) {
+            newFiles[index] = { ...newFiles[index], fileUrl };
             setDistributiveFiles(newFiles);
         }
+    };
+
+    const handleUpdateDistributive = (index: number, displayName: string, iconUrl?: string, logoUrl?: string) => {
+        const newFiles = [...distributiveFiles];
+        newFiles[index] = { ...newFiles[index], customName: displayName, iconUrl, logoUrl };
+        setDistributiveFiles(newFiles);
+    };
+
+    const handleRemoveDistributive = (index: number) => {
+        const newFiles = [...distributiveFiles];
+        newFiles.splice(index, 1);
+        setDistributiveFiles(newFiles);
     };
 
     const handleRelatedProductSelect = (product: Product) => {
@@ -330,10 +333,12 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
             setSuccess(null);
 
             const uploadedDistributives = distributiveFiles
-                .filter((dist) => dist.fileUrl && dist.displayName)
+                .filter((dist) => dist.fileUrl && (dist.customName || dist.displayName))
                 .map((dist) => ({
-                    displayName: dist.displayName,
+                    displayName: dist.customName || dist.displayName,
                     fileUrl: dist.fileUrl!,
+                    iconUrl: dist.iconUrl,
+                    logoUrl: dist.logoUrl,
                 }));
 
             const result = await updateProduct({
@@ -353,7 +358,7 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                 deviceCounts: selectedDeviceCounts,
                 characteristics: characteristics.filter((char) => char.title && char.value),
                 questions: questions.filter((q) => q.question && q.answer),
-                distributives: uploadedDistributives,
+                distributives: uploadedDistributives, // Pass distributives, which may be empty
                 relatedProductIds: relatedProducts.map((p) => p.id),
                 autorelease,
             });
@@ -381,7 +386,7 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <form
                 onSubmit={handleSubmit}
-                className="flex flex-col w-[800px] pt-4 pb-7 px-6 bg-white rounded-[16px] max-h-[80vh] overflow-y-auto"
+                className="flex flex-col w-[800px] pt-4 pb-7 px-6 bg-white rounded-[16px] max-h-[90vh] overflow-y-auto"
             >
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-[22px] font-bold text-[#161616]">Редактировать товар</h3>
@@ -400,7 +405,7 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                 )}
 
                 <div className="flex sml:flex-row flex-col gap-6">
-                    <div className="flex text-black flex-col gap-4 sml:w-1/2 w-full">
+                    <div className="flex flex-col gap-4 sml:w-1/2 w-full">
                         <div
                             className={`relative h-[250px] rounded-[16px] overflow-hidden ${
                                 image ? "" : "bg-[#B9BCCB]"
@@ -413,12 +418,7 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                         >
                             {image ? (
                                 <>
-                                    <Image
-                                        src={image}
-                                        alt="Product image"
-                                        fill
-                                        style={{ objectFit: "cover" }}
-                                    />
+                                    <Image src={image} alt="Product image" fill style={{ objectFit: "cover" }} />
                                     <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
                                         <div className="bg-white p-2 rounded-full opacity-0 hover:opacity-100 transition-all duration-200">
                                             <UploadIcon className="w-6 h-6 text-[#161616]" />
@@ -475,10 +475,7 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <CategoryPopup
-                                onSelect={handleCategorySelect}
-                                selectedCategory={selectedCategory}
-                            />
+                            <CategoryPopup onSelect={handleCategorySelect} selectedCategory={selectedCategory} />
                         </div>
 
                         <div className="flex items-center gap-3">
@@ -503,18 +500,14 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                                 selectedDurations={selectedLicenseDurations}
                             />
                             <div className="flex flex-wrap gap-2">
-                                <h4 className="text-[14px] font-semibold text-[#161616] w-full">
-                                    Количество устройств:
-                                </h4>
+                                <h4 className="text-[14px] font-semibold text-[#161616] w-full">Количество устройств:</h4>
                                 {deviceCountOptions.map((count) => (
                                     <button
                                         key={count}
                                         type="button"
                                         onClick={() => handleDeviceCountSelect(count)}
                                         className={`px-4 py-2 border-[1px] border-[#B9BCCB] rounded-[20px] ${
-                                            selectedDeviceCounts.includes(count)
-                                                ? "bg-[#161616] text-white"
-                                                : "bg-white text-[#161616]"
+                                            selectedDeviceCounts.includes(count) ? "bg-[#161616] text-white" : "bg-white text-[#161616]"
                                         }`}
                                     >
                                         {count}
@@ -525,12 +518,12 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
 
                         <div className="flex items-center gap-3">
                             <div className="px-[15px] w-full py-[10px] border-[1px] border-[#B9BCCB] rounded-[10px]">
-                                <textarea
-                                    className="bg-transparent w-full outline-0 text-[#161616] min-h-[100px]"
-                                    placeholder="Введите описание товара"
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                />
+                <textarea
+                    className="bg-transparent w-full outline-0 text-[#161616] min-h-[100px]"
+                    placeholder="Введите описание товара"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                />
                             </div>
                         </div>
                     </div>
@@ -538,9 +531,7 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                     <div className="flex flex-col gap-6 sml:w-1/2 w-full">
                         <div>
                             <div className="flex items-center justify-between mb-2">
-                                <h4 className="text-[16px] font-semibold text-[#161616]">
-                                    Характеристики товара:
-                                </h4>
+                                <h4 className="text-[16px] font-semibold text-[#161616]">Характеристики товара:</h4>
                                 <button
                                     type="button"
                                     onClick={handleAddCharacteristic}
@@ -565,9 +556,7 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
 
                         <div>
                             <div className="flex items-center justify-between mb-2">
-                                <h4 className="text-[16px] font-semibold text-[#161616]">
-                                    Вопросы и ответы:
-                                </h4>
+                                <h4 className="text-[16px] font-semibold text-[#161616]">Вопросы и ответы:</h4>
                                 <button
                                     type="button"
                                     onClick={handleAddQuestion}
@@ -603,22 +592,33 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                             </div>
                             <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
                                 {distributiveFiles.map((file, index) => (
-                                    <FileUploadItem
-                                        key={index}
-                                        index={index}
-                                        fileName={file.displayName}
-                                        onChange={handleChangeFile}
-                                        onRemove={handleRemoveFile}
-                                    />
+                                    <div key={index}>
+                                        <FileUploadItem
+                                            index={index}
+                                            fileName={file.displayName}
+                                            fileUrl={file.fileUrl}
+                                            onChange={handleChangeFile}
+                                            onRemove={handleRemoveFile}
+                                            onUploadSuccess={handleUploadSuccess}
+                                        />
+                                        {file.fileUrl && (
+                                            <DistributiveDetails
+                                                index={index}
+                                                displayName={file.customName || file.displayName}
+                                                fileUrl={file.fileUrl}
+                                                logoUrl={file.logoUrl}
+                                                onUpdate={handleUpdateDistributive}
+                                                onRemove={handleRemoveDistributive}
+                                            />
+                                        )}
+                                    </div>
                                 ))}
                             </div>
                         </div>
 
                         <div>
                             <div className="flex items-center justify-between mb-2">
-                                <h4 className="text-[16px] font-semibold text-[#161616]">
-                                    Связанные товары (до 4):
-                                </h4>
+                                <h4 className="text-[16px] font-semibold text-[#161616]">Связанные товары (до 4):</h4>
                             </div>
                             <div className="space-y-2">
                                 <div className="px-[15px] py-[10px] border-[1px] border-[#B9BCCB] rounded-[10px]">
@@ -644,17 +644,14 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                                                             : "bg-white text-[#161616]"
                                                     }`}
                                                     disabled={
-                                                        relatedProducts.length >= 4 &&
-                                                        !relatedProducts.some((p) => p.id === product.id)
+                                                        relatedProducts.length >= 4 && !relatedProducts.some((p) => p.id === product.id)
                                                     }
                                                 >
                                                     {product.name}
                                                 </button>
                                             ))
                                         ) : (
-                                            <div className="px-4 py-2 text-[#161616]">
-                                                Товары не найдены
-                                            </div>
+                                            <div className="px-4 py-2 text-[#161616]">Товары не найдены</div>
                                         )}
                                     </div>
                                 )}
@@ -665,9 +662,7 @@ export function ProductEditModal({ product, isOpen, onClose }: ProductEditModalP
                                                 key={product.id}
                                                 className="flex items-center gap-2 px-3 py-1 bg-[#DBDEEF] rounded-full"
                                             >
-                                                <span className="text-[14px] text-[#161616]">
-                                                    {product.name}
-                                                </span>
+                                                <span className="text-[14px] text-[#161616]">{product.name}</span>
                                                 <button
                                                     type="button"
                                                     onClick={() => handleRemoveRelatedProduct(product.id)}

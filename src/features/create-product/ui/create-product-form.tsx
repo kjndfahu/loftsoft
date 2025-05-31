@@ -313,12 +313,6 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                     logoUrl: dist.logoUrl, // Include logoUrl in the submission
                 }));
 
-            if (uploadedDistributives.length === 0) {
-                setError("Добавьте хотя бы один дистрибутив");
-                setIsSubmitting(false);
-                return;
-            }
-
             const result = await createProduct({
                 name: title,
                 price,
@@ -335,7 +329,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                 deviceCounts: selectedDeviceCounts,
                 characteristics: characteristics.filter((char) => char.title && char.value),
                 questions: questions.filter((q) => q.question && q.answer),
-                distributives: uploadedDistributives,
+                distributives: uploadedDistributives, // Pass distributives, which may be empty
                 relatedProductIds: relatedProducts.map((p) => p.id),
                 autorelease,
             });

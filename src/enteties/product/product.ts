@@ -150,8 +150,8 @@ export async function createProduct(data: CreateProductData) {
             return { success: false, error: "Invalid photo URL" }
         }
 
-        // Validate distributive URLs and ensure they are GCS URLs
-        if (data.distributives) {
+        // Validate distributive URLs if provided
+        if (data.distributives && data.distributives.length > 0) {
             for (const dist of data.distributives) {
                 if (!isValidUrl(dist.fileUrl)) {
                     return { success: false, error: `Invalid URL for distributive: ${dist.displayName}` }

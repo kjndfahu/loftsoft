@@ -1,3 +1,5 @@
+"use server";
+
 import { prisma } from "../../../prisma/prisma-client";
 import type { LicenseType, TYPE } from "@/kernel/types";
 
@@ -49,20 +51,21 @@ export async function updateProduct(data: UpdateProductData) {
             return { success: false, error: "Invalid photo URL" };
         }
 
-        // Validate distributive URLs and ensure they are GCS URLs
+        // Validate distributive URLs and ensure they are from GCS
         if (data.distributives) {
             for (const dist of data.distributives) {
                 if (!isValidUrl(dist.fileUrl)) {
                     return { success: false, error: `Invalid URL for distributive: ${dist.displayName}` };
                 }
-                // Validate that the URL is from the configured GCS bucket
+                // Validate that the fileUrl is from the configured GCS bucket
                 if (!dist.fileUrl.includes(`storage.googleapis.com/${process.env.GOOGLE_CLOUD_BUCKET_NAME}`)) {
                     return { success: false, error: `Distributive URL must be from the configured GCS bucket: ${dist.displayName}` };
                 }
-                // Validate iconUrl and logoUrl if provided
+                // Validate iconUrl if provided
                 if (dist.iconUrl && !isValidUrl(dist.iconUrl)) {
                     return { success: false, error: `Invalid icon URL for distributive: ${dist.displayName}` };
                 }
+                // Validate logoUrl if provided
                 if (dist.logoUrl && !isValidUrl(dist.logoUrl)) {
                     return { success: false, error: `Invalid logo URL for distributive: ${dist.displayName}` };
                 }
@@ -117,7 +120,6 @@ export async function updateProduct(data: UpdateProductData) {
                     create: data.distributives?.filter((dist) => dist.displayName && dist.fileUrl).map((dist) => ({
                         displayName: dist.displayName,
                         fileUrl: dist.fileUrl,
-                        iconUrl: dist.iconUrl,
                         logoUrl: dist.logoUrl,
                     })) || [],
                 },

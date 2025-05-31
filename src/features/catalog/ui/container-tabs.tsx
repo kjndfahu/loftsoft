@@ -31,7 +31,7 @@ export function CategoryTabs({ tabs, activeTab, onChange }: CategoryTabsProps) {
     return (
         <>
             <style jsx>{scrollbarHideStyles}</style>
-            <div className="flex sml:flex-wrap overflow-x-auto gap-[10px] sml:w-[600px] scrollbar-hide">
+            <div className="flex sml:flex-wrap overflow-x-auto gap-[10px] sml:w-full scrollbar-hide">
                 <button
                     onClick={() => onChange("all")}
                     className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${activeTab === "all" ? `bg-[#5069E8] text-white` : `bg-[#F5F7FF] text-black`}`}
