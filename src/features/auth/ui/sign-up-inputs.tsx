@@ -56,7 +56,7 @@ export const SignUpInputs = ({ formData, errors, handleChange }: SignUpInputsPro
                 </label>
                 <div
                     className={`flex items-center justify-between rounded-full border-[1px] ${
-                        errors.password || errors.confirmPassword ? "border-red-500" : "border-[#B9BCCB]"
+                        errors.password ? "border-red-500" : "border-[#B9BCCB]"
                     } px-[15px] py-[10px]`}
                 >
                     <input
@@ -83,7 +83,7 @@ export const SignUpInputs = ({ formData, errors, handleChange }: SignUpInputsPro
                 </label>
                 <div
                     className={`flex items-center justify-between rounded-full border-[1px] ${
-                        errors.password || errors.confirmPassword ? "border-red-500" : "border-[#B9BCCB]"
+                        errors.confirmPassword ? "border-red-500" : "border-[#B9BCCB]"
                     } px-[15px] py-[10px]`}
                 >
                     <input

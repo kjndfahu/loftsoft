@@ -35,7 +35,7 @@ export default async function ArticleDetailPage({ params }: ArticleDetailPagePro
     const mainContent = articleContent.filter((block) => block.type !== "relatedArticle");
 
     return (
-        <div className="mds:pt-[150px] pt-[80px] xxl:px-[250px] xl:px-[150px] mdbvp:px-[100px] sml:px-[50px] px-[20px]">
+        <div className=" mds:pt-[150px] pt-[80px] xxl:px-[250px] xl:px-[150px] mdbvp:px-[100px] sml:px-[50px] px-[20px]">
             <nav className="flex items-center text-sm text-gray-500 mb-6">
                 <Link href="/" className="hover:text-gray-700 transition-colors">
                     Главная
@@ -68,7 +68,7 @@ export default async function ArticleDetailPage({ params }: ArticleDetailPagePro
                 </div>
             )}
 
-            <div className="prose prose-lg max-w-none text-gray-700">
+            <div className="flex w-full flex-wrap prose prose-lg max-w-none text-gray-700">
                 {mainContent.length > 0 ? (
                     mainContent.map((block, index) => {
                         switch (block.type) {
@@ -83,7 +83,7 @@ export default async function ArticleDetailPage({ params }: ArticleDetailPagePro
                                 );
                             case "text":
                                 return (
-                                    <p key={`text-${index}`} className="text-base mb-4">
+                                    <p key={`text-${index}`} className=" text-base mb-4">
                                         {block.content}
                                     </p>
                                 );

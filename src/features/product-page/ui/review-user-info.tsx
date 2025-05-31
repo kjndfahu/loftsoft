@@ -20,13 +20,14 @@ export const ReviewUserInfo = ({ user, item }: ReviewUserInfoProps) => {
     }
 
     const username = user?.email ? maskEmail(user.email) : undefined
+    const firstLetter = user?.email ? user.email.charAt(0).toUpperCase() : 'Z';
 
     return (
         <div className="flex sml:w-[35%] w-full md:gap-4 gap-1.5">
             <div
                 style={{ aspectRatio: 1 / 1 }}
-                className="md:w-[88px] w-[50px] md:h-[88px] h-[50px] bg-gray-400 rounded-[12px]"
-            />
+                className="flex items-center justify-center text-black font-semibold text-[27px] md:w-[88px] w-[50px] md:h-[88px] h-[50px] bg-[#F5F7FF] rounded-[12px]"
+            >{firstLetter}</div>
             <div className="flex md:w-auto sml:w-[150px] flex-col gap-1">
                 <h5 className="md:text-[18px] text-[15px] font-semibold text-[#161616]">{username}</h5>
                 <p className="text-[#4E4F56] sml:w-[180px] md:text-[14px] text-[12px] truncate">
