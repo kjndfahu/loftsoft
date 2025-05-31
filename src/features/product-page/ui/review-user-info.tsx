@@ -10,7 +10,16 @@ interface ReviewUserInfoProps {
 }
 
 export const ReviewUserInfo = ({ user, item }: ReviewUserInfoProps) => {
-    const username = user?.email ? user.email.split("@")[0] : "Anonymous User"
+    const maskEmail = (email: string): string => {
+        const [localPart, domain] = email.split("@")
+        if (localPart.length <= 4) {
+            return `${localPart.charAt(0)}***@${domain}`
+        }
+        const visiblePart = localPart.substring(0, 4)
+        return `${visiblePart}***@${domain}`
+    }
+
+    const username = user?.email ? maskEmail(user.email) : undefined
 
     return (
         <div className="flex sml:w-[35%] w-full md:gap-4 gap-1.5">
