@@ -12,8 +12,9 @@ import { LicenseDurationPopup, type LicenseDuration } from "./license-duration-p
 import { CharacteristicItem } from "./characteristic-item";
 import { FileUploadItem } from "./file-upload-item";
 import { QuestionAnswerItem } from "./question-answer-item";
+
 import { createProduct, findProducts } from "@/enteties/product/product";
-import { uploadDistributive } from "@/enteties/auth/upload-distributive";
+import {DistributiveDetails} from "@/features/create-product/ui/distributive-item";
 
 interface Props {
     setIsOpen: (arg: boolean) => void;
@@ -42,6 +43,9 @@ interface DistributiveFile {
     file: File | null;
     displayName: string;
     fileUrl?: string;
+    iconUrl?: string;
+    logoUrl?: string; // New field for logo URL
+    customName?: string;
 }
 
 interface Product {
@@ -216,6 +220,32 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
         setDistributiveFiles(newFiles);
     };
 
+    const handleChangeFile = (index: number, file: File | null, displayName: string, fileUrl?: string) => {
+        const newFiles = [...distributiveFiles];
+        newFiles[index] = { ...newFiles[index], file, displayName, fileUrl };
+        setDistributiveFiles(newFiles);
+    };
+
+    const handleUploadSuccess = (index: number, fileUrl: string) => {
+        const newFiles = [...distributiveFiles];
+        if (!newFiles[index].fileUrl) {
+            newFiles[index] = { ...newFiles[index], fileUrl };
+            setDistributiveFiles(newFiles);
+        }
+    };
+
+    const handleUpdateDistributive = (index: number, displayName: string, iconUrl?: string, logoUrl?: string) => {
+        const newFiles = [...distributiveFiles];
+        newFiles[index] = { ...newFiles[index], customName: displayName, iconUrl, logoUrl };
+        setDistributiveFiles(newFiles);
+    };
+
+    const handleRemoveDistributive = (index: number) => {
+        const newFiles = [...distributiveFiles];
+        newFiles.splice(index, 1);
+        setDistributiveFiles(newFiles);
+    };
+
     const handleRelatedProductSelect = (product: Product) => {
         if (relatedProducts.length >= 4) {
             setError("Можно выбрать только 4 связанных товара");
@@ -275,11 +305,19 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
             setError(null);
 
             const uploadedDistributives = distributiveFiles
-                .filter((dist) => dist.fileUrl && dist.displayName)
+                .filter((dist) => dist.fileUrl && (dist.customName || dist.displayName))
                 .map((dist) => ({
-                    displayName: dist.displayName,
+                    displayName: dist.customName || dist.displayName,
                     fileUrl: dist.fileUrl!,
+                    iconUrl: dist.iconUrl,
+                    logoUrl: dist.logoUrl, // Include logoUrl in the submission
                 }));
+
+            if (uploadedDistributives.length === 0) {
+                setError("Добавьте хотя бы один дистрибутив");
+                setIsSubmitting(false);
+                return;
+            }
 
             const result = await createProduct({
                 name: title,
@@ -303,7 +341,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
             });
 
             if (result.success) {
-                await refetchProducts(); // Повторно загружаем товары после успешного создания
+                await refetchProducts();
                 setIsOpen(false);
             } else {
                 throw new Error(result.error || "Ошибка при создании товара");
@@ -506,13 +544,26 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                         </div>
                         <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
                             {distributiveFiles.map((file, index) => (
-                                <FileUploadItem
-                                    key={index}
-                                    index={index}
-                                    fileName={file.displayName}
-                                    // onChange={handleChangeFile}
-                                    onRemove={handleRemoveFile}
-                                />
+                                <div key={index}>
+                                    <FileUploadItem
+                                        index={index}
+                                        fileName={file.displayName}
+                                        fileUrl={file.fileUrl}
+                                        onChange={handleChangeFile}
+                                        onRemove={handleRemoveFile}
+                                        onUploadSuccess={handleUploadSuccess}
+                                    />
+                                    {file.fileUrl && (
+                                        <DistributiveDetails
+                                            index={index}
+                                            displayName={file.customName || file.displayName}
+                                            fileUrl={file.fileUrl}
+                                            logoUrl={file.logoUrl} // Pass logoUrl
+                                            onUpdate={handleUpdateDistributive}
+                                            onRemove={handleRemoveDistributive}
+                                        />
+                                    )}
+                                </div>
                             ))}
                         </div>
                     </div>

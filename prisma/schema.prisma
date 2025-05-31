@@ -64,11 +64,12 @@ model Characteristic {
 }
 
 model Distributive {
-  id          Int    @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   displayName String
   fileUrl     String
+  logoUrl     String?
   itemId      Int
-  item        Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  item        Item    @relation(fields: [itemId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

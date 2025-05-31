@@ -6,7 +6,7 @@ const nextConfig = {
     },
     experimental: {
         serverActions: {
-            bodySizeLimit: '20mb',
+            bodySizeLimit: '70mb',
         },
     },
     typescript: {

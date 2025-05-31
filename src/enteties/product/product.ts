@@ -116,7 +116,7 @@ interface CreateProductData {
     deviceCounts: number[]
     characteristics?: { title: string; value: string }[]
     questions?: { question: string; answer: string }[]
-    distributives?: { displayName: string; fileUrl: string }[]
+    distributives?: { displayName: string; fileUrl: string; logoUrl:string }[]
     relatedProductIds?: number[]
     autorelease: boolean
 }
@@ -192,6 +192,7 @@ export async function createProduct(data: CreateProductData) {
                     create: data.distributives?.map((dist) => ({
                         displayName: dist.displayName,
                         fileUrl: dist.fileUrl,
+                        logoUrl: dist.logoUrl
                     })) || [],
                 },
                 relatedProducts: {
