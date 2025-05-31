@@ -1,25 +1,25 @@
 "use client"
 
-import { useState } from "react"
-import { Modal } from "@/shared/modal"
-import { RequestAnswer } from "@/features/soft-requests/ui/request-answer"
+import { useState } from "react";
+import { Modal } from "@/shared/modal";
+import { RequestAnswer } from "@/features/soft-requests/ui/request-answer";
 
 export interface SoftRequest {
-    id: string
-    name: string
-    email: string
-    program: string
-    comment: string
-    status: string
-    createdAt: Date
+    id: string;
+    name: string;
+    email: string;
+    program: string;
+    comment: string;
+    status: string;
+    createdAt: Date;
 }
 
 interface RequestBlockProps {
-    request: SoftRequest
+    request: SoftRequest;
 }
 
 export const RequestBlock = ({ request }: RequestBlockProps) => {
-    const [isOpen, setIsOpen] = useState(false)
+    const [isOpen, setIsOpen] = useState(false);
 
     return (
         <div
@@ -48,7 +48,11 @@ export const RequestBlock = ({ request }: RequestBlockProps) => {
                 </p>
             </div>
 
-            {isOpen && <Modal form={<RequestAnswer setIsOpen={setIsOpen}/>} />}
+            {isOpen && (
+                <Modal
+                    form={<RequestAnswer setIsOpen={setIsOpen} email={request.email} requestId={request.id} />}
+                />
+            )}
         </div>
-    )
-}
+    );
+};

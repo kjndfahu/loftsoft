@@ -1,32 +1,31 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
 export type WithdrawFormData = {
-    phone: number
-    bank: string
-    name: string
-    sum: string
-}
+    phone: string;
+    bank: string;
+    name: string;
+    sum: string;
+};
 
 interface WithdrawInputsProps {
-    formData: WithdrawFormData
-    setFormData: (data: WithdrawFormData) => void
-    availableSum: number
+    formData: WithdrawFormData;
+    setFormData: (data: WithdrawFormData) => void;
+    availableSum: number;
 }
 
 export const WithdrawInputs = ({ formData, setFormData, availableSum }: WithdrawInputsProps) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target
+        const { name, value } = e.target;
         if (name === "phone") {
-            // Allow only integer input
-            if (/^\d*$/.test(value)) {
-                setFormData({ ...formData, [name]: value ? parseInt(value) : 0 })
-            }
+            // Allow only digits
+            const digitsOnly = value.replace(/\D/g, "");
+            setFormData({ ...formData, [name]: digitsOnly });
         } else {
-            setFormData({ ...formData, [name]: value })
+            setFormData({ ...formData, [name]: value });
         }
-    }
+    };
 
     return (
         <div className="flex flex-col pt-[24px] gap-4">
@@ -39,13 +38,12 @@ export const WithdrawInputs = ({ formData, setFormData, availableSum }: Withdraw
                     <input
                         id="phone"
                         name="phone"
-                        value={formData.phone}
+                        value={formData.phone ?? ""}
                         onChange={handleChange}
                         placeholder="Введите номер телефона"
                         className="text-[14px] text-[#161616] outline-0 w-full"
-                        type="number"
-                        min="0"
-                        step="1"
+                        type="text"
+                        maxLength={11}
                     />
                 </div>
             </div>
@@ -92,5 +90,5 @@ export const WithdrawInputs = ({ formData, setFormData, availableSum }: Withdraw
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};

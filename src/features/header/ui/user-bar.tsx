@@ -1,4 +1,3 @@
-// src/features/header/ui/user-bar.tsx
 import { MainLogo } from "@/shared/icons";
 import { SearchBlock } from "@/features/header/ui/search-block";
 import { ShopNavigation } from "@/features/header/ui/shop-navigation";

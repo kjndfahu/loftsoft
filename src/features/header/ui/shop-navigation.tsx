@@ -10,24 +10,23 @@ import { RestorePasswordForm } from "@/features/auth/container/restore-password-
 import { BurgerMenu } from "@/features/burger-menu/container/burger-menu";
 import { usePathname } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
-
-import { getCategories } from "@/enteties/category/category";
-import { getProductsByCategory } from "@/enteties/product/product";
 import { SearchBar } from "@/features/header/ui/search-bar";
 import { useSearch } from "@/features/header/search-context";
 import { useCartStore } from "../../../../store/use-cart-store";
 import { useAuth } from "@/enteties/auth/auth-provider";
+import {useCatalog} from "@/features/header/catalog-context";
+
 
 export const ShopNavigation = () => {
     const { user, refreshUser } = useAuth();
     const items = useCartStore((state) => state.items);
     const { isSearchOpen, setIsSearchOpen } = useSearch();
+    const { categories, fetchData, allProducts } = useCatalog(); // Use context for categories and fetchData
     const [isAuth, setIsAuth] = useState(false);
     const [isRegistration, setIsRegistration] = useState(false);
     const [forgotPassword, setForgotPassword] = useState(false);
     const [isBurgerMenu, setIsBurgerMenu] = useState(false);
-    const [categories, setCategories] = useState<any[]>([]);
-    const [products, setProducts] = useState<Record<number, any[]>>({});
+    const [products, setProducts] = useState<Record<number, any[]>>({}); // Keep local products state
     const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
     const [isDataLoaded, setIsDataLoaded] = useState(false);
     const pathname = usePathname();
@@ -37,18 +36,20 @@ export const ShopNavigation = () => {
             try {
                 if (products[categoryId]) return;
 
-                const result = await getProductsByCategory(categoryId);
-                if (result.success) {
-                    setProducts((prev) => ({
-                        ...prev,
-                        [categoryId]: result.products,
-                    }));
-                }
+                // Use allProducts from context if categoryId is null, else filter by categoryId
+                const resultProducts = categoryId
+                    ? allProducts.filter((product) => product.categoryId === categoryId)
+                    : allProducts;
+
+                setProducts((prev) => ({
+                    ...prev,
+                    [categoryId]: resultProducts,
+                }));
             } catch (error) {
                 console.error(`Error fetching products for category ${categoryId}:`, error);
             }
         },
-        [products]
+        [allProducts, products]
     );
 
     const toggleCategory = useCallback(
@@ -88,16 +89,7 @@ export const ShopNavigation = () => {
 
     useEffect(() => {
         if (!isDataLoaded) {
-            const fetchCategories = async () => {
-                try {
-                    const categoriesData = await getCategories();
-                    setCategories(categoriesData);
-                    setIsDataLoaded(true);
-                } catch (error) {
-                    console.error("Error fetching categories:", error);
-                }
-            };
-            fetchCategories();
+            fetchData().then(() => setIsDataLoaded(true)); // Fetch categories and products from context
         } else {
             categories.forEach((category) => {
                 if (!products[category.id]) {
@@ -105,7 +97,7 @@ export const ShopNavigation = () => {
                 }
             });
         }
-    }, [isDataLoaded, categories, fetchProductsForCategory, products]);
+    }, [isDataLoaded, categories, fetchProductsForCategory, fetchData]);
 
     const burgerMenuComponent = useMemo(() => {
         return (

@@ -13,10 +13,6 @@ interface CreateOrderResponse {
     orderId?: number;
 }
 
-interface UpdateAdminResponseParams {
-    orderId: number;
-    adminResponse: string;
-}
 
 interface OrderItem {
     id: number;
@@ -174,17 +170,28 @@ export const getUserOrders = async (userId?: number): Promise<GetUserOrdersRespo
 
 
 
-export async function updateAdminResponse(prevState: any, formData: FormData) {
+export type UpdateAdminResponseState = {
+    success: boolean;
+    errors?: {
+        _errors?: string;
+    };
+};
+
+export async function updateAdminResponse(
+    prevState: UpdateAdminResponseState,
+    formData: FormData
+): Promise<UpdateAdminResponseState> {
+    console.log("updateAdminResponse called with formData:", Object.fromEntries(formData));
     try {
         const orderId = parseInt(formData.get("orderId") as string);
-        const adminResponse = formData.get("adminResponse") as string;
+        const adminResponse = formData.get("response") as string; // Changed from "adminResponse" to "response"
 
         if (isNaN(orderId)) {
-            return { success: false, error: "Invalid order ID" };
+            return { success: false, errors: { _errors: "Invalid order ID" } };
         }
 
         if (!adminResponse) {
-            return { success: false, error: "Admin response is required" };
+            return { success: false, errors: { _errors: "Admin response is required" } };
         }
 
         const updatedOrder = await prisma.order.update({
@@ -195,11 +202,15 @@ export async function updateAdminResponse(prevState: any, formData: FormData) {
             },
         });
 
+        console.log("Order updated successfully:", updatedOrder);
         revalidatePath("/admin-orders"); // Revalidate the orders page
-        return { success: true, order: updatedOrder };
+        return { success: true };
     } catch (error) {
         console.error("Error updating admin response:", error);
-        return { success: false, error: "Failed to update admin response" };
+        return {
+            success: false,
+            errors: { _errors: error instanceof Error ? error.message : "Failed to update admin response" },
+        };
     } finally {
         await prisma.$disconnect();
     }

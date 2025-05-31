@@ -225,7 +225,7 @@ enum Type {
 model WithdrawRequest {
   id Int @id @default(autoincrement())
 
-  phone Int
+  phone String
   bank  String
   name  String
   sum   String

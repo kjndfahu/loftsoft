@@ -4,7 +4,6 @@ import Link from "next/link"
 import { useCatalog } from "@/features/header/catalog-context"
 import { useState, useEffect } from "react"
 
-// Custom hook to detect media query
 const useMediaQuery = (query: string) => {
     const [matches, setMatches] = useState(false)
 
@@ -23,7 +22,7 @@ const useMediaQuery = (query: string) => {
 
 export const FooterLinks = () => {
     const { filteredCategories } = useCatalog()
-    const isAbove800 = useMediaQuery("(min-width: 801px)") // Detect if screen width is greater than 800px
+    const isAbove800 = useMediaQuery("(min-width: 801px)")
 
     const baseData = [
         {

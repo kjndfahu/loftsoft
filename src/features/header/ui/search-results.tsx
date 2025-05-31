@@ -1,11 +1,9 @@
 "use client"
 
 import { AnimatePresence, motion } from "framer-motion"
-import { FC, useState } from "react"
+import { FC } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Modal } from "@/shared/modal"
-import { SoftRequestForm } from "@/features/header/ui/soft-request-form"
 
 interface Category {
     id: number
@@ -35,11 +33,10 @@ interface Props {
     products: Product[]
     isLoading: boolean
     searchQuery: string
+    setShowForm: (show: boolean) => void // Add callback prop
 }
 
-export const SearchResults: FC<Props> = ({ isOpen, setIsOpen, categories, products, isLoading, searchQuery }) => {
-    const [showForm, setShowForm] = useState(false)
-
+export const SearchResults: FC<Props> = ({ isOpen, setIsOpen, categories, products, isLoading, searchQuery, setShowForm }) => {
     const clipVariants = {
         hidden: {
             clipPath: "inset(0 0 100% 0 round 0 0 8px 8px)",
@@ -81,7 +78,7 @@ export const SearchResults: FC<Props> = ({ isOpen, setIsOpen, categories, produc
                         onClick={() => setIsOpen(false)}
                     />
 
-                    <div className="absolute top-[60px] left-0 w-full rounded-b-lg shadow-lg z-50 overflow-hidden">
+                    <div className="absolute mds:top-[60px] top-[50px] left-0 w-full rounded-b-lg shadow-lg z-50 overflow-hidden">
                         <motion.div
                             className="absolute inset-0 bg-white"
                             initial="hidden"
@@ -199,17 +196,17 @@ export const SearchResults: FC<Props> = ({ isOpen, setIsOpen, categories, produc
                                                     <div className="pb-[20px] flex flex-col">
                                                         <h3 className="sm:text-[20px] text-[16px] font-semibold">Ничего не найдено</h3>
                                                         <p className="sm:text-[14px] text-[12px] text-[#8B8B8B] mb-6">Попробуйте изменить запрос или поискать в каталоге.</p>
-                                                        <div className="flex flex-col sm:flex-row gap-4">
+                                                        <div className="flex flex-col md:flex-row gap-4">
                                                             <Link
                                                                 href="/catalog"
                                                                 onClick={() => setIsOpen(false)}
-                                                                className="flex items-center bg-black text-white px-6 h-[42px] rounded-full font-medium"
+                                                                className="flex items-center justify-center bg-black mdbvp:text-[16px] md:text-[13px] text-[16px] text-white px-6 h-[42px] rounded-full font-medium"
                                                             >
                                                                 Перейти в каталог
                                                             </Link>
                                                             <button
                                                                 onClick={() => setShowForm(true)}
-                                                                className="flex items-center border border-gray-300 px-6 h-[42px] rounded-full font-medium"
+                                                                className="flex items-center justify-center mdbvp:text-[16px] md:text-[13px] text-[16px] border border-gray-300 px-6 h-[42px] rounded-full font-medium"
                                                             >
                                                                 Запросить товар
                                                             </button>
@@ -221,10 +218,6 @@ export const SearchResults: FC<Props> = ({ isOpen, setIsOpen, categories, produc
                                     </>
                                 )}
                             </div>
-
-                            {showForm && (
-                                <Modal form={<SoftRequestForm setIsClicked={setShowForm} />} />
-                            )}
                         </motion.div>
                     </div>
                 </>

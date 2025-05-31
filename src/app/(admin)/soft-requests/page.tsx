@@ -59,7 +59,7 @@ export default function SoftRequestsPage() {
                     <p className="text-gray-500">Заявок пока нет</p>
                 </div>
             )}
-            <div className="grid md:grid-cols-3 sml:grid-cols-2 grid-cols-1 w-full">
+            <div className="grid gap-3 md:grid-cols-3 sml:grid-cols-2 grid-cols-1 w-full">
                 {softRequests.map((request) => (
                     <RequestBlock key={request.id} request={request} />
                 ))}

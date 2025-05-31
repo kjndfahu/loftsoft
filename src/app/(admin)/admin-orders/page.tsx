@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getAllOrders } from "@/enteties/orders/orders"; // Assuming this can be used client-side
-
+import { useEffect, useState, useCallback } from "react";
+import { getAllOrders } from "@/enteties/orders/orders";
 import { Loader2 } from "lucide-react";
 import AdminResponseForm from "@/features/admin-orders/ui/admin-response-form";
-
 
 interface Order {
     id: number;
@@ -21,21 +19,21 @@ export default function AdminOrdersPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                setLoading(true);
-                const ordersData = await getAllOrders(); // Assuming getAllOrders is client-compatible
-                setOrders(ordersData || []);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : "Failed to fetch orders");
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchOrders = useCallback(async () => {
+        try {
+            setLoading(true);
+            const ordersData = await getAllOrders();
+            setOrders(ordersData || []);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to fetch orders");
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
+    useEffect(() => {
         fetchOrders();
-    }, []); // Empty dependency array ensures fetch runs only once on mount
+    }, [fetchOrders]);
 
     return (
         <div className="flex flex-col w-full mds:py-[150px] py-[90px] mds:pl-[350px] sml:pl-[100px] pl-[55px] mds:pr-[50px] sm:pr-[20px] gap-5">
@@ -59,7 +57,7 @@ export default function AdminOrdersPage() {
                             <th className="p-3 text-left text-[#161616] font-semibold">Сумма</th>
                             <th className="p-3 text-left text-[#161616] font-semibold">Статус</th>
                             <th className="p-3 text-left text-[#161616] font-semibold">Дата создания</th>
-                            <th className="p-3 text-left text-[#161616] font-semibold">Ответ администратора</th>
+                            <th className="p-3 text-left text-[#161616] font-semibold">Ответ</th>
                             <th className="p-3 text-left text-[#161616] font-semibold">Действие</th>
                         </tr>
                         </thead>
@@ -76,9 +74,15 @@ export default function AdminOrdersPage() {
                                         timeStyle: "short",
                                     })}
                                 </td>
-                                <td className="p-3 text-[#161616]">{order.adminResponse || "Нет ответа"}</td>
+                                <td className="p-3 text-[#161616]">{order.adminResponse || "Нет"}</td>
                                 <td className="p-3">
-                                    <AdminResponseForm orderId={order.id} initialResponse={order.adminResponse} />
+                                    <AdminResponseForm
+                                        orderId={order.id}
+                                        initialResponse={order.adminResponse}
+                                        email={order.email}
+                                        totalAmount={order.totalAmount}
+                                        refetchOrders={fetchOrders} // Pass the refetch callback
+                                    />
                                 </td>
                             </tr>
                         ))}

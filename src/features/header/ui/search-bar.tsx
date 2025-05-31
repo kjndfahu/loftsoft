@@ -4,7 +4,9 @@ import type React from "react"
 import { SearchLogo } from "@/shared/icons"
 import { FC, useState } from "react"
 import { SearchResults } from "@/features/header/ui/search-results"
-import {useCatalog} from "@/features/header/catalog-context";
+import { useCatalog } from "@/features/header/catalog-context"
+import { SoftRequestForm } from "@/features/header/ui/soft-request-form"
+import { Modal } from "@/shared/modal"
 
 interface Category {
     id: number
@@ -21,6 +23,7 @@ interface Props {
 
 export const SearchBar: FC<Props> = () => {
     const [isOpen, setIsOpen] = useState(false)
+    const [showForm, setShowForm] = useState(false)
     const { filteredCategories, filteredProducts, isLoading, searchQuery, setSearchQuery, fetchData } = useCatalog()
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +61,12 @@ export const SearchBar: FC<Props> = () => {
                 setIsOpen={setIsOpen}
                 isLoading={isLoading}
                 searchQuery={searchQuery}
+                setShowForm={setShowForm} // Pass callback to control form visibility
             />
+
+            {showForm && (
+                <Modal form={<SoftRequestForm setIsClicked={setShowForm} />} />
+            )}
         </div>
     )
 }

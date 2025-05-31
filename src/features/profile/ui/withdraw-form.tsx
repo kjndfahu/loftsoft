@@ -1,57 +1,57 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { CrossLogo } from "@/shared/icons"
-import { WithdrawInputs, type WithdrawFormData } from "@/features/profile/ui/withdraw-inputs"
-import { type FC, useState } from "react"
+import { CrossLogo } from "@/shared/icons";
+import { WithdrawInputs, type WithdrawFormData } from "@/features/profile/ui/withdraw-inputs";
+import { type FC, useState } from "react";
 
-import { WithdrawSuccess } from "@/features/profile/ui/withdraw-success"
-import { createWithdrawRequest } from "@/enteties/user/create-withdraw-request"
+import { WithdrawSuccess } from "@/features/profile/ui/withdraw-success";
+import { createWithdrawRequest } from "@/enteties/user/create-withdraw-request";
 
 interface Props {
-    setIsClicked: (arg: boolean) => void
-    userEmail: string
-    availableSum: number
+    setIsClicked: (arg: boolean) => void;
+    userEmail: string;
+    availableSum: number;
 }
 
 export const WithdrawForm: FC<Props> = ({ setIsClicked, userEmail, availableSum }) => {
     const [formData, setFormData] = useState<WithdrawFormData>({
-        phone: 0,
+        phone: "",
         bank: "",
         name: "",
         sum: String(availableSum),
-    })
-    const [isLoading, setIsLoading] = useState(false)
-    const [showSuccess, setShowSuccess] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+    });
+    const [isLoading, setIsLoading] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
+        e.preventDefault();
 
-        // Валидация формы
-        if (!Number.isInteger(formData.phone) || formData.phone <= 0) {
-            setError("Пожалуйста, введите корректный номер телефона (целое число)")
-            return
+        // Form validation
+        if (!formData.phone || !/^\d{1,11}$/.test(formData.phone)) {
+            setError("Пожалуйста, введите корректный номер телефона (1-11 цифр)");
+            return;
         }
 
         if (!formData.bank) {
-            setError("Пожалуйста, введите название банка")
-            return
+            setError("Пожалуйста, введите название банка");
+            return;
         }
 
         if (!formData.name) {
-            setError("Пожалуйста, введите имя владельца карты")
-            return
+            setError("Пожалуйста, введите имя владельца карты");
+            return;
         }
 
         if (!userEmail) {
-            setError("Email пользователя отсутствует")
-            return
+            setError("Email пользователя отсутствует");
+            return;
         }
 
-        setIsLoading(true)
-        setError(null)
+        setIsLoading(true);
+        setError(null);
 
         try {
             const result = await createWithdrawRequest({
@@ -60,26 +60,26 @@ export const WithdrawForm: FC<Props> = ({ setIsClicked, userEmail, availableSum 
                 name: formData.name,
                 sum: String(availableSum),
                 userEmail,
-            })
+            });
 
             if (result.success) {
-                setShowSuccess(true)
+                setShowSuccess(true);
                 setTimeout(() => {
-                    setIsClicked(false)
-                }, 3000)
+                    setIsClicked(false);
+                }, 3000);
             } else {
-                setError(result.error || "Произошла ошибка при создании заявки")
+                setError(result.error || "Произошла ошибка при создании заявки");
             }
         } catch (err: any) {
-            setError(`Произошла ошибка при отправке формы: ${err.message || 'Неизвестная ошибка'}`)
-            console.error("Withdraw request error:", err)
+            setError(`Произошла ошибка при отправке формы: ${err.message || "Неизвестная ошибка"}`);
+            console.error("Withdraw request error:", err);
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
-    }
+    };
 
     if (showSuccess) {
-        return <WithdrawSuccess />
+        return <WithdrawSuccess />;
     }
 
     return (
@@ -112,5 +112,5 @@ export const WithdrawForm: FC<Props> = ({ setIsClicked, userEmail, availableSum 
                 </button>
             </div>
         </form>
-    )
-}
+    );
+};

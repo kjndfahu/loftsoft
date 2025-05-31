@@ -1,39 +1,48 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
-import { updateAdminResponse } from "@/enteties/orders/orders";
+import { Modal } from "@/shared/modal";
+import { AdminResponseModal } from "@/features/admin-orders/ui/admin-response-modal";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
 
-function AdminResponseForm({ orderId, initialResponse }: { orderId: number; initialResponse: string | null }) {
-    const [state, formAction] = useFormState(updateAdminResponse, { success: false, error: null });
-    const { pending } = useFormStatus();
-    const [response, setResponse] = useState(initialResponse || "");
+export default function AdminResponseForm({
+                                              orderId,
+                                              initialResponse,
+                                              email,
+                                              totalAmount,
+                                              refetchOrders,
+                                          }: {
+    orderId: number;
+    initialResponse: string | null;
+    email: string | null;
+    totalAmount: number;
+    refetchOrders: () => Promise<void>;
+}) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    console.log("AdminResponseForm props:", { orderId, initialResponse, email, totalAmount });
 
     return (
-        <form action={formAction} className="flex items-center gap-2">
-            <input type="hidden" name="orderId" value={orderId} />
-            <input
-                type="text"
-                name="adminResponse"
-                value={response}
-                onChange={(e) => setResponse(e.target.value)}
-                placeholder="Введите ответ..."
-                className="px-3 py-1 border-[1px] border-[#B9BCCB] rounded-[10px] text-[#161616] w-full"
-            />
+        <div>
             <button
-                type="submit"
-                disabled={pending}
-                className={`px-3 py-1 rounded-[10px] text-white font-semibold ${
-                    pending ? "bg-gray-400" : "bg-[#161616]"
-                } flex items-center justify-center`}
+                onClick={() => setIsModalOpen(true)}
+                className="px-3 py-1 bg-[#161616] text-white rounded-[10px] font-semibold"
             >
-                {pending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Сохранить"}
+                Ответить
             </button>
-            {state.success && <span className="text-green-600 text-sm">Сохранено</span>}
-            {state.error && <span className="text-red-600 text-sm">{state.error}</span>}
-        </form>
+            {isModalOpen && (
+                <Modal
+                    form={
+                        <AdminResponseModal
+                            orderId={orderId}
+                            initialResponse={initialResponse}
+                            setIsOpen={setIsModalOpen}
+                            email={email || "default@example.com"}
+                            totalAmount={totalAmount}
+                            refetchOrders={refetchOrders} // Pass the refetch callback
+                        />
+                    }
+                    onClose={() => setIsModalOpen(false)}
+                />
+            )}
+        </div>
     );
 }
-
-export default AdminResponseForm;
