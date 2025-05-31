@@ -1,7 +1,10 @@
 "use server"
 
+import fs from "fs/promises";
+import path from "path";
 import { Prisma } from "@prisma/client"
 import { prisma } from "../../../prisma/prisma-client"
+import sharp from "sharp";
 
 function isValidUrl(url: string): boolean {
     try {
@@ -175,34 +178,52 @@ export async function getAllReviews() {
             orderBy: {
                 createdAt: "desc",
             },
-        })
+        });
 
-        return {
-            success: true,
-            reviews: reviews.map((review) => {
-
-                let photos = []
+        const compressedReviews = await Promise.all(
+            reviews.map(async (review) => {
+                let photos = [];
                 try {
                     if (review.photo) {
-                        photos = JSON.parse(review.photo)
-                        // Ensure photos is always an array
+                        photos = JSON.parse(review.photo);
                         if (!Array.isArray(photos)) {
-                            photos = [review.photo]
+                            photos = [review.photo];
                         }
+
+                        photos = await Promise.all(
+                            photos.map(async (photoPath) => {
+                                const outputPath = path.join("compressed", path.basename(photoPath));
+
+                                try {
+                                    await fs.access(outputPath);
+                                    return outputPath;
+                                } catch {
+                                    try {
+                                        await sharp(photoPath)
+                                            .resize({ width: 300 })
+                                            .jpeg({ quality: 80 })
+                                            .toFile(outputPath);
+                                        return outputPath;
+                                    } catch (err) {
+                                        console.error(`Error compressing image ${photoPath}:`, err);
+                                        return photoPath;
+                                    }
+                                }
+                            })
+                        );
                     }
                 } catch (e) {
-                    // If parsing fails, treat the photo as a single string
                     if (review.photo) {
-                        photos = [review.photo]
+                        photos = [review.photo];
                     }
-                    console.error("Error parsing photo JSON:", e)
+                    console.error("Error parsing photo JSON:", e);
                 }
 
                 return {
                     id: review.id,
                     text: review.text,
                     photo: review.photo,
-                    photos: photos,
+                    photos,
                     grade: review.grade,
                     createdAt: review.createdAt.toISOString(),
                     user: review.user
@@ -217,15 +238,22 @@ export async function getAllReviews() {
                             name: review.item.name,
                         }
                         : null,
-                }
-            }),
-        }
+                };
+            })
+        );
+
+        return {
+            success: true,
+            reviews: compressedReviews,
+        };
     } catch (error) {
-        console.error("Error fetching reviews:", error)
+        console.error("Error fetching reviews:", error);
         return {
             success: false,
             error: "Failed to fetch reviews",
-        }
+        };
+    } finally {
+        await prisma.$disconnect();
     }
 }
 
