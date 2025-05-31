@@ -16,6 +16,7 @@ export function CategoryFilter({ categories, onProductsChange }: Props) {
     const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState<string>("price_asc");
+    const [products, setProducts] = useState<Product[]>([]);
 
     const isFirstRender = useRef(true);
     const prevCategoryId = useRef<number | null>(null);
@@ -28,6 +29,24 @@ export function CategoryFilter({ categories, onProductsChange }: Props) {
         { id: "price_asc", label: "По возрастанию цены" },
         { id: "price_desc", label: "По убыванию цены" },
     ];
+
+    const sortProducts = useCallback((products: Product[], filter: string): Product[] => {
+        const sortedProducts = [...products]; // Create a copy to avoid mutating state
+        switch (filter) {
+            case "rating":
+                return sortedProducts.sort((a, b) => b.averageRating - a.averageRating);
+            case "popularity":
+                return sortedProducts.sort((a, b) => b.purchaseCount - a.purchaseCount);
+            case "purchases":
+                return sortedProducts.sort((a, b) => b.purchaseCount - a.purchaseCount);
+            case "price_asc":
+                return sortedProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+            case "price_desc":
+                return sortedProducts.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+            default:
+                return sortedProducts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        }
+    }, []);
 
     const fetchProducts = useCallback(
         async (categoryId: number | null, filter: string) => {
@@ -42,19 +61,24 @@ export function CategoryFilter({ categories, onProductsChange }: Props) {
             try {
                 const result = await getSortedProducts(categoryId, filter);
                 if (result.success && result.products) {
-                    onProductsChange(result.products);
+                    // Store fetched products and sort them locally
+                    const sortedProducts = sortProducts(result.products, filter);
+                    setProducts(sortedProducts);
+                    onProductsChange(sortedProducts);
                 } else {
                     console.error("Failed to fetch products:", result.error);
+                    setProducts([]);
                     onProductsChange([]);
                 }
             } catch (error) {
                 console.error("Error fetching products:", error);
+                setProducts([]);
                 onProductsChange([]);
             } finally {
                 setIsLoading(false);
             }
         },
-        [onProductsChange],
+        [onProductsChange, sortProducts],
     );
 
     const handleCategoryChange = useCallback(
@@ -72,9 +96,16 @@ export function CategoryFilter({ categories, onProductsChange }: Props) {
         [categories],
     );
 
-    const handleFilterSelect = useCallback((option: { id: string; label: string }) => {
-        setSelectedFilter(option.id);
-    }, []);
+    const handleFilterSelect = useCallback(
+        (option: { id: string; label: string }) => {
+            setSelectedFilter(option.id);
+            // Re-sort the existing products when filter changes
+            const sortedProducts = sortProducts(products, option.id);
+            setProducts(sortedProducts);
+            onProductsChange(sortedProducts);
+        },
+        [products, sortProducts, onProductsChange],
+    );
 
     useEffect(() => {
         if (isFirstRender.current) {
