@@ -1,11 +1,11 @@
 "use client"
 
 import { toast, type Toast as HotToast, type ToastPosition, Toaster, type Renderable } from "react-hot-toast"
-import {ErrorLogo, SuccessLogo} from "@/shared/icons";
+import { ErrorLogo, SuccessLogo } from "@/shared/icons"
 
 interface Toast extends HotToast {
-    message: string;
-    secondaryMessage?: string;
+    message: string
+    secondaryMessage?: string
 }
 
 export type ToastType = "success" | "error"
@@ -22,7 +22,7 @@ const defaultOptions: CustomToastOptions = {
     duration: 3000,
 }
 
-const CustomToast = ({ toast, type }: { toast: Toast; type: ToastType }) => {
+const CustomToast = ({ toast, type, onClose }: { toast: Toast; type: ToastType; onClose: () => void }) => {
     const styles = {
         success: "bg-[#ffffff] shadow-2xl text-[#161616]",
         error: "bg-[#ffffff] shadow-2xl text-[#161616]",
@@ -39,9 +39,9 @@ const CustomToast = ({ toast, type }: { toast: Toast; type: ToastType }) => {
         <div className={className.trim()}>
             <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${iconStyles[type]}`}>
                 {type === "success" ? (
-                   <SuccessLogo/>
+                    <SuccessLogo />
                 ) : (
-                    <ErrorLogo/>
+                    <ErrorLogo />
                 )}
             </div>
 
@@ -52,9 +52,9 @@ const CustomToast = ({ toast, type }: { toast: Toast; type: ToastType }) => {
                 )}
             </div>
 
-
             <button
                 className="ml-3 text-gray-400 hover:text-gray-200 focus:outline-none"
+                onClick={onClose} // Используем пропс onClose для закрытия тоста
             >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -68,7 +68,13 @@ export const showToast = (message: string, type: ToastType, options?: CustomToas
     const mergedOptions = { ...defaultOptions, ...options }
 
     return toast.custom(
-        (t: HotToast): Renderable => <CustomToast toast={{ ...t, message, secondaryMessage: options?.secondaryMessage }} type={type} />,
+        (t: HotToast): Renderable => (
+            <CustomToast
+                toast={{ ...t, message, secondaryMessage: options?.secondaryMessage }}
+                type={type}
+                onClose={() => toast.remove(t.id)} // Передаем функцию закрытия
+            />
+        ),
         {
             duration: mergedOptions.duration,
             position: mergedOptions.position,

@@ -8,6 +8,7 @@ import { Loader } from "@/shared/loader"
 
 import { useEffect, useRef } from "react"
 import {showToast} from "@/shared/custom-toast";
+import Link from "next/link";
 
 export const SignUpForm = ({
                                setIsRegistration,
@@ -51,13 +52,7 @@ export const SignUpForm = ({
 
     // Wrap handleChange to clear generalError when email changes
     const handleChangeWithErrorClear = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.name === "email" && generalError) {
-            // Assuming useRegisterForm provides a way to clear generalError
-            // If not, you'll need to modify useRegisterForm to expose a setter
-            handleChange(e) // Call the original handleChange
-        } else {
-            handleChange(e)
-        }
+        handleChange(e) // Просто передаём событие в handleChange из useRegisterForm
     }
 
     return (
@@ -89,14 +84,16 @@ export const SignUpForm = ({
                     <p className={`text-[12px] leading-[15px] font-medium ${errors.agreement ? "text-red-500" : "text-[#6A6B75]"}`}>
                         Ознакомлен и согласен с условиями
                         <br />
-                        <span className={`font-bold ${errors.agreement ? "text-red-500" : "text-[#161616]"}`}>
+                        <Link href="/privacy-policy">
+                            <span className={`font-bold ${errors.agreement ? "text-red-500" : "text-[#161616]"}`}>
                             политики конфиденциальности.
                         </span>
+                        </Link>
                     </p>
                 </div>
 
                 {generalError && !isLoading && (
-                    <GeneralError generalError={generalError} />
+                    <GeneralError generalError={generalError}/>
                 )}
 
                 <div className="flex flex-col pt-2 gap-2">

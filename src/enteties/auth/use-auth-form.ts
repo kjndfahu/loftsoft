@@ -79,10 +79,22 @@ export function useRegisterForm(onSuccess: () => void) {
 
         if (type === "checkbox") {
             setIsAgreed(checked)
+            if (checked && errors.agreement) {
+                // Очищаем ошибку agreement при установке галочки
+                setErrors((prev) => {
+                    const newErrors = { ...prev }
+                    delete newErrors.agreement // Удаляем ошибку agreement
+                    return newErrors
+                })
+            }
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }))
             if (errors[name]) {
-                setErrors((prev) => ({ ...prev, [name]: "" }))
+                setErrors((prev) => {
+                    const newErrors = { ...prev }
+                    delete newErrors[name] // Очищаем ошибку для изменённого поля
+                    return newErrors
+                })
             }
         }
     }
@@ -91,8 +103,7 @@ export function useRegisterForm(onSuccess: () => void) {
         e.preventDefault()
         setIsLoading(true)
 
-        // Only clear errors if we intend to re-validate
-        const newErrors: { [key: string]: string } = { ...errors } // Preserve existing errors
+        const newErrors: { [key: string]: string } = {}
         if (!formData.email) newErrors.email = "Email обязателен"
         if (!formData.password) newErrors.password = "Пароль обязателен"
         if (!formData.confirmPassword) newErrors.confirmPassword = "Подтверждение пароля обязательно"
@@ -109,7 +120,7 @@ export function useRegisterForm(onSuccess: () => void) {
             return
         }
 
-        setErrors({})
+        setErrors({}) // Полностью очищаем ошибки при успешной валидации
 
         try {
             const result = await register(formData)

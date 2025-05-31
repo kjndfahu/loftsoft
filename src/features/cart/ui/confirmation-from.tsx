@@ -4,6 +4,7 @@ import { PayType } from "@/features/cart/ui/pay-type";
 import { createOrder } from "@/enteties/orders/orders";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
 
 interface OrderItem {
     id: string;
@@ -123,7 +124,10 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
                 <input className="border-[2px] m-1 bg-[#CACDDC]" type="checkbox" />
                 <p className="text-[14px] text-[#6A6B75]">
                     Ознакомлен и согласен с условиями{" "}
-                    <span className="font-bold text-[#161616]">политики конфиденциальности.</span>
+                    <Link href="/privacy-policy"><span
+                        className="font-bold text-[#161616]">политики конфиденциальности.</span>
+
+                    </Link>
                 </p>
             </div>
             <button
