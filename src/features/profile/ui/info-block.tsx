@@ -1,4 +1,3 @@
-
 import {ReviewStar} from "@/shared/icons";
 import Image from "next/image";
 import spiral from '../../../../public/img/spiral.avif'

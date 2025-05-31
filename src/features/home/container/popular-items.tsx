@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import { TitleDesc } from "@/shared/title-desc"
 import { NavBtn } from "@/features/home/ui/nav-btn"
 import { Items } from "@/features/home/ui/item"
-
 import Link from "next/link"
 import {getPopularProducts} from "@/enteties/popular-products/popular-products";
 

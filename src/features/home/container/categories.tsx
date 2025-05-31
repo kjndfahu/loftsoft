@@ -30,7 +30,7 @@ export const Categories = () => {
                     />
                 ))}
             </div>
-            <Link className="w-full" href="/catalog">
+            <Link className="flex items-center justify-center w-full" href="/catalog">
                 <NavBtn text="Все категории" />
             </Link>
         </div>

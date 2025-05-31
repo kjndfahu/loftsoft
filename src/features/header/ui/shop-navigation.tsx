@@ -14,33 +14,29 @@ import { SearchBar } from "@/features/header/ui/search-bar";
 import { useSearch } from "@/features/header/search-context";
 import { useCartStore } from "../../../../store/use-cart-store";
 import { useAuth } from "@/enteties/auth/auth-provider";
-import {useCatalog} from "@/features/header/catalog-context";
-
+import { useCatalog } from "@/features/header/catalog-context";
 
 export const ShopNavigation = () => {
     const { user, refreshUser } = useAuth();
     const items = useCartStore((state) => state.items);
     const { isSearchOpen, setIsSearchOpen } = useSearch();
-    const { categories, fetchData, allProducts } = useCatalog(); // Use context for categories and fetchData
+    const { categories, fetchData, allProducts } = useCatalog();
     const [isAuth, setIsAuth] = useState(false);
     const [isRegistration, setIsRegistration] = useState(false);
     const [forgotPassword, setForgotPassword] = useState(false);
     const [isBurgerMenu, setIsBurgerMenu] = useState(false);
-    const [products, setProducts] = useState<Record<number, any[]>>({}); // Keep local products state
+    const [products, setProducts] = useState<Record<number, any[]>>({});
     const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
     const [isDataLoaded, setIsDataLoaded] = useState(false);
     const pathname = usePathname();
 
     const fetchProductsForCategory = useCallback(
-        async (categoryId: number) => {
+        (categoryId: number) => {
+            if (products[categoryId]) return; // Avoid redundant fetches
             try {
-                if (products[categoryId]) return;
-
-                // Use allProducts from context if categoryId is null, else filter by categoryId
                 const resultProducts = categoryId
                     ? allProducts.filter((product) => product.categoryId === categoryId)
                     : allProducts;
-
                 setProducts((prev) => ({
                     ...prev,
                     [categoryId]: resultProducts,
@@ -49,25 +45,42 @@ export const ShopNavigation = () => {
                 console.error(`Error fetching products for category ${categoryId}:`, error);
             }
         },
-        [allProducts, products]
+        [allProducts] // Removed `products` to prevent infinite loop
     );
 
     const toggleCategory = useCallback(
         (categoryId: number) => {
-            if (expandedCategory === categoryId) {
-                setExpandedCategory(null);
-            } else {
-                setExpandedCategory(categoryId);
+            setExpandedCategory((prev) => (prev === categoryId ? null : categoryId));
+            if (expandedCategory !== categoryId) {
                 fetchProductsForCategory(categoryId);
             }
         },
         [expandedCategory, fetchProductsForCategory]
     );
 
+    // Reset burger menu and search on pathname change
     useEffect(() => {
         setIsBurgerMenu(false);
         setIsSearchOpen(false);
     }, [pathname, setIsSearchOpen]);
+
+    // Fetch initial data
+    useEffect(() => {
+        if (!isDataLoaded) {
+            fetchData().then(() => setIsDataLoaded(true));
+        }
+    }, [fetchData, isDataLoaded]);
+
+    // Fetch products for categories when data is loaded
+    useEffect(() => {
+        if (isDataLoaded) {
+            categories.forEach((category) => {
+                if (!products[category.id]) {
+                    fetchProductsForCategory(category.id);
+                }
+            });
+        }
+    }, [isDataLoaded, categories, fetchProductsForCategory]);
 
     const handleRegistrationClick = useCallback(() => {
         setIsAuth(false);
@@ -87,20 +100,8 @@ export const ShopNavigation = () => {
         setForgotPassword(true);
     }, []);
 
-    useEffect(() => {
-        if (!isDataLoaded) {
-            fetchData().then(() => setIsDataLoaded(true)); // Fetch categories and products from context
-        } else {
-            categories.forEach((category) => {
-                if (!products[category.id]) {
-                    fetchProductsForCategory(category.id);
-                }
-            });
-        }
-    }, [isDataLoaded, categories, fetchProductsForCategory, fetchData]);
-
-    const burgerMenuComponent = useMemo(() => {
-        return (
+    const burgerMenuComponent = useMemo(
+        () => (
             <AnimatePresence>
                 {isBurgerMenu && (
                     <BurgerMenu
@@ -111,11 +112,14 @@ export const ShopNavigation = () => {
                     />
                 )}
             </AnimatePresence>
-        );
-    }, [isBurgerMenu, products, categories, expandedCategory, toggleCategory]);
+        ),
+        [isBurgerMenu, products, categories, expandedCategory, toggleCategory]
+    );
 
     return (
-        <div className={`flex ${isSearchOpen ? "w-full" : "w-auto"} items-center md:gap-5 mds:gap-2 sm:gap-5 gap-3 text-[12px] text-[#858692] relative`}>
+        <div
+            className={`flex ${isSearchOpen ? "w-full" : "w-auto"} items-center md:gap-5 mds:gap-2 sm:gap-5 gap-3 text-[12px] text-[#858692] relative`}
+        >
             {!isSearchOpen && (
                 <div
                     className="mds:hidden flex items-center cursor-pointer flex-col gap-1"
@@ -145,8 +149,9 @@ export const ShopNavigation = () => {
                         <div className="mds:hidden flex relative items-center cursor-pointer flex-col gap-1">
                             <CartLogo />
                             {items.length !== 0 && (
-                                <div
-                                    className="absolute bg-[#5069E8] text-[#ffffff] top-[-13px] right-[-10px] border-[2px] border-white font-extrabold rounded-full px-2">{items.length}</div>
+                                <div className="absolute bg-[#5069E8] text-[#ffffff] top-[-13px] right-[-10px] border-[2px] border-white font-extrabold rounded-full px-2">
+                                    {items.length}
+                                </div>
                             )}
                         </div>
                     </Link>
@@ -158,14 +163,17 @@ export const ShopNavigation = () => {
                             </div>
                         </Link>
                     ) : (
-                        <div onClick={() => setIsAuth(true)} className="flex items-center cursor-pointer flex-col gap-1">
+                        <div
+                            onClick={() => setIsAuth(true)}
+                            className="flex items-center cursor-pointer flex-col gap-1"
+                        >
                             <UserLogo color="#161616" />
                             <p className="mds:flex hidden">Войти</p>
                         </div>
                     )}
                     <Link className="mds:flex hidden" href="/orders">
                         <div className="flex relative items-center cursor-pointer flex-col gap-1">
-                            <BoxLogo color="#161616"/>
+                            <BoxLogo color="#161616" />
                             <p className="mds:flex hidden">Заказы</p>
                         </div>
                     </Link>
@@ -181,10 +189,11 @@ export const ShopNavigation = () => {
                     </div>
                     <Link href="/cart">
                         <div className="mds:flex hidden relative items-center cursor-pointer flex-col gap-1">
-                            <CartLogo/>
+                            <CartLogo />
                             {items.length !== 0 && (
-                                <div
-                                    className="absolute bg-[#5069E8] text-[#ffffff] top-[-13px] right-[-10px] border-[2px] border-white font-extrabold rounded-full px-2">{items.length}</div>
+                                <div className="absolute bg-[#5069E8] text-[#ffffff] top-[-13px] right-[-10px] border-[2px] border-white font-extrabold rounded-full px-2">
+                                    {items.length}
+                                </div>
                             )}
                             <p className="mds:flex hidden">Корзина</p>
                         </div>
@@ -221,7 +230,12 @@ export const ShopNavigation = () => {
 
             {forgotPassword && (
                 <Modal
-                    form={<RestorePasswordForm handleLoginClick={handleLoginClick} setForgotPassword={setForgotPassword} />}
+                    form={
+                        <RestorePasswordForm
+                            handleLoginClick={handleLoginClick}
+                            setForgotPassword={setForgotPassword}
+                        />
+                    }
                 />
             )}
         </div>

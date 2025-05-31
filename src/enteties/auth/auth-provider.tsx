@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from "react";
 import { getCurrentUser } from "@/enteties/auth/auth-actions";
 import { ROLE } from "@/kernel/types";
 
@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         try {
             const currentUser = await getCurrentUser();
-            setUser(currentUser);
+            setUser(currentUser || null);
         } catch (error) {
             console.error("Ошибка при загрузке пользователя:", error);
             setUser(null);
@@ -42,15 +42,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
     }, []);
 
+    // Fetch user on mount
     useEffect(() => {
         refreshUser();
     }, [refreshUser]);
 
-    return (
-        <AuthContext.Provider value={{ user, isLoading, refreshUser, handleLogout }}>
-            {children}
-        </AuthContext.Provider>
+    // Memoize context value to prevent unnecessary re-renders
+    const contextValue = useMemo(
+        () => ({
+            user,
+            isLoading,
+            refreshUser,
+            handleLogout,
+        }),
+        [user, isLoading, refreshUser, handleLogout]
     );
+
+    return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
