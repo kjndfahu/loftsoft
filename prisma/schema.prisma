@@ -105,7 +105,7 @@ model Article {
 model Review {
   id        Int      @id @default(autoincrement())
   text      String
-  photo     String
+  photo     String?
   grade     Int
   userId    Int
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

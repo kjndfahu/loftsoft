@@ -22,7 +22,7 @@ export async function createReview(formData: FormData): Promise<{
         const comment = formData.get("comment") as string;
         const photos = formData.getAll("photos") as string[];
         const userId = Number(formData.get("userId"));
-        const orderId = Number(formData.get("orderId")); // Assuming orderId is passed
+        const orderId = Number(formData.get("orderId"));
 
         console.log("Received formData:", {
             rating,
@@ -50,6 +50,31 @@ export async function createReview(formData: FormData): Promise<{
             };
         }
 
+        // Validate userId
+        if (isNaN(userId)) {
+            console.error("Validation error: Invalid userId", { userId });
+            return {
+                success: false,
+                error: "Неверный идентификатор пользователя.",
+            };
+        }
+
+        // Fetch the Item ID from OrderItem
+        const orderItem = await prisma.orderItem.findFirst({
+            where: { orderId },
+            select: { itemId: true },
+        });
+
+        if (!orderItem) {
+            console.error("No OrderItem found for orderId:", orderId);
+            return {
+                success: false,
+                error: "Товар для заказа не найден.",
+            };
+        }
+
+        const itemId = orderItem.itemId;
+
         // Validate photos and upload to Cloudinary
         let photoUrls: string[] = [];
         if (photos.length > 0) {
@@ -69,7 +94,6 @@ export async function createReview(formData: FormData): Promise<{
                     };
                 }
 
-                // Convert base64 to Blob and prepare FormData for Cloudinary
                 const byteString = atob(photo.split(",")[1]);
                 const mimeString = photo.split(",")[0].match(/:(.*?);/)![1];
                 const ab = new ArrayBuffer(byteString.length);
@@ -109,8 +133,12 @@ export async function createReview(formData: FormData): Promise<{
                 text: comment,
                 photo: photoUrls.length > 0 ? JSON.stringify(photoUrls) : null,
                 grade: rating,
-                userId,
-                itemId: orderId, // Use orderId as itemId, adjust if needed
+                user: {
+                    connect: { id: userId },
+                },
+                item: {
+                    connect: { id: itemId }, // Use itemId instead of orderId
+                },
             },
         });
 
