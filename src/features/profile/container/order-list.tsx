@@ -25,7 +25,7 @@ export const OrderList = () => {
         }
 
         try {
-            const response = await getUserOrders(email); // Pass email to getUserOrders
+            const response = await getUserOrders(email);
             if (response.success && response.orders) {
                 setOrders(response.orders);
             } else {

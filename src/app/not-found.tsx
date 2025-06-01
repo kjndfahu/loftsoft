@@ -1,5 +1,5 @@
-import {Box2NotFound, Box3NotFound, BoxNotFound} from "@/shared/catalog-images";
 import Link from "next/link";
+import Image from 'next/image'
 
 
 export default function NotFoundPage() {
@@ -22,9 +22,10 @@ export default function NotFoundPage() {
                     </button>
                 </Link>
             </div>
-            <BoxNotFound className="absolute right-[172px] bottom-[-100px]"/>
-            <Box2NotFound className="absolute left-[250px] bottom-[-100px]"/>
-            <Box3NotFound className="absolute right-[181px] top-[270px]"/>
+
+            <Image src="https://i.imgur.com/KUqia6r.png" className="absolute right-[172px] bottom-[-100px]" alt="box2"/>
+            <Image src="https://i.imgur.com/UBRZ8fq.png" className="absolute left-[250px] bottom-[-100px]" alt="box"/>
+            <Image src="https://i.imgur.com/YtNEXLq.png" className="absolute right-[181px] top-[270px]" alt="box3"/>
         </div>
     );
 }
