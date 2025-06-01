@@ -19,7 +19,7 @@ export const OrderList = () => {
         setError(null);
 
         if (!email) {
-            setError("User email not found");
+            setError("На данный момент у вас нет заказов :(");
             setLoading(false);
             return;
         }
