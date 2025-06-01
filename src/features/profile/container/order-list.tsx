@@ -29,10 +29,10 @@ export const OrderList = () => {
             if (response.success && response.orders) {
                 setOrders(response.orders);
             } else {
-                setError(response.error || "Failed to load orders");
+                setError(response.error || "На данный момент у вас нет заказов :(");
             }
         } catch (err) {
-            setError("Failed to load orders");
+            setError("На данный момент у вас нет заказов :(");
         } finally {
             setLoading(false);
         }
