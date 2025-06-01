@@ -77,7 +77,7 @@ export const SoftRequestForm = ({ setIsClicked }: SoftRequestFormProps) => {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col sm:w-[360px] w-full bg-white rounded-[16px] p-4">
+        <form onClick={e => e.stopPropagation()} onSubmit={handleSubmit} className="flex flex-col sm:w-[360px] w-full bg-white rounded-[16px] p-4">
             <div className="flex items-center justify-between mb-[40px]">
                 <h3 className="text-[22px] font-bold text-[#161616]">Запрос на товар</h3>
                 <button type="button" onClick={() => setIsClicked(false)} className="text-black">

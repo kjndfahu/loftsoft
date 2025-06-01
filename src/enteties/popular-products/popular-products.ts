@@ -33,6 +33,37 @@ export async function addPopularProduct(itemId: number, position = 0) {
     }
 }
 
+export async function updatePopularProduct(popularProductId: number, newItemId: number) {
+    try {
+        const product = await prisma.item.findUnique({
+            where: { id: newItemId },
+        })
+
+        if (!product) {
+            return { success: false, error: "Product not found" }
+        }
+
+        const updatedPopularProduct = await prisma.popularProduct.update({
+            where: { id: popularProductId },
+            data: {
+                itemId: newItemId,
+            },
+            include: {
+                item: {
+                    include: {
+                        category: true,
+                    },
+                },
+            },
+        })
+
+        return { success: true, popularProduct: updatedPopularProduct }
+    } catch (error) {
+        console.error("Error updating popular product:", error)
+        return { success: false, error: "Failed to update popular product" }
+    }
+}
+
 export async function getPopularProducts() {
     try {
         const popularProducts = await prisma.popularProduct.findMany({

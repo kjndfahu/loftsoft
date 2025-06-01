@@ -83,7 +83,7 @@ export const WithdrawForm: FC<Props> = ({ setIsClicked, userEmail, availableSum 
     }
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-[360px] pt-4 pb-7 px-6 bg-white rounded-[16px]">
+        <form onClick={e => e.stopPropagation()} onSubmit={handleSubmit} className="flex flex-col gap-4 w-[360px] pt-4 pb-7 px-6 bg-white rounded-[16px]">
             <div className="flex items-center justify-between">
                 <h3 className="text-[22px] font-bold text-[#161616]">Вывод</h3>
                 <div onClick={() => setIsClicked(false)}>

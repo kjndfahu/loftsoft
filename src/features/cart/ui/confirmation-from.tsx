@@ -5,6 +5,7 @@ import { createOrder } from "@/enteties/orders/orders";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
+import Cookies from "js-cookie"; // Import js-cookie
 
 interface OrderItem {
     id: string;
@@ -67,8 +68,6 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
         }
     };
 
-    console.log(items)
-
     const handleOrderSubmit = async () => {
         if (!email) {
             setError("Пожалуйста, введите email");
@@ -78,14 +77,15 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
         setIsSubmitting(true);
         setError(null);
 
-        const result = await createOrder(email, items); // Pass items to createOrder
+        const result = await createOrder(email, items);
 
         setIsSubmitting(false);
 
         if (!result.success) {
             setError(result.error || "Не удалось создать заказ");
         } else {
-            // Send Telegram notification on success
+            // Store email in cookies
+            Cookies.set("userEmail", email, { expires: 7 }); // Expires in 7 days
             await sendTelegramNotification(email, items);
             clearCart();
             router.push("/successful-payment");
@@ -124,9 +124,8 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
                 <input className="border-[2px] m-1 bg-[#CACDDC]" type="checkbox" />
                 <p className="text-[14px] text-[#6A6B75]">
                     Ознакомлен и согласен с условиями{" "}
-                    <Link href="/privacy-policy"><span
-                        className="font-bold text-[#161616]">политики конфиденциальности.</span>
-
+                    <Link href="/privacy-policy">
+                        <span className="font-bold text-[#161616]">политики конфиденциальности.</span>
                     </Link>
                 </p>
             </div>

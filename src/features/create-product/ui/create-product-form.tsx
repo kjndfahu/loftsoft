@@ -350,6 +350,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
 
     return (
         <form
+            onClick={e => e.stopPropagation()}
             onSubmit={handleSubmit}
             className="flex flex-col w-[800px] pt-4 pb-7 px-6 bg-white rounded-[16px] max-h-[90vh] overflow-y-auto"
         >

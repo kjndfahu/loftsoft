@@ -89,7 +89,7 @@ export const OrderBlock = ({ order, refetchOrders }: OrderBlockProps) => {
             </AnimatePresence>
 
             {isReview && (
-                <Modal form={<CreateReview setIsReview={setIsReview} orderId={order.id} />} />
+                <Modal setModalOpen={setIsReview} form={<CreateReview setIsReview={setIsReview} orderId={order.id} />} />
             )}
 
             {!isOpen && (

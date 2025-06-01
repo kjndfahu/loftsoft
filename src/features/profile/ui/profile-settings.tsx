@@ -21,8 +21,8 @@ export const ProfileSettings = () => {
                 <CrossLogo />
                 Удалить аккаунт
             </div>
-            {isClicked && <Modal form={<ChangePasswordForm setIsClicked={setIsClicked} />} />}
-            {isDelete && <Modal form={<DeleteAccountForm setIsDelete={setIsDelete} />} />}
+            {isClicked && <Modal setModalOpen={setIsClicked} form={<ChangePasswordForm setIsClicked={setIsClicked} />} />}
+            {isDelete && <Modal setModalOpen={setIsDelete} form={<DeleteAccountForm setIsDelete={setIsDelete} />} />}
         </div>
     )
 }

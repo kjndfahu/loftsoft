@@ -6,9 +6,10 @@ interface Props {
     isOpen?: boolean
     onClose?: () => void
     autoClose?: number
+    setModalOpen: (arg: boolean) => void
 }
 
-export const Modal:React.FC<Props> = ({ form, isOpen = true, onClose, autoClose }) =>{
+export const Modal:React.FC<Props> = ({ form, isOpen = true, onClose, autoClose, setModalOpen }) =>{
     const [isVisible, setIsVisible] = useState(isOpen)
 
     useEffect(() => {
@@ -27,9 +28,9 @@ export const Modal:React.FC<Props> = ({ form, isOpen = true, onClose, autoClose 
     }, [autoClose, isVisible, onClose])
 
     return (
-        <div className="flex z-[100] items-center justify-center fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm">
+        <div onClick={() => setModalOpen(false)} className="flex z-[100] items-center justify-center fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm">
             <div className="flex sm:items-center items-end justify-center relative w-full h-full "
-                onClick={e => e.stopPropagation()}>
+                >
                 {form}
             </div>
         </div>

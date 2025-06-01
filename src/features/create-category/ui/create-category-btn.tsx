@@ -21,7 +21,7 @@ export const CreateCategoryBtn = ({ onCategoryCreated }: Props) => {
             </div>
 
             {isOpen && (
-                <Modal form={<CreateCategoryForm setIsOpen={setIsOpen} onCategoryCreated={onCategoryCreated} />} />
+                <Modal setModalOpen={setIsOpen} form={<CreateCategoryForm setIsOpen={setIsOpen} onCategoryCreated={onCategoryCreated} />} />
             )}
         </div>
     )

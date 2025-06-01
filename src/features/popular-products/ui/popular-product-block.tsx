@@ -1,3 +1,4 @@
+// popular-product-block.tsx
 "use client"
 
 import { useState, useTransition } from "react"
@@ -5,7 +6,7 @@ import Image from "next/image"
 import { Modal } from "@/shared/modal"
 import { PopularProductModal } from "@/features/popular-products/ui/popular-product-modal"
 import { useRouter } from "next/navigation"
-import {removePopularProduct} from "@/enteties/popular-products/popular-products";
+import { removePopularProduct } from "@/enteties/popular-products/popular-products"
 
 interface Product {
     id: number
@@ -24,9 +25,10 @@ interface PopularProductProps {
         item: Product
     }
     isEditable?: boolean
+    onProductChange?: () => void // Added to notify parent of changes
 }
 
-export const PopularProductBlock = ({ product, isEditable = true }: PopularProductProps) => {
+export const PopularProductBlock = ({ product, isEditable = true, onProductChange }: PopularProductProps) => {
     const [isClicked, setIsClicked] = useState(false)
     const [isPending, startTransition] = useTransition()
     const router = useRouter()
@@ -37,7 +39,8 @@ export const PopularProductBlock = ({ product, isEditable = true }: PopularProdu
         if (confirm("Вы уверены, что хотите удалить этот товар из популярных?")) {
             startTransition(async () => {
                 await removePopularProduct(product.id)
-                router.refresh()
+                onProductChange?.() // Trigger re-fetch
+                router.refresh() // Fallback in case re-fetch fails
             })
         }
     }
@@ -70,7 +73,19 @@ export const PopularProductBlock = ({ product, isEditable = true }: PopularProdu
                         </button>
                     </div>
                 )}
-                {isClicked && <Modal form={<PopularProductModal setIsClicked={setIsClicked} />} />}
+                {isClicked && (
+                    <Modal
+                        setModalOpen={setIsClicked}
+                        form={
+                            <PopularProductModal
+                                setIsClicked={setIsClicked}
+                                productId={product.id}
+                                product={product.item}
+                                onProductChange={onProductChange}
+                            />
+                        }
+                    />
+                )}
             </div>
         )
     }
@@ -83,7 +98,7 @@ export const PopularProductBlock = ({ product, isEditable = true }: PopularProdu
             <div className="flex items-center justify-center border-[1px] text-gray-500 border-[#DBDEEF] w-[50px] h-[50px] rounded-full">
                 +
             </div>
-            {isClicked && <Modal form={<PopularProductModal setIsClicked={setIsClicked} />} />}
+            {isClicked && <Modal form={<PopularProductModal setIsClicked={setIsClicked} onProductChange={onProductChange} />} />}
         </div>
     )
 }

@@ -24,7 +24,7 @@ export const CreateProductBtn = ({ refetchProducts }: CreateProductBtnProps) => 
             </div>
 
             {isOpen && (
-                <Modal form={<CreateProductForm setIsOpen={setIsOpen} refetchProducts={refetchProducts} />} />
+                <Modal setModalOpen={setIsOpen} form={<CreateProductForm setIsOpen={setIsOpen} refetchProducts={refetchProducts} />} />
             )}
         </div>
     );

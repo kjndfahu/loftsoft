@@ -88,6 +88,7 @@ export const ReviewInfo: FC<Props> = ({ isImage, text, grade, createdAt, photos 
             )}
             {isModal && !hideModal && (
                 <Modal
+                    setModalOpen={setIsModal}
                     form={
                         <ReviewModal
                             user={user}

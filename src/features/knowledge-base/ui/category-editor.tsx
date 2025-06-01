@@ -1,110 +1,105 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-
-import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react"
-import { useRouter } from "next/navigation"
-import {createCategory, deleteCategory, updateCategoryOrder} from "@/enteties/knowledge-base/knowledge-base";
+import type React from "react";
+import { useState } from "react";
+import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { createCategory, deleteCategory, updateCategoryOrder } from "@/enteties/knowledge-base/knowledge-base";
 
 interface Category {
-    id: number
-    name: string
-    emoji: string
-    order: number
+    id: number;
+    name: string;
+    emoji: string;
+    order: number;
 }
 
 interface CategoryEditorProps {
-    categories: Category[]
+    categories: Category[];
+    onCategoryUpdate: () => void; // Новый проп для обновления категорий
 }
 
-export const CategoryEditor = ({ categories }: CategoryEditorProps) => {
-    const [name, setName] = useState("")
-    const [emoji, setEmoji] = useState("📄")
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const router = useRouter()
+export const CategoryEditor = ({ categories, onCategoryUpdate }: CategoryEditorProps) => {
+    const [name, setName] = useState("");
+    const [emoji, setEmoji] = useState("📄");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsSubmitting(true)
+        e.preventDefault();
+        setIsSubmitting(true);
 
         try {
             const result = await createCategory({
                 name,
                 emoji,
                 order: categories.length,
-            })
+            });
 
             if (result.success) {
-                setName("")
-                setEmoji("📄")
-                // Use router.refresh() instead of onUpdate callback
-                router.refresh()
+                setName("");
+                setEmoji("📄");
+                onCategoryUpdate(); // Вызываем коллбэк для обновления категорий
             } else {
-                alert(`Failed to create category: ${result.error}`)
+                alert(`Failed to create category: ${result.error}`);
             }
         } catch (error) {
-            console.error("Error creating category:", error)
-            alert(`Error creating category: ${error instanceof Error ? error.message : String(error)}`)
+            console.error("Error creating category:", error);
+            alert(`Error creating category: ${error instanceof Error ? error.message : String(error)}`);
         } finally {
-            setIsSubmitting(false)
+            setIsSubmitting(false);
         }
-    }
+    };
 
     const handleMoveUp = async (id: number, currentOrder: number) => {
-        if (currentOrder === 0) return
+        if (currentOrder === 0) return;
 
         try {
-            await updateCategoryOrder(id, currentOrder - 1)
+            await updateCategoryOrder(id, currentOrder - 1);
 
             // Find the category that's currently at the position we're moving to
-            const categoryToMoveDown = categories.find((cat) => cat.order === currentOrder - 1)
+            const categoryToMoveDown = categories.find((cat) => cat.order === currentOrder - 1);
             if (categoryToMoveDown) {
-                await updateCategoryOrder(categoryToMoveDown.id, currentOrder)
+                await updateCategoryOrder(categoryToMoveDown.id, currentOrder);
             }
 
-            // Use router.refresh() instead of onUpdate callback
-            router.refresh()
+            onCategoryUpdate(); // Вызываем коллбэк для обновления категорий
         } catch (error) {
-            console.error("Error reordering categories:", error)
+            console.error("Error reordering categories:", error);
         }
-    }
+    };
 
     const handleMoveDown = async (id: number, currentOrder: number) => {
-        if (currentOrder === categories.length - 1) return
+        if (currentOrder === categories.length - 1) return;
 
         try {
-            await updateCategoryOrder(id, currentOrder + 1)
+            await updateCategoryOrder(id, currentOrder + 1);
 
             // Find the category that's currently at the position we're moving to
-            const categoryToMoveUp = categories.find((cat) => cat.order === currentOrder + 1)
+            const categoryToMoveUp = categories.find((cat) => cat.order === currentOrder + 1);
             if (categoryToMoveUp) {
-                await updateCategoryOrder(categoryToMoveUp.id, currentOrder)
+                await updateCategoryOrder(categoryToMoveUp.id, currentOrder);
             }
 
-            // Use router.refresh() instead of onUpdate callback
-            router.refresh()
+            onCategoryUpdate(); // Вызываем коллбэк для обновления категорий
         } catch (error) {
-            console.error("Error reordering categories:", error)
+            console.error("Error reordering categories:", error);
         }
-    }
+    };
 
     const handleDelete = async (id: number) => {
         if (
             !confirm("Are you sure you want to delete this category? All articles in this category will also be deleted.")
         ) {
-            return
+            return;
         }
 
         try {
-            await deleteCategory(id)
-            // Use router.refresh() instead of onUpdate callback
-            router.refresh()
+            await deleteCategory(id);
+            onCategoryUpdate(); // Вызываем коллбэк для обновления категорий
         } catch (error) {
-            console.error("Error deleting category:", error)
+            console.error("Error deleting category:", error);
         }
-    }
+    };
 
     return (
         <div className="space-y-6">
@@ -151,7 +146,10 @@ export const CategoryEditor = ({ categories }: CategoryEditorProps) => {
                 <h3 className="text-lg font-medium mb-4">Существующие категории</h3>
                 <div className="space-y-2">
                     {categories.map((category) => (
-                        <div key={category.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-md">
+                        <div
+                            key={category.id}
+                            className="flex items-center justify-between p-3 border border-gray-200 rounded-md"
+                        >
                             <div className="flex items-center space-x-2">
                                 <span>{category.emoji}</span>
                                 <span>{category.name}</span>
@@ -175,7 +173,10 @@ export const CategoryEditor = ({ categories }: CategoryEditorProps) => {
                                 >
                                     <ArrowDown size={16} />
                                 </button>
-                                <button onClick={() => handleDelete(category.id)} className="p-1 text-red-500 hover:text-red-700">
+                                <button
+                                    onClick={() => handleDelete(category.id)}
+                                    className="p-1 text-red-500 hover:text-red-700"
+                                >
                                     <Trash2 size={16} />
                                 </button>
                             </div>
@@ -184,5 +185,5 @@ export const CategoryEditor = ({ categories }: CategoryEditorProps) => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};

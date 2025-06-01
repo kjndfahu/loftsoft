@@ -26,30 +26,33 @@ export default function AdminKnowledgeBasePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                setLoading(true);
-                const response = await getCategories();
-                if (response.success) {
-                    setCategories(response.categories);
-                } else {
-                    setError(response.error || "Ошибка при загрузке категорий");
-                }
-            } catch (err) {
-                setError("Ошибка при загрузке категорий");
-            } finally {
-                setLoading(false);
+    const fetchCategories = async () => {
+        try {
+            setLoading(true);
+            const response = await getCategories();
+            if (response.success) {
+                setCategories(response.categories);
+            } else {
+                setError(response.error || "Ошибка при загрузке категорий");
             }
-        };
+        } catch (err) {
+            setError("Ошибка при загрузке категорий");
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchCategories();
     }, []);
 
     if (loading) {
         return (
             <div className="flex justify-center items-center h-screen">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900" aria-label="Загрузка данных"></div>
+                <div
+                    className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"
+                    aria-label="Загрузка данных"
+                ></div>
             </div>
         );
     }
@@ -59,7 +62,7 @@ export default function AdminKnowledgeBasePage() {
             <div className="flex justify-center items-center h-screen text-red-500">
                 {error}
                 <button
-                    onClick={() => window.location.reload()}
+                    onClick={() => fetchCategories()}
                     className="ml-4 px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
                     aria-label="Повторить попытку загрузки"
                 >
@@ -84,15 +87,13 @@ export default function AdminKnowledgeBasePage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 text-[#161616] gap-8">
                 <div className="bg-white border border-[#DBDEEF] rounded-lg p-6">
-                    <CategoryEditor categories={categories} />
+                    <CategoryEditor categories={categories} onCategoryUpdate={fetchCategories} />
                 </div>
 
                 <div className="bg-white border border-[#DBDEEF] rounded-lg p-6">
                     <h2 className="text-xl font-semibold mb-6">Статьи по категориям</h2>
                     {categories.length === 0 ? (
-                        <p className="text-gray-500">
-                            Нет категорий. Создайте категорию, чтобы добавить статьи.
-                        </p>
+                        <p className="text-gray-500">Нет категорий. Создайте категорию, чтобы добавить статьи.</p>
                     ) : (
                         <div className="space-y-6">
                             {categories.map((category) => (

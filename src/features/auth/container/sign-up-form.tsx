@@ -56,7 +56,7 @@ export const SignUpForm = ({
     }
 
     return (
-        <div className="relative sm:w-[360px] w-full bg-white rounded-[16px]">
+        <div onClick={e => e.stopPropagation()} className="relative sm:w-[360px] w-full bg-white rounded-[16px]">
             <form
                 onSubmit={(e) => {
                     e.preventDefault()

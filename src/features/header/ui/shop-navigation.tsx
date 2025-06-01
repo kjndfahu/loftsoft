@@ -205,6 +205,7 @@ export const ShopNavigation = () => {
 
             {isAuth && (
                 <Modal
+                    setModalOpen={setIsAuth}
                     form={
                         <LoginForm
                             handleRegistrationClick={handleRegistrationClick}
@@ -218,6 +219,7 @@ export const ShopNavigation = () => {
 
             {isRegistration && (
                 <Modal
+                    setModalOpen={setIsRegistration}
                     form={
                         <SignUpForm
                             handleLoginClick={handleLoginClick}
@@ -230,6 +232,7 @@ export const ShopNavigation = () => {
 
             {forgotPassword && (
                 <Modal
+                    setModalOpen={setForgotPassword}
                     form={
                         <RestorePasswordForm
                             handleLoginClick={handleLoginClick}

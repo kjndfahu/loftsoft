@@ -93,20 +93,20 @@ export async function updateOrderText(
     }
 }
 
-export const getUserOrders = async (userId?: number): Promise<GetUserOrdersResponse> => {
+export const getUserOrders = async (email: string): Promise<GetUserOrdersResponse> => {
     try {
-        // If no userId is provided, return an error
-        if (!userId) {
+        // If no email is provided, return an error
+        if (!email) {
             return {
                 success: false,
-                error: 'User ID is required to fetch orders',
+                error: 'Email is required to fetch orders',
             };
         }
 
-        // Fetch orders for the user, including related order items
+        // Fetch orders for the user by email, including related order items
         const orders = await prisma.order.findMany({
             where: {
-                userId,
+                email, // Query by email instead of userId
             },
             include: {
                 orderItems: {

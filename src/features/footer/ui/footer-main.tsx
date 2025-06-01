@@ -63,6 +63,7 @@ export const FooterMain = () => {
             )}
             {isAuth && (
                 <Modal
+                    setModalOpen={setIsAuth}
                     form={
                         <LoginForm
                             handleRegistrationClick={handleRegistrationClick}
@@ -75,6 +76,7 @@ export const FooterMain = () => {
             )}
             {isRegistration && (
                 <Modal
+                    setModalOpen={setIsRegistration}
                     form={
                         <SignUpForm
                             handleLoginClick={handleLoginClick}
@@ -86,6 +88,7 @@ export const FooterMain = () => {
             )}
             {forgotPassword && (
                 <Modal
+                    setModalOpen={setForgotPassword}
                     form={
                         <RestorePasswordForm
                             handleLoginClick={handleLoginClick}

@@ -65,7 +65,7 @@ export const SearchBar: FC<Props> = () => {
             />
 
             {showForm && (
-                <Modal form={<SoftRequestForm setIsClicked={setShowForm} />} />
+                <Modal setModalOpen={setShowForm} form={<SoftRequestForm setIsClicked={setShowForm} />} />
             )}
         </div>
     )

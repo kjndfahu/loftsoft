@@ -1,14 +1,17 @@
+// popular-product-modal.tsx
 "use client"
 
 import { CrossLogo, SearchLogo } from "@/shared/icons"
 import { type FC, useState, useEffect } from "react"
 import Image from "next/image"
-import {searchProductsAndCategories} from "@/enteties/product/product";
-import {addPopularProduct} from "@/enteties/popular-products/popular-products";
-
+import { searchProductsAndCategories } from "@/enteties/product/product"
+import { addPopularProduct, updatePopularProduct } from "@/enteties/popular-products/popular-products"
 
 interface Props {
     setIsClicked: (arg: boolean) => void
+    productId?: number
+    product?: Product
+    onProductChange?: () => void // Added to notify parent of changes
 }
 
 interface Product {
@@ -22,10 +25,10 @@ interface Product {
     }
 }
 
-export const PopularProductModal: FC<Props> = ({ setIsClicked }) => {
+export const PopularProductModal: FC<Props> = ({ setIsClicked, productId, product, onProductChange }) => {
     const [searchQuery, setSearchQuery] = useState("")
     const [searchResults, setSearchResults] = useState<Product[]>([])
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(product || null)
     const [isSearching, setIsSearching] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -61,13 +64,16 @@ export const PopularProductModal: FC<Props> = ({ setIsClicked }) => {
             setIsSubmitting(true)
             setError(null)
 
-            // Call the server action to add the product to popular products
-            const result = await addPopularProduct(selectedProduct.id)
+            let result
+            if (productId) {
+                result = await updatePopularProduct(productId, selectedProduct.id)
+            } else {
+                result = await addPopularProduct(selectedProduct.id)
+            }
 
             if (result.success) {
-                // Close the modal after successful save
                 setIsClicked(false)
-                // Optionally, you could add a toast notification here
+                onProductChange?.() // Trigger re-fetch
             } else {
                 setError(result.error || "Failed to save popular product")
             }
@@ -82,7 +88,9 @@ export const PopularProductModal: FC<Props> = ({ setIsClicked }) => {
     return (
         <div className="flex flex-col w-[500px] bg-white rounded-[16px] p-4">
             <div className="flex items-center justify-between mb-[40px]">
-                <h3 className="text-[22px] font-bold text-[#161616]">Выбрать товар</h3>
+                <h3 className="text-[22px] font-bold text-[#161616]">
+                    {productId ? "Изменить товар" : "Выбрать товар"}
+                </h3>
                 <button type="button" onClick={() => setIsClicked(false)} className="text-black">
                     <CrossLogo />
                 </button>
@@ -100,7 +108,6 @@ export const PopularProductModal: FC<Props> = ({ setIsClicked }) => {
                         <SearchLogo />
                     </div>
 
-                    {/* Search results dropdown */}
                     {searchResults.length > 0 && (
                         <div className="absolute top-full left-0 right-0 bg-white border border-[#DBDEEF] rounded-lg mt-1 shadow-lg z-20 max-h-[300px] overflow-y-auto">
                             {searchResults.map((product) => (
@@ -160,21 +167,21 @@ export const PopularProductModal: FC<Props> = ({ setIsClicked }) => {
                 >
                     {isSubmitting ? (
                         <span className="flex items-center justify-center">
-              <svg
-                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-              >
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Сохранение...
-            </span>
+                            <svg
+                                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                ></path>
+                            </svg>
+                            Сохранение...
+                        </span>
                     ) : (
                         "Готово"
                     )}
