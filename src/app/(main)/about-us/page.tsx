@@ -21,7 +21,7 @@ export default async function AboutUsPage() {
 
     return (
         <div
-            className="flex flex-col pb-20 mds:pt-[150px] pt-[80px] xxl:px-[250px] xl:px-[150px] mdbvp:px-[100px] sml:px-[50px] px-[20px] mds:gap-[120px] gap-[60px]">
+            className="flex overflow-x-hidden flex-col pb-20 mds:pt-[150px] pt-[80px] xxl:px-[250px] xl:px-[150px] mdbvp:px-[100px] sml:px-[50px] px-[20px] mds:gap-[120px] gap-[60px]">
             <Hero/>
             <Banner/>
             <BenefitsLoftsoft/>
