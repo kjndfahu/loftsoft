@@ -5,18 +5,37 @@ import Link from "next/link";
 import { getCategories } from "@/enteties/knowledge-base/knowledge-base";
 import { CategoryEditor } from "@/features/knowledge-base/ui/category-editor";
 
+// TypeScript interfaces for type safety
+interface Article {
+    id: string;
+    title: string;
+    emoji?: string;
+    order: number;
+}
+
+interface Category {
+    id: string;
+    name: string;
+    emoji?: string;
+    order: number;
+    articles: Article[];
+}
 
 export default function AdminKnowledgeBasePage() {
-    const [categories, setCategories] = useState([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
                 setLoading(true);
-                const { categories = [] } = await getCategories();
-                setCategories(categories);
+                const response = await getCategories();
+                if (response.success) {
+                    setCategories(response.categories);
+                } else {
+                    setError(response.error || "Ошибка при загрузке категорий");
+                }
             } catch (err) {
                 setError("Ошибка при загрузке категорий");
             } finally {
@@ -25,14 +44,29 @@ export default function AdminKnowledgeBasePage() {
         };
 
         fetchCategories();
-    }, []); // Пустой массив зависимостей, чтобы запрос выполнялся один раз при монтировании
+    }, []);
 
     if (loading) {
-        return <div className="flex justify-center items-center h-screen">Загрузка...</div>;
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900" aria-label="Загрузка данных"></div>
+            </div>
+        );
     }
 
     if (error) {
-        return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
+        return (
+            <div className="flex justify-center items-center h-screen text-red-500">
+                {error}
+                <button
+                    onClick={() => window.location.reload()}
+                    className="ml-4 px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+                    aria-label="Повторить попытку загрузки"
+                >
+                    Повторить
+                </button>
+            </div>
+        );
     }
 
     return (
@@ -42,6 +76,7 @@ export default function AdminKnowledgeBasePage() {
                 <Link
                     href="/admin-knowledge-base/create-article"
                     className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
+                    aria-label="Создать новую статью"
                 >
                     Создать статью
                 </Link>
@@ -55,7 +90,9 @@ export default function AdminKnowledgeBasePage() {
                 <div className="bg-white border border-[#DBDEEF] rounded-lg p-6">
                     <h2 className="text-xl font-semibold mb-6">Статьи по категориям</h2>
                     {categories.length === 0 ? (
-                        <p className="text-gray-500">Нет категорий. Создайте категорию, чтобы добавить статьи.</p>
+                        <p className="text-gray-500">
+                            Нет категорий. Создайте категорию, чтобы добавить статьи.
+                        </p>
                     ) : (
                         <div className="space-y-6">
                             {categories.map((category) => (
@@ -65,7 +102,16 @@ export default function AdminKnowledgeBasePage() {
                                         {category.name}
                                     </h3>
                                     {category.articles.length === 0 ? (
-                                        <p className="text-gray-500 text-sm pl-6">Нет статей в этой категории</p>
+                                        <p className="text-gray-500 text-sm pl-6">
+                                            Нет статей в этой категории.{" "}
+                                            <Link
+                                                href="/admin-knowledge-base/create-article"
+                                                className="text-blue-600 hover:text-blue-800"
+                                                aria-label={`Создать статью в категории ${category.name}`}
+                                            >
+                                                Создать статью
+                                            </Link>
+                                        </p>
                                     ) : (
                                         <ul className="space-y-2 sml:pl-6">
                                             {category.articles.map((article) => (
@@ -81,6 +127,7 @@ export default function AdminKnowledgeBasePage() {
                                                         <Link
                                                             href={`/admin-knowledge-base/edit-article/${article.id}`}
                                                             className="text-sm text-blue-600 hover:text-blue-800"
+                                                            aria-label={`Редактировать статью ${article.title}`}
                                                         >
                                                             Редактировать
                                                         </Link>
@@ -88,6 +135,7 @@ export default function AdminKnowledgeBasePage() {
                                                             href={`/knowledge-base/${article.id}`}
                                                             className="text-sm text-gray-600 hover:text-gray-800"
                                                             target="_blank"
+                                                            aria-label={`Просмотреть статью ${article.title}`}
                                                         >
                                                             Просмотр
                                                         </Link>

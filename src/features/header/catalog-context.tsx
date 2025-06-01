@@ -1,8 +1,10 @@
+// catalog-context.tsx
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { getCategories } from "@/enteties/category/category";
 import { getProductsByCategory, searchProductsAndCategories } from "@/enteties/product/product";
+import { getAllReviews } from "@/enteties/review/review";
 
 interface Category {
     id: number;
@@ -29,6 +31,23 @@ interface Product {
     updatedAt?: Date;
 }
 
+interface ReviewData {
+    id: number;
+    text: string;
+    photo: string;
+    photos: string[];
+    grade: number;
+    createdAt: string;
+    user: {
+        id: number;
+        email: string;
+    } | null;
+    item: {
+        id: number;
+        name: string;
+    } | null;
+}
+
 interface CatalogContextType {
     categories: Category[];
     products: Product[];
@@ -38,10 +57,14 @@ interface CatalogContextType {
     searchQuery: string;
     filteredCategories: Category[];
     filteredProducts: Product[];
+    reviews: ReviewData[];
+    isReviewsLoading: boolean;
+    reviewsError: string | null;
     setSelectedCategoryId: (id: number | null) => void;
     setSearchQuery: (query: string) => void;
     fetchData: () => Promise<void>;
     search: (query: string) => Promise<void>;
+    fetchReviews: () => Promise<void>;
 }
 
 const CatalogContext = createContext<CatalogContextType | undefined>(undefined);
@@ -55,6 +78,9 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const [searchQuery, setSearchQuery] = useState("");
     const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+    const [reviews, setReviews] = useState<ReviewData[]>([]);
+    const [isReviewsLoading, setIsReviewsLoading] = useState(true);
+    const [reviewsError, setReviewsError] = useState<string | null>(null);
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);
@@ -64,7 +90,6 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
             setCategories(categoriesArray);
             setFilteredCategories(categoriesArray);
 
-            // Only set initial selectedCategoryId if not already set
             if (categoriesArray.length > 0 && selectedCategoryId === null) {
                 setSelectedCategoryId(categoriesArray[0].id);
             }
@@ -89,6 +114,26 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
             setIsLoading(false);
         }
     }, []); // Removed selectedCategoryId from dependencies
+
+    const fetchReviews = useCallback(async () => {
+        setIsReviewsLoading(true);
+        try {
+            const response = await getAllReviews();
+            if (response.success && response.reviews) {
+                setReviews(response.reviews);
+                setReviewsError(null);
+            } else {
+                setReviewsError(response.error || "Failed to load reviews");
+                setReviews([]);
+            }
+        } catch (err) {
+            setReviewsError("An error occurred while fetching reviews");
+            console.error(err);
+            setReviews([]);
+        } finally {
+            setIsReviewsLoading(false);
+        }
+    }, []);
 
     const search = useCallback(
         async (query: string) => {
@@ -118,10 +163,11 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
         [categories, products]
     );
 
-    // Fetch data on mount
+    // Fetch data and reviews on mount
     useEffect(() => {
         fetchData();
-    }, [fetchData]);
+        fetchReviews();
+    }, [fetchData, fetchReviews]);
 
     // Debounced search
     useEffect(() => {
@@ -149,10 +195,14 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
             searchQuery,
             filteredCategories,
             filteredProducts,
+            reviews,
+            isReviewsLoading,
+            reviewsError,
             setSelectedCategoryId,
             setSearchQuery,
             fetchData,
             search,
+            fetchReviews,
         }),
         [
             categories,
@@ -163,8 +213,12 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
             searchQuery,
             filteredCategories,
             filteredProducts,
+            reviews,
+            isReviewsLoading,
+            reviewsError,
             fetchData,
             search,
+            fetchReviews,
         ]
     );
 

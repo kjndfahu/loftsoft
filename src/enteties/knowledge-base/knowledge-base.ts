@@ -10,12 +10,26 @@ export interface CategoryData {
     order: number
 }
 
+interface Category {
+    id: string;
+    name: string;
+    emoji?: string;
+    order: number;
+    articles: Article[];
+}
+
 interface ArticleData {
     title: string
     content: string
     categoryId: number
     order: number
     emoji?: string
+}
+
+interface GetCategoriesResponse {
+    success: boolean;
+    categories: Category[];
+    error?: string;
 }
 
 // Function to create a new category
@@ -44,7 +58,7 @@ export async function createCategory(data: CategoryData) {
 }
 
 // Function to get all categories
-export async function getCategories() {
+export async function getCategories(): Promise<GetCategoriesResponse> {
     try {
         const categories = await prisma.knowledgeBaseCategory.findMany({
             orderBy: {
@@ -63,12 +77,12 @@ export async function getCategories() {
                     },
                 },
             },
-        })
+        });
 
-        return { success: true, categories }
+        return { success: true, categories };
     } catch (error) {
-        console.error("Error fetching categories:", error)
-        return { success: false, error: "Failed to fetch categories", categories: [] }
+        console.error("Error fetching categories:", error);
+        return { success: false, error: "Failed to fetch categories", categories: [] };
     }
 }
 
