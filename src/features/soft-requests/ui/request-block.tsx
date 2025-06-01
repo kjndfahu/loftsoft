@@ -50,6 +50,7 @@ export const RequestBlock = ({ request }: RequestBlockProps) => {
 
             {isOpen && (
                 <Modal
+                    setModalOpen={setIsOpen}
                     form={<RequestAnswer setIsOpen={setIsOpen} email={request.email} requestId={request.id} />}
                 />
             )}

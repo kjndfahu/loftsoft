@@ -30,6 +30,7 @@ export default function AdminResponseForm({
             </button>
             {isModalOpen && (
                 <Modal
+                    setModalOpen={setIsModalOpen}
                     form={
                         <AdminResponseModal
                             orderId={orderId}

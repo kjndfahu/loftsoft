@@ -26,7 +26,7 @@ export const RequestAnswer: FC<Props> = ({ setIsOpen, email, requestId }) => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center gap-7 w-[500px] py-10 px-6 bg-white rounded-[16px]">
+        <div onClick={e => e.stopPropagation()} className="flex flex-col items-center justify-center gap-7 w-[500px] py-10 px-6 bg-white rounded-[16px]">
             <div className="flex items-center w-full justify-between">
                 <h3 className="text-[22px] font-bold text-[#161616]">Ответ на заявку #{requestId}</h3>
                 <div onClick={() => setIsOpen(false)}>
