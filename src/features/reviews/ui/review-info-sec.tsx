@@ -9,7 +9,7 @@ import Link from "next/link";
 export const ReviewInfoSec = () => {
     return (
         <div
-            className="flex flex-col lg:w-[480px] md:w-[400px] mds:w-[320px] w-full items-center mds:justify-center justify-between overflow-hidden gap-4 mds:px-0 px-[23px] pt-16 mds:pt-7 lg:pb-10 pb-5 relative info rounded-[16px]">
+            className="flex flex-col w-full items-center mds:justify-center justify-between overflow-hidden gap-4 mds:px-0 px-[23px] pt-16 mds:pt-7 lg:pb-10 pb-5 relative info rounded-[16px]">
             <div className="flex flex-col lg:gap-4 gap-3">
                 <h2 className="lg:text-[20px] text-[17px] text-center lg:leading-[25px] leading-[23px] text-white font-medium">
                     Нам доверяют более 3000 человек
