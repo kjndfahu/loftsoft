@@ -1,6 +1,6 @@
 "use client"
 
-import {CrossLogo, ThreeLines} from "@/shared/icons"
+import { CrossLogo, ThreeLines } from "@/shared/icons"
 import { useState } from "react"
 import { OpenSearchBar } from "@/features/header/ui/open-search-bar"
 import { AnimatePresence, motion } from "framer-motion"
@@ -35,9 +35,8 @@ export const CatalogBtn = () => {
                             fill="#5069E8"
                         />
                     </svg>
-
                 ) : (
-                    <ThreeLines/>
+                    <ThreeLines />
                 )}
                 Каталог
             </div>
@@ -47,10 +46,10 @@ export const CatalogBtn = () => {
                     <>
                         <motion.div
                             className="fixed top-[130px] inset-0 bg-black/50 z-40"
-                            initial={{opacity: 0}}
-                            animate={{opacity: 1}}
-                            exit={{opacity: 0}}
-                            transition={{duration: 0.3}}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
                             onClick={() => setIsOpen(false)}
                         />
 
@@ -60,6 +59,7 @@ export const CatalogBtn = () => {
                             isLoading={isLoading}
                             selectedCategoryId={selectedCategoryId}
                             onCategorySelect={handleCategorySelect}
+                            onClose={() => setIsOpen(false)}
                         />
                     </>
                 )}

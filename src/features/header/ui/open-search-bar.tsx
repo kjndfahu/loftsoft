@@ -34,6 +34,7 @@ interface OpenSearchBarProps {
     isLoading: boolean
     selectedCategoryId: number | null
     onCategorySelect: (categoryId: number) => void
+    onClose: () => void
 }
 
 export const OpenSearchBar = ({
@@ -42,6 +43,7 @@ export const OpenSearchBar = ({
                                   isLoading,
                                   selectedCategoryId,
                                   onCategorySelect,
+                                  onClose,
                               }: OpenSearchBarProps) => {
     const categoryTitle = useMemo(() => {
         if (!selectedCategoryId) return ""
@@ -135,6 +137,7 @@ export const OpenSearchBar = ({
                                                 <Link
                                                     key={product.id}
                                                     href={`/catalog/${product.id}`}
+                                                    onClick={onClose}
                                                     className="text-[16px] text-[#4E4F56] cursor-pointer font-medium hover:text-[#5069E8] transition-colors"
                                                 >
                                                     {product.name}

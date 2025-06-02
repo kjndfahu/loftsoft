@@ -1,15 +1,13 @@
 "use client"
 
-
-
 interface CatalogBarProps {
     categories: {
-        id: number;
-        photo: string;
-        title: string;
-        description: string;
-        createdAt: Date;
-        updateAt: Date;
+        id: number
+        photo: string
+        title: string
+        description: string
+        createdAt: Date
+        updateAt: Date
     }[]
     onCategorySelect: (categoryId: number) => void
     selectedCategoryId: number | null
@@ -27,10 +25,9 @@ export const CatalogBar = ({ categories, onCategorySelect, selectedCategoryId }:
                     <div
                         key={category.id}
                         onClick={() => onCategorySelect(category.id)}
-                        className={`${
-                            selectedCategoryId === category.id
-                                ? "bg-[#F5F7FF] rounded-r-[8px] border-r-[4px] border-[#5069E8]"
-                                : "bg-white"
+                        className={`${selectedCategoryId === category.id
+                            ? "bg-[#F5F7FF] rounded-r-[8px] border-r-[4px] border-[#5069E8]"
+                            : "bg-white"
                         } cursor-pointer text-[14px] text-[#161616] font-medium px-4 py-[11px]`}
                     >
                         {category.title}
