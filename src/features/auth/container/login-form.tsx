@@ -61,62 +61,65 @@ export const LoginForm = ({
     }
 
     return (
-        <div onClick={e => e.stopPropagation()} className="relative sm:w-[360px] w-full bg-white rounded-[16px]">
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault() // Prevent default form submission
-                    handleSubmit(e)
-                }}
-                className="flex flex-col gap-4 w-full pt-4 pb-7 px-6"
-            >
-                <div className="flex items-center justify-between">
-                    <h3 className="text-[22px] font-bold text-[#161616]">Войти</h3>
-                    <div onClick={() => setIsAuth(false)}>
-                        <CrossLogo className="w-6 h-6 cursor-pointer" />
-                    </div>
-                </div>
-
-                <LoginInputs
-                    generalError={generalError}
-                    formData={formData}
-                    errors={errors}
-                    handleChange={handleChangeWithErrorClear}
-                />
-
-                <h3
-                    onClick={handleRestoreClick}
-                    className="text-[16px] font-semibold text-[#161616] self-end underline cursor-pointer"
+        <div onClick={e => e.stopPropagation()} className="flex items-center justify-center sm:w-[70vw] w-[96vw]">
+            <div  className="relative sm:w-[360px] w-full bg-white rounded-[16px]">
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault() // Prevent default form submission
+                        handleSubmit(e)
+                    }}
+                    className="flex flex-col gap-4 w-full pt-4 pb-7 px-6"
                 >
-                    Забыли пароль?
-                </h3>
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-[22px] font-bold text-[#161616]">Войти</h3>
+                        <div onClick={() => setIsAuth(false)}>
+                            <CrossLogo className="w-6 h-6 cursor-pointer"/>
+                        </div>
+                    </div>
 
-                {generalError && !isLoading && (
-                    <GeneralError generalError={generalError} />
+                    <LoginInputs
+                        generalError={generalError}
+                        formData={formData}
+                        errors={errors}
+                        handleChange={handleChangeWithErrorClear}
+                    />
+
+                    <h3
+                        onClick={handleRestoreClick}
+                        className="text-[16px] font-semibold text-[#161616] self-end underline cursor-pointer"
+                    >
+                        Забыли пароль?
+                    </h3>
+
+                    {generalError && !isLoading && (
+                        <GeneralError generalError={generalError}/>
+                    )}
+
+                    <div className="flex flex-col pt-2 gap-2">
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="text-[16px] h-[42px] font-semibold text-white rounded-full bg-[#161616] disabled:opacity-70"
+                        >
+                            Войти
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleRegistrationClick}
+                            className="text-[16px] h-[42px] font-semibold text-[#161616] border-[1px] border-[#DBDEEF] rounded-full bg-white"
+                        >
+                            Зарегистрироваться
+                        </button>
+                    </div>
+                </form>
+
+                {isLoading && (
+                    <div
+                        className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-[16px]">
+                        <Loader/>
+                    </div>
                 )}
-
-                <div className="flex flex-col pt-2 gap-2">
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="text-[16px] h-[42px] font-semibold text-white rounded-full bg-[#161616] disabled:opacity-70"
-                    >
-                        Войти
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleRegistrationClick}
-                        className="text-[16px] h-[42px] font-semibold text-[#161616] border-[1px] border-[#DBDEEF] rounded-full bg-white"
-                    >
-                        Зарегистрироваться
-                    </button>
-                </div>
-            </form>
-
-            {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-[16px]">
-                    <Loader />
-                </div>
-            )}
+            </div>
         </div>
     )
 }

@@ -56,69 +56,73 @@ export const SignUpForm = ({
     }
 
     return (
-        <div onClick={e => e.stopPropagation()} className="relative sm:w-[360px] w-full bg-white rounded-[16px]">
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault()
-                    handleSubmit(e)
-                }}
-                className="flex flex-col gap-4 w-full pt-4 pb-7 px-6"
-            >
-                <div className="flex items-center justify-between">
-                    <h3 className="text-[22px] font-bold text-[#161616]">Регистрация</h3>
-                    <div onClick={() => setIsRegistration(false)}>
-                        <CrossLogo className="w-6 h-6 cursor-pointer" />
+        <div onClick={e => e.stopPropagation()} className="flex items-center justify-center sm:w-[70vw] w-[96vw]">
+            <div className="relative sm:w-[360px] w-full bg-white rounded-[16px]">
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault()
+                        handleSubmit(e)
+                    }}
+                    className="flex flex-col gap-4 w-full pt-4 pb-7 px-6"
+                >
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-[22px] font-bold text-[#161616]">Регистрация</h3>
+                        <div onClick={() => setIsRegistration(false)}>
+                            <CrossLogo className="w-6 h-6 cursor-pointer"/>
+                        </div>
                     </div>
-                </div>
 
-                <SignUpInputs formData={formData} errors={errors} handleChange={handleChangeWithErrorClear} />
+                    <SignUpInputs formData={formData} errors={errors} handleChange={handleChangeWithErrorClear}/>
 
-                <div className="flex items-start gap-3">
-                    <input
-                        className={`border-[2px] mt-[5px] ${errors.agreement ? "border-red-500" : "bg-[#CACDDC]"}`}
-                        type="checkbox"
-                        name="agreement"
-                        checked={isAgreed}
-                        onChange={handleChangeWithErrorClear}
-                    />
-                    <p className={`text-[12px] leading-[15px] font-medium ${errors.agreement ? "text-red-500" : "text-[#6A6B75]"}`}>
-                        Ознакомлен и согласен с условиями
-                        <br />
-                        <Link href="/privacy-policy">
+                    <div className="flex items-start gap-3">
+                        <input
+                            className={`border-[2px] mt-[5px] ${errors.agreement ? "border-red-500" : "bg-[#CACDDC]"}`}
+                            type="checkbox"
+                            name="agreement"
+                            checked={isAgreed}
+                            onChange={handleChangeWithErrorClear}
+                        />
+                        <p className={`text-[12px] leading-[15px] font-medium ${errors.agreement ? "text-red-500" : "text-[#6A6B75]"}`}>
+                            Ознакомлен и согласен с условиями
+                            <br/>
+                            <Link href="/privacy-policy">
                             <span className={`font-bold ${errors.agreement ? "text-red-500" : "text-[#161616]"}`}>
                             политики конфиденциальности.
                         </span>
-                        </Link>
-                    </p>
-                </div>
+                            </Link>
+                        </p>
+                    </div>
 
-                {generalError && !isLoading && (
-                    <GeneralError generalError={generalError}/>
+                    {generalError && !isLoading && (
+                        <GeneralError generalError={generalError}/>
+                    )}
+
+                    <div className="flex flex-col pt-2 gap-2">
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="text-[16px] h-[42px] font-semibold text-white rounded-full bg-[#161616] disabled:opacity-70 flex items-center justify-center"
+                        >
+                            Зарегистрироваться
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleLoginClick}
+                            className="text-[16px] h-[42px] font-semibold text-[#161616] border-[1px] border-[#DBDEEF] rounded-full bg-white"
+                        >
+                            Войти
+                        </button>
+                    </div>
+                </form>
+
+                {isLoading && (
+                    <div
+                        className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-[16px]">
+                        <Loader/>
+                    </div>
                 )}
-
-                <div className="flex flex-col pt-2 gap-2">
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="text-[16px] h-[42px] font-semibold text-white rounded-full bg-[#161616] disabled:opacity-70 flex items-center justify-center"
-                    >
-                        Зарегистрироваться
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleLoginClick}
-                        className="text-[16px] h-[42px] font-semibold text-[#161616] border-[1px] border-[#DBDEEF] rounded-full bg-white"
-                    >
-                        Войти
-                    </button>
-                </div>
-            </form>
-
-            {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-[16px]">
-                    <Loader />
-                </div>
-            )}
+            </div>
         </div>
+
     )
 }
