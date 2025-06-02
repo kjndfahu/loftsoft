@@ -1,5 +1,11 @@
+'use client'
+
 import {HelpLogo} from "@/shared/icons";
 import Link from "next/link";
+import {useState} from "react";
+import {Modal} from "@/shared/modal";
+import {HelpModal} from "@/features/header/ui/help-popup";
+import {Help} from "@/features/burger-menu/ui/help";
 
 export const Sections = () => {
     const sectionsList = [
@@ -20,6 +26,9 @@ export const Sections = () => {
             text: "Ответы на вопросы"
         },
         ]
+
+    const [isOpen, setIsOpen] = useState(false);
+    console.log(isOpen)
     return (
         <div className="flex flex-col py-6 gap-3">
             <h2 className="font-normal text-[13px] leading-[17px] text-[#6A6B75]">Разделы</h2>
@@ -31,10 +40,15 @@ export const Sections = () => {
                 ))}
             </div>
             <button
+                onClick={() => setIsOpen(true)}
                 className="flex items-center justify-center rounded-full gap-2 text-[16px] text-white font-semibold leading-4 h-[42px] bg-[#5069E8] mt-1">
                 <HelpLogo color="#ffffff"/>
                 Помощь
             </button>
+
+            {isOpen && (
+                <Modal setModalOpen={setIsOpen} form={ <Help/> }/>
+            )}
         </div>
     )
 }
