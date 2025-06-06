@@ -91,11 +91,11 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
 
         const payAnyWayUrl = "https://payanyway.ru/merchant/pay"; // Уточните у поддержки
         const merchantId = "10338738";
-        const secretKey = "7ha7Tr4r8%#2";
+        const secretKey = "7hqyTp4r8%#2";
         const orderId = result.orderId || Date.now().toString();
         const amount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const currency = "RUB";
-        const returnUrl = "https://loftsoft.store/successful-payment";
+        const returnUrl = "https://loftsoft.store/successfull-payment";
 
         const signatureData = `${merchantId}:${orderId}:${amount.toFixed(2)}:${currency}:${secretKey}`;
         const signature = require('crypto').createHash('md5').update(signatureData).digest('hex');
