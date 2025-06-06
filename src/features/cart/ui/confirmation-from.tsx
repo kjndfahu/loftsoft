@@ -88,22 +88,33 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
             await sendTelegramNotification(email, items);
             clearCart();
 
-            // Prepare PayAnyWay payment parameters
-            const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            // Check if PayAnyWay is reachable (basic check)
             const payAnyWayUrl = "https://payanyway.com/merchant/payment";
-            const params = new URLSearchParams({
-                MNT_ID: "10338738", // Your merchant ID from the image
-                MNT_CURRENCY_CODE: "THB", // Currency code from the image
-                MNT_AMOUNT: totalAmount.toString(),
-                MNT_DESCRIPTION: `Order from ${email}`,
-                MNT_TEST_MODE: "0", // Set to "1" for test mode if needed
-                MNT_SIGNATURE: "7na7Tr4r8%#2", // Your signature from the image
-                MNT_SUCCESS_URL: "https://loftsoft.store/successful-payment",
-                MNT_FAIL_URL: "https://loftsoft.store/failed-payment",
-            }).toString();
+            try {
+                const response = await fetch(payAnyWayUrl, { method: "HEAD" });
+                if (!response.ok) {
+                    throw new Error("PayAnyWay is not reachable");
+                }
 
-            // Redirect to PayAnyWay payment page
-            window.location.href = `${payAnyWayUrl}?${params}`;
+                // Prepare PayAnyWay payment parameters
+                const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+                const params = new URLSearchParams({
+                    MNT_ID: "10338738",
+                    MNT_CURRENCY_CODE: "THB",
+                    MNT_AMOUNT: totalAmount.toString(),
+                    MNT_DESCRIPTION: `Order from ${email}`,
+                    MNT_TEST_MODE: "0",
+                    MNT_SIGNATURE: "7na7Tr4r8%#2",
+                    MNT_SUCCESS_URL: "https://loftsoft.store/successful-payment",
+                    MNT_FAIL_URL: "https://loftsoft.store/failed-payment",
+                }).toString();
+
+                // Redirect to PayAnyWay payment page
+                window.location.href = `${payAnyWayUrl}?${params}`;
+            } catch (err) {
+                setError("Payment service is currently unavailable. Please try again later or contact support.");
+                setIsSubmitting(false);
+            }
         }
     };
 
