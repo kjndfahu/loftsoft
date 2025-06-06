@@ -43,6 +43,7 @@ export const KnowledgeBaseArticleEditor = ({
     const [blocks, setBlocks] = useState<ContentBlock[]>([])
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const [mediaFiles, setMediaFiles] = useState<{ [blockId: string]: File }>({})
 
     // Initialize blocks from article content if editing
     useEffect(() => {
@@ -52,13 +53,11 @@ export const KnowledgeBaseArticleEditor = ({
                 if (Array.isArray(parsedContent)) {
                     setBlocks(parsedContent)
                 } else {
-                    setBlocks([
-                        {
-                            id: "1",
-                            type: "text",
-                            content: typeof parsedContent === "string" ? parsedContent : article.content,
-                        },
-                    ])
+                    setBlocks([{
+                        id: "1",
+                        type: "text",
+                        content: typeof parsedContent === "string" ? parsedContent : article.content,
+                    }])
                 }
             } catch (e) {
                 setBlocks([{ id: "1", type: "text", content: article.content }])
@@ -81,6 +80,11 @@ export const KnowledgeBaseArticleEditor = ({
     // Remove a content block
     const removeBlock = (id: string) => {
         setBlocks(blocks.filter((block) => block.id !== id))
+        setMediaFiles((prev) => {
+            const newMediaFiles = { ...prev }
+            delete newMediaFiles[id]
+            return newMediaFiles
+        })
     }
 
     // Update a content block
@@ -92,26 +96,34 @@ export const KnowledgeBaseArticleEditor = ({
     const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>, blockId: string) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0]
+            setMediaFiles((prev) => ({ ...prev, [blockId]: file }))
             const blockIndex = blocks.findIndex((block) => block.id === blockId)
 
             if (blockIndex !== -1) {
                 setIsLoading(true)
                 try {
-                    console.log("Uploading file:", file.name)
                     const formData = new FormData()
+                    const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL
+                    const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+
+                    if (!CLOUDINARY_UPLOAD_URL || !CLOUDINARY_UPLOAD_PRESET) {
+                        throw new Error("Cloudinary configuration is missing")
+                    }
+
                     formData.append("file", file)
+                    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
+
                     const uploadResult = await uploadKnowledgeBaseMedia(formData)
-                    console.log("Upload result:", uploadResult)
                     if (uploadResult.success) {
                         const updatedBlocks = [...blocks]
                         updatedBlocks[blockIndex].content = uploadResult.url
                         setBlocks(updatedBlocks)
                     } else {
-                        alert(`Failed to upload image: ${uploadResult.error}`)
+                        throw new Error(`Failed to upload image: ${uploadResult.error}`)
                     }
                 } catch (error) {
                     console.error("Error uploading image:", error)
-                    alert("Error uploading image")
+                    alert(`Failed to upload image: ${error instanceof Error ? error.message : String(error)}`)
                 } finally {
                     setIsLoading(false)
                 }
@@ -155,9 +167,36 @@ export const KnowledgeBaseArticleEditor = ({
         setIsLoading(true)
 
         try {
+            // Validate Cloudinary configuration
+            const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL
+            const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+            if (!CLOUDINARY_UPLOAD_URL || !CLOUDINARY_UPLOAD_PRESET) {
+                throw new Error("Cloudinary configuration is missing")
+            }
+
+            // Upload any pending media files
+            const updatedBlocks = await Promise.all(blocks.map(async (block) => {
+                if (block.type === "image" && mediaFiles[block.id] && !block.content) {
+                    const formData = new FormData()
+                    formData.append("file", mediaFiles[block.id])
+                    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
+
+                    const uploadResult = await uploadKnowledgeBaseMedia(formData)
+                    if (uploadResult.success) {
+                        return { ...block, content: uploadResult.url }
+                    } else {
+                        throw new Error(`Failed to upload image for block ${block.id}: ${uploadResult.error}`)
+                    }
+                }
+                return block
+            }))
+
+            // Combine and serialize content blocks
+            const contentJson = JSON.stringify(updatedBlocks)
+
             const articleData = {
                 title,
-                content: JSON.stringify(blocks),
+                content: contentJson,
                 emoji,
                 categoryId,
                 order: article?.order || 0,
@@ -174,7 +213,7 @@ export const KnowledgeBaseArticleEditor = ({
                 router.push("/admin-knowledge-base")
                 router.refresh()
             } else {
-                alert(`Failed to ${isEdit ? "update" : "create"} article: ${result.error}`)
+                throw new Error(`Failed to ${isEdit ? "update" : "create"} article: ${result.error}`)
             }
         } catch (error) {
             console.error(`Error ${isEdit ? "updating" : "creating"} article:`, error)
@@ -286,10 +325,7 @@ export const KnowledgeBaseArticleEditor = ({
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    onChange={(e) => {
-                                        console.log("File input triggered", e.target.files)
-                                        handleMediaUpload(e, block.id)
-                                    }}
+                                    onChange={(e) => handleMediaUpload(e, block.id)}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
                             </div>
@@ -402,6 +438,17 @@ export const KnowledgeBaseArticleEditor = ({
                             </option>
                         ))}
                     </select>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium mb-1">Эмодзи (необязательно)</label>
+                    <input
+                        type="text"
+                        value={emoji}
+                        onChange={(e) => setEmoji(e.target.value)}
+                        placeholder="Введите эмодзи (например, 📝)"
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                    />
                 </div>
             </div>
 

@@ -10,7 +10,7 @@ export const Banners = () => {
             <div className="flex flex-col mds:w-1/2 w-full relative sm:gap-4 gap-2.5 mds:p-10 p-5 sm:h-[536px] h-[240px] banner-1 rounded-[20px]">
                 <h2 className="z-[3] text-white md:text-[34px] sm:text-[24px] text-[20px] md:leading-[40px] sm:leading-[28px] leading-[24px] font-semibold">Открой полный доступ<br/> к
                     программам и сервисам</h2>
-                <p className="z-[3] md:text-[16px] text-[14px] md:leading-6 leading-4">Лицензионные ключи для софта и онлайн-<br/>сервисов. Быстрая
+                <p className="z-[3] md:text-[16px] sml:text-[14px] text-[12px] text-white md:leading-6 sml:leading-4 leading-[14px]">Лицензионные ключи для софта и онлайн-<br/>сервисов. Быстрая
                     доставка, гарантия<br/> активации и круглосуточная поддержка 24/7</p>
                 <div className="flex z-[3] gap-[10px]">
                     <Link href="/catalog">

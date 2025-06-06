@@ -3,22 +3,18 @@
 import { revalidatePath } from "next/cache"
 import { prisma } from "../../../prisma/prisma-client"
 
-// Interface for article creation
 interface ArticleData {
     title: string
     photo: string
     content: string
 }
 
-// Function to create a new article
 export async function createArticle(data: ArticleData) {
     try {
-        // Validate required fields
         if (!data.title || !data.content) {
             return { success: false, error: "Title and content are required" }
         }
 
-        // Create the article
         const article = await prisma.article.create({
             data: {
                 title: data.title,

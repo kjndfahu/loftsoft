@@ -1,4 +1,4 @@
-"use client"; // Указываем, что это клиентский компонент
+"use client";
 
 import { useState, useEffect } from "react";
 import { getCategories } from "@/enteties/knowledge-base/knowledge-base";

@@ -3,52 +3,30 @@
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import {
-    ImageIcon,
-    Video,
-    Quote,
-    LinkIcon,
-    ShoppingBag,
-    Copy,
-    Trash2,
-    Plus,
-    Save,
-    ArrowLeft,
-    ChevronDown,
-    List,
-} from "lucide-react"
+import dynamic from "next/dynamic"
 import Image from "next/image"
-import { createArticle, uploadArticleMedia, getArticles } from "@/enteties/articles/article"
+import { ImageIcon, Save, ArrowLeft } from "lucide-react"
+import { createArticle, uploadArticleMedia } from "@/enteties/articles/article"
 import { getAllProducts } from "@/enteties/product/product"
 
-type ContentBlockType = "text" | "image" | "video" | "quote" | "link" | "product" | "relatedArticle" | "tableOfContents"
+// Dynamically import ReactQuill to avoid SSR issues
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false })
+import "react-quill/dist/quill.snow.css"
 
-interface ContentBlock {
-    id: string
-    type: ContentBlockType
-    content: any
-}
-
-interface TableOfContentsSection {
-    id: string
-    title: string
-    content: string
-}
-
-interface TableOfContentsBlock {
-    sections: TableOfContentsSection[]
-}
-
-interface SelectOption {
-    value: string
-    label: string
-}
-
-interface CustomSelectProps {
-    options: SelectOption[]
-    value: string
-    onChange: (value: string) => void
-    placeholder: string
+// Quill modules configuration
+const quillModules = {
+    toolbar: [
+        [{ header: [1, 2, 3, false] }],
+        ["bold", "italic", "underline", "strike"],
+        ["blockquote", "code-block"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        ["link", "image"],
+        [{ align: [] }],
+        ["clean"],
+    ],
+    clipboard: {
+        matchVisual: false,
+    },
 }
 
 interface Article {
@@ -59,100 +37,151 @@ interface Article {
     createdAt: string
 }
 
-const CustomSelect = ({ options, value, onChange, placeholder }: CustomSelectProps) => {
-    const [isOpen, setIsOpen] = useState(false)
-    const selectRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
-                setIsOpen(false)
-            }
-        }
-
-        document.addEventListener("mousedown", handleClickOutside)
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside)
-        }
-    }, [])
-
-    const selectedOption = options.find((option) => option.value === value)
-
-    return (
-        <div className="relative" ref={selectRef}>
-            <div
-                className="flex items-center justify-between border border-gray-300 rounded-md px-3 py-2 cursor-pointer bg-white"
-                onClick={() => setIsOpen(!isOpen)}
-            >
-                <span className={`${!selectedOption ? "text-gray-500" : ""}`}>
-                    {selectedOption ? selectedOption.label : placeholder}
-                </span>
-                <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "transform rotate-180" : ""}`} />
-            </div>
-
-            {isOpen && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                    {options.map((option) => (
-                        <div
-                            key={option.value}
-                            className="px-3 py-2 cursor-pointer hover:bg-gray-100"
-                            onClick={() => {
-                                onChange(option.value)
-                                setIsOpen(false)
-                            }}
-                        >
-                            {option.label}
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    )
+interface Product {
+    id: string
+    name: string
+    price: number | string
+    photo: string
 }
+
+type ArticleContentBlock =
+    | { type: "text"; content: string }
+    | { type: "image"; content: string; caption?: string }
+    | { type: "quote"; content: { text: string; author: string } }
+    | { type: "section"; id: string; title: string; content: string }
+    | { type: "link"; content: { url: string; title: string } }
+    | { type: "product"; content: { id: string; name: string; price: number; photo: string } }
+    | { type: "video"; content: { url: string; caption?: string } }
+    | { type: "relatedArticle"; content: { id: number; title: string; photo: string } }
 
 export const ArticleEditor = () => {
     const router = useRouter()
     const [title, setTitle] = useState("")
     const [mainImage, setMainImage] = useState<string | null>(null)
     const [mainImageFile, setMainImageFile] = useState<File | null>(null)
-    const [blocks, setBlocks] = useState<ContentBlock[]>([{ id: "1", type: "text", content: "" }])
+    const [content, setContent] = useState("")
+    const [selectedProducts, setSelectedProducts] = useState<ArticleContentBlock[]>([]) // New state for products
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [products, setProducts] = useState<any[]>([])
-    const [articles, setArticles] = useState<Article[]>([])
     const [isLoading, setIsLoading] = useState(false)
-    const [showProductSelect, setShowProductSelect] = useState(false)
     const [isHoveringMainImage, setIsHoveringMainImage] = useState(false)
+    const [products, setProducts] = useState<Product[]>([])
+    const [showProductSelector, setShowProductSelector] = useState(false)
     const mainImageInputRef = useRef<HTMLInputElement>(null)
+    const quillRef = useRef<any>(null)
 
     // Cloudinary configuration
     const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL
     const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
 
-    // Fetch products and articles on component mount
+    // Fetch products on mount
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchProducts = async () => {
             try {
-                // Fetch products
-                const productResult = await getAllProducts()
-                if (productResult.success) {
-                    setProducts(productResult.products)
+                const result = await getAllProducts()
+                if (result.success && result.products) {
+                    setProducts(result.products)
                 } else {
-                    console.error("Failed to fetch products:", productResult.error)
-                }
-
-                // Fetch articles
-                const articleResult = await getArticles()
-                if (articleResult.success) {
-                    setArticles(articleResult.articles)
-                } else {
-                    console.error("Failed to fetch articles:", productResult.error)
+                    console.error("Failed to fetch products:", result.error)
                 }
             } catch (error) {
-                console.error("Error fetching data:", error)
+                console.error("Error fetching products:", error)
             }
         }
+        fetchProducts()
+    }, [])
 
-        fetchData()
+    // Parse Quill HTML content into ArticleContentBlock array
+    const parseQuillContentToBlocks = (html: string): ArticleContentBlock[] => {
+        const blocks: ArticleContentBlock[] = []
+        const parser = new DOMParser()
+        const doc = parser.parseFromString(html || "<p></p>", "text/html")
+        const elements = doc.body.childNodes
+
+        elements.forEach((element, index) => {
+            if (element.nodeName === "P") {
+                const paragraphs = element.innerHTML.split(/<br\s*\/?>/i).filter((p) => p.trim())
+                paragraphs.forEach((para) => {
+                    if (para) {
+                        const tempDiv = document.createElement("div")
+                        tempDiv.innerHTML = para
+                        const link = tempDiv.querySelector("a")
+                        if (link) {
+                            const url = link.getAttribute("href") || "#"
+                            const title = link.textContent?.trim() || "Link"
+                            blocks.push({ type: "link", content: { url, title } })
+                        } else {
+                            blocks.push({ type: "text", content: para })
+                        }
+                    }
+                })
+            } else if (element.nodeName === "BLOCKQUOTE") {
+                const text = element.textContent?.trim()
+                if (text) {
+                    blocks.push({
+                        type: "quote",
+                        content: { text, author: "" },
+                    })
+                }
+            } else if (element.nodeName === "IMG") {
+                const src = (element as HTMLImageElement).src
+                const alt = (element as HTMLImageElement).alt || ""
+                if (src) {
+                    blocks.push({ type: "image", content: src, caption: alt })
+                }
+            } else if (element.nodeName === "H1" || element.nodeName === "H2" || element.nodeName === "H3") {
+                const title = element.textContent?.trim()
+                if (title) {
+                    blocks.push({
+                        type: "section",
+                        id: `section-${index}-${Math.random().toString(36).substr(2, 9)}`,
+                        title,
+                        content: "",
+                    })
+                }
+            }
+        })
+
+        return blocks
+    }
+
+    // Handle clipboard paste for images
+    useEffect(() => {
+        const quill = quillRef.current?.getEditor()
+        if (quill) {
+            quill.root.addEventListener("paste", async (e: ClipboardEvent) => {
+                const items = e.clipboardData?.items
+                if (items) {
+                    for (const item of items) {
+                        if (item.type.includes("image")) {
+                            e.preventDefault()
+                            const file = item.getAsFile()
+                            if (file) {
+                                try {
+                                    const formData = new FormData()
+                                    if (!CLOUDINARY_UPLOAD_URL || !CLOUDINARY_UPLOAD_PRESET) {
+                                        throw new Error("Cloudinary configuration is missing")
+                                    }
+                                    formData.append("file", file)
+                                    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
+
+                                    const uploadResult = await uploadArticleMedia(formData)
+                                    if (uploadResult.success) {
+                                        const range = quill.getSelection(true)
+                                        quill.insertEmbed(range.index, "image", uploadResult.url)
+                                        quill.setSelection(range.index + 1)
+                                    } else {
+                                        throw new Error(`Failed to upload pasted image: ${uploadResult.error}`)
+                                    }
+                                } catch (error) {
+                                    console.error("Error uploading pasted image:", error)
+                                    alert(`Failed to upload pasted image: ${error instanceof Error ? error.message : String(error)}`)
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+        }
     }, [])
 
     // Handle main image upload
@@ -187,73 +216,19 @@ export const ArticleEditor = () => {
         }
     }
 
-    // Add a new content block
-    const addBlock = (type: ContentBlockType, content?: any) => {
-        const newBlock: ContentBlock = {
-            id: Date.now().toString(),
-            type,
-            content:
-                type === "text"
-                    ? ""
-                    : type === "quote"
-                        ? { text: "", author: "" }
-                        : type === "tableOfContents"
-                            ? { sections: [{ id: Date.now().toString(), title: "", content: "" }] }
-                            : type === "product" && content
-                                ? content
-                                : type === "image" || type === "video"
-                                    ? { file: null, url: "", caption: "" }
-                                    : null,
+    // Handle product selection
+    const handleProductInsert = (product: Product) => {
+        const productBlock: ArticleContentBlock = {
+            type: "product",
+            content: {
+                id: product.id,
+                name: product.name,
+                price: Number(product.price),
+                photo: product.photo || "/placeholder.svg",
+            },
         }
-        setBlocks([...blocks, newBlock])
-        setShowProductSelect(false)
-    }
-
-    // Remove a content block
-    const removeBlock = (id: string) => {
-        setBlocks(blocks.filter((block) => block.id !== id))
-    }
-
-    // Update a content block
-    const updateBlock = (id: string, content: any) => {
-        setBlocks(blocks.map((block) => (block.id === id ? { ...block, content } : block)))
-    }
-
-    // Handle media upload for a block
-    const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>, blockId: string) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0]
-            const blockIndex = blocks.findIndex((block) => block.id === blockId)
-            const block = blocks[blockIndex]
-
-            if (blockIndex !== -1 && (block.type === "image" || block.type === "video")) {
-                try {
-                    const formData = new FormData()
-                    if (!CLOUDINARY_UPLOAD_URL || !CLOUDINARY_UPLOAD_PRESET) {
-                        throw new Error("Cloudinary configuration is missing")
-                    }
-                    formData.append("file", file)
-                    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
-                    formData.append("type", block.type)
-
-                    const uploadResult = await uploadArticleMedia(formData)
-                    if (uploadResult.success) {
-                        const updatedBlocks = [...blocks]
-                        updatedBlocks[blockIndex].content = {
-                            file,
-                            url: uploadResult.url,
-                            caption: blocks[blockIndex].content?.caption || "",
-                        }
-                        setBlocks(updatedBlocks)
-                    } else {
-                        throw new Error(`Failed to upload ${block.type}: ${uploadResult.error}`)
-                    }
-                } catch (error) {
-                    console.error(`Error uploading ${block.type}:`, error)
-                    alert(`Failed to upload ${block.type}: ${error instanceof Error ? error.message : String(error)}`)
-                }
-            }
-        }
+        setSelectedProducts((prev) => [...prev, productBlock])
+        setShowProductSelector(false)
     }
 
     // Handle form submission
@@ -282,35 +257,15 @@ export const ArticleEditor = () => {
                 }
             }
 
-            const processedBlocks = await Promise.all(
-                blocks.map(async (block) => {
-                    if (["image", "video"].includes(block.type) && block.content?.file) {
-                        const formData = new FormData()
-                        formData.append("file", block.content.file)
-                        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
-                        formData.append("type", block.type)
-
-                        const uploadResult = await uploadArticleMedia(formData)
-                        if (uploadResult.success) {
-                            return {
-                                ...block,
-                                content: {
-                                    url: uploadResult.url,
-                                    caption: block.content.caption || "",
-                                },
-                            }
-                        } else {
-                            throw new Error(`Failed to upload ${block.type}: ${uploadResult.error}`)
-                        }
-                    }
-                    return block
-                })
-            )
+            // Combine Quill content and selected products
+            const contentBlocks = parseQuillContentToBlocks(content)
+            const allBlocks: ArticleContentBlock[] = [...contentBlocks, ...selectedProducts]
+            const contentJson = JSON.stringify(allBlocks)
 
             const result = await createArticle({
                 title,
                 photo: mainImageUrl,
-                content: JSON.stringify(processedBlocks),
+                content: contentJson,
             })
 
             if (result.success) {
@@ -329,287 +284,53 @@ export const ArticleEditor = () => {
         }
     }
 
-    // Render the appropriate editor for each block type
-    const renderBlockEditor = (block: ContentBlock) => {
-        switch (block.type) {
-            case "text":
-                return (
-                    <textarea
-                        value={block.content}
-                        onChange={(e) => updateBlock(block.id, e.target.value)}
-                        placeholder="Введите текст..."
-                        className="w-full min-h-[150px] p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
-                    />
-                )
+    // Handle image insertion via toolbar
+    const handleImageInsert = async () => {
+        const input = document.createElement("input")
+        input.setAttribute("type", "file")
+        input.setAttribute("accept", "image/*")
+        input.click()
 
-            case "image":
-                return (
-                    <div className="space-y-4">
-                        {block.content?.url ? (
-                            <div className="relative h-64 w-full">
-                                <Image
-                                    src={block.content.url || "/placeholder.svg"}
-                                    alt="Preview"
-                                    fill
-                                    className="object-contain"
-                                />
-                            </div>
-                        ) : (
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-                                <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
-                                <p className="mt-2 text-sm text-gray-500">Нажмите для загрузки изображения</p>
-                            </div>
-                        )}
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleMediaUpload(e, block.id)}
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                        />
-                        {block.content?.url && (
-                            <input
-                                type="text"
-                                placeholder="Подпись к изображению (опционально)"
-                                value={block.content.caption || ""}
-                                onChange={(e) =>
-                                    updateBlock(block.id, {
-                                        ...block.content,
-                                        caption: e.target.value,
-                                    })
-                                }
-                                className="w-full p-2 border border-gray-300 rounded-md"
-                            />
-                        )}
-                    </div>
-                )
+        input.onchange = async () => {
+            if (input.files && input.files[0]) {
+                const file = input.files[0]
+                try {
+                    const formData = new FormData()
+                    if (!CLOUDINARY_UPLOAD_URL || !CLOUDINARY_UPLOAD_PRESET) {
+                        throw new Error("Cloudinary configuration is missing")
+                    }
+                    formData.append("file", file)
+                    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
 
-            case "video":
-                return (
-                    <div className="space-y-4">
-                        {block.content?.url ? (
-                            <div className="relative h-64 w-full">
-                                <video src={block.content.url} controls className="w-full h-full" />
-                            </div>
-                        ) : (
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-                                <Video className="mx-auto h-12 w-12 text-gray-400" />
-                                <p className="mt-2 text-sm text-gray-500">Нажмите для загрузки видео</p>
-                            </div>
-                        )}
-                        <input
-                            type="file"
-                            accept="video/*"
-                            onChange={(e) => handleMediaUpload(e, block.id)}
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                        />
-                        {block.content?.url && (
-                            <input
-                                type="text"
-                                placeholder="Подпись к видео (опционально)"
-                                value={block.content.caption || ""}
-                                onChange={(e) =>
-                                    updateBlock(block.id, {
-                                        ...block.content,
-                                        caption: e.target.value,
-                                    })
-                                }
-                                className="w-full p-2 border border-gray-300 rounded-md"
-                            />
-                        )}
-                    </div>
-                )
-
-            case "quote":
-                return (
-                    <div className="space-y-4">
-                        <textarea
-                            value={block.content?.text || ""}
-                            onChange={(e) => updateBlock(block.id, { ...block.content, text: e.target.value })}
-                            placeholder="Введите цитату..."
-                            className="w-full min-h-[100px] p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
-                        />
-                        <input
-                            type="text"
-                            value={block.content?.author || ""}
-                            onChange={(e) => updateBlock(block.id, { ...block.content, author: e.target.value })}
-                            placeholder="Автор цитаты"
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                        />
-                    </div>
-                )
-
-            case "link":
-                return (
-                    <div className="space-y-4">
-                        <input
-                            type="url"
-                            value={block.content?.url || ""}
-                            onChange={(e) => updateBlock(block.id, { ...block.content, url: e.target.value })}
-                            placeholder="URL ссылки"
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                        />
-                        <input
-                            type="text"
-                            value={block.content?.title || ""}
-                            onChange={(e) => updateBlock(block.id, { ...block.content, title: e.target.value })}
-                            placeholder="Название ссылки (опционально)"
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                        />
-                        <input
-                            type="text"
-                            value={block.content?.description || ""}
-                            onChange={(e) => updateBlock(block.id, { ...block.content, description: e.target.value })}
-                            placeholder="Описание ссылки (опционально)"
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                        />
-                    </div>
-                )
-
-            case "product":
-                return (
-                    <div className="space-y-4">
-                        <CustomSelect
-                            options={products.map((product) => ({ value: product.id.toString(), label: product.name }))}
-                            value={block.content?.id?.toString() || ""}
-                            onChange={(value) => {
-                                const product = products.find((p) => p.id.toString() === value)
-                                updateBlock(block.id, product)
-                            }}
-                            placeholder="Выберите товар"
-                        />
-                        {block.content && (
-                            <div className="border rounded-lg p-4">
-                                <div className="flex items-center gap-4">
-                                    {block.content.photo && (
-                                        <div className="relative h-16 w-16">
-                                            <Image
-                                                src={block.content.photo || "/placeholder.svg"}
-                                                alt={block.content.name}
-                                                fill
-                                                className="object-cover rounded-md"
-                                            />
-                                        </div>
-                                    )}
-                                    <div>
-                                        <h4 className="font-medium">{block.content.name}</h4>
-                                        <p className="text-sm text-gray-500">{block.content.price}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )
-
-            case "relatedArticle":
-                return (
-                    <div className="space-y-4">
-                        <CustomSelect
-                            options={articles.map((article) => ({ value: article.id.toString(), label: article.title }))}
-                            value={block.content?.id?.toString() || ""}
-                            onChange={(value) => {
-                                const article = articles.find((a) => a.id.toString() === value)
-                                updateBlock(block.id, article)
-                            }}
-                            placeholder="Выберите статью"
-                        />
-                        {block.content && (
-                            <div className="border rounded-lg p-4">
-                                <div className="flex items-center gap-4">
-                                    {block.content.photo && (
-                                        <div className="relative h-16 w-16">
-                                            <Image
-                                                src={block.content.photo || "/placeholder.svg"}
-                                                alt={block.content.title}
-                                                fill
-                                                className="object-cover rounded-md"
-                                            />
-                                        </div>
-                                    )}
-                                    <div>
-                                        <h4 className="font-medium">{block.content.title}</h4>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )
-
-            case "tableOfContents":
-                return (
-                    <div className="space-y-4">
-                        <div className="mb-4">
-                            <h4 className="font-medium mb-2">Предпросмотр оглавления</h4>
-                            <div className="pl-4 border-l-2 border-gray-300">
-                                {(block.content?.sections || []).map((section: TableOfContentsSection, idx: number) => (
-                                    <div key={section.id} className="text-sm py-1">
-                                        {section.title || "Без заголовка"}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        {(block.content?.sections || []).map((section: TableOfContentsSection, idx: number) => (
-                            <div key={section.id} className="border p-4 rounded-md">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h4 className="font-medium">Раздел {idx + 1}</h4>
-                                    <div className="flex gap-2">
-                                        {idx > 0 && (
-                                            <button
-                                                type="button"
-                                                className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
-                                                onClick={() => {
-                                                    const newSections = [...block.content.sections]
-                                                    newSections.splice(idx, 1)
-                                                    updateBlock(block.id, { ...block.content, sections: newSections })
-                                                }}
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="space-y-3">
-                                    <input
-                                        type="text"
-                                        value={section.title || ""}
-                                        onChange={(e) => {
-                                            const newSections = [...block.content.sections]
-                                            newSections[idx] = { ...section, title: e.target.value }
-                                            updateBlock(block.id, { ...block.content, sections: newSections })
-                                        }}
-                                        placeholder="Заголовок раздела"
-                                        className="w-full p-2 border border-gray-300 rounded-md"
-                                    />
-                                    <textarea
-                                        value={section.content || ""}
-                                        onChange={(e) => {
-                                            const newSections = [...block.content.sections]
-                                            newSections[idx] = { ...section, content: e.target.value }
-                                            updateBlock(block.id, { ...block.content, sections: newSections })
-                                        }}
-                                        placeholder="Содержание раздела..."
-                                        className="w-full min-h-[100px] p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                        <button
-                            type="button"
-                            onClick={() => {
-                                const newSections = [...(block.content?.sections || [])]
-                                newSections.push({ id: Date.now().toString(), title: "", content: "" })
-                                updateBlock(block.id, { ...block.content, sections: newSections })
-                            }}
-                            className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
-                        >
-                            <Plus size={16} /> Добавить раздел
-                        </button>
-                    </div>
-                )
-
-            default:
-                return null
+                    const uploadResult = await uploadArticleMedia(formData)
+                    if (uploadResult.success) {
+                        const quill = quillRef.current?.getEditor()
+                        if (quill) {
+                            const range = quill.getSelection(true)
+                            quill.insertEmbed(range.index, "image", uploadResult.url)
+                            quill.setSelection(range.index + 1)
+                        } else {
+                            console.error("Quill editor not initialized")
+                        }
+                    } else {
+                        throw new Error(`Failed to upload image: ${uploadResult.error}`)
+                    }
+                } catch (error) {
+                    console.error("Error uploading image:", error)
+                    alert(`Failed to upload image: ${error instanceof Error ? error.message : String(error)}`)
+                }
+            }
         }
     }
+
+    // Add custom image handler to Quill toolbar
+    useEffect(() => {
+        const quill = quillRef.current?.getEditor()
+        if (quill) {
+            const toolbar = quill.getModule("toolbar")
+            toolbar.addHandler("image", handleImageInsert)
+        }
+    }, [])
 
     return (
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -621,6 +342,13 @@ export const ArticleEditor = () => {
                 >
                     <ArrowLeft size={16} />
                     Назад
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setShowProductSelector(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-black rounded-md hover:bg-gray-300 transition-colors"
+                >
+                    Добавить продукт
                 </button>
                 <button
                     type="submit"
@@ -641,19 +369,19 @@ export const ArticleEditor = () => {
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Введите заголовок статьи"
+                        placeholder="Input article title"
                         required
-                        className="w-full p-2 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400"
+                        className="w-full p-2 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring-gray-400"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium mb-1">Главное изображение</label>
+                    <label className="block text-sm font-medium mb-1">Main image</label>
                     <div
-                        className={`relative h-[250px] rounded-[16px] overflow-hidden ${
+                        className={`relative h-[250px] rounded-[40px] overflow-hidden ${
                             mainImage ? "" : "bg-[#B9BCCB]"
                         } cursor-pointer transition-all duration-200 ${
-                            isHoveringMainImage && !mainImage ? "bg-[#A4A8BA]" : ""
+                            isHoveringMainImage ? "bg-[#A4A8BA]" : ""
                         } flex items-center justify-center`}
                         onClick={handleMainImageClick}
                         onMouseEnter={() => setIsHoveringMainImage(true)}
@@ -661,18 +389,18 @@ export const ArticleEditor = () => {
                     >
                         {mainImage ? (
                             <>
-                                <Image src={mainImage} alt="Main article image" fill style={{ objectFit: "cover" }} />
-                                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
-                                    <div className="bg-white p-2 rounded-full opacity-0 hover:opacity-100 transition-all duration-200">
-                                        <ImageIcon className="w-6 h-6 text-[#161616]" />
+                                <Image src={mainImage} alt="Main article image" fill className="object-cover" />
+                                <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-all duration-200 flex items-center justify-center">
+                                    <div className="bg-white p-2 rounded-full">
+                                        <ImageIcon className="w-10 h-10 text-[#161616]" />
                                     </div>
                                 </div>
                             </>
                         ) : (
                             <div className="flex flex-col items-center justify-center text-white">
                                 <ImageIcon className="w-10 h-10 mb-2" />
-                                <p className="text-sm font-medium">Нажмите, чтобы загрузить изображение</p>
-                                <p className="text-xs opacity-70 mt-1">Рекомендуемый размер: 424x133px</p>
+                                <p className="text-sm font-medium">Click to upload an image</p>
+                                <p className="text-xs opacity-70 mt-1">Recommended size: 424x426 pixels</p>
                             </div>
                         )}
                         <input
@@ -687,131 +415,96 @@ export const ArticleEditor = () => {
                 </div>
             </div>
 
-            <div className="space-y-8 text-black">
-                <h2 className="text-xl font-semibold">Содержание статьи</h2>
-
-                {blocks.map((block, index) => (
-                    <div key={block.id} className="border rounded-lg p-4 space-y-4">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <span className="font-medium">Блок {index + 1}:</span>
-                                <span className="text-sm text-gray-500">
-                                    {block.type === "text"
-                                        ? "Текст"
-                                        : block.type === "image"
-                                            ? "Изображение"
-                                            : block.type === "video"
-                                                ? "Видео"
-                                                : block.type === "quote"
-                                                    ? "Цитата"
-                                                    : block.type === "link"
-                                                        ? "Ссылка"
-                                                        : block.type === "product"
-                                                            ? "Товар"
-                                                            : block.type === "tableOfContents"
-                                                                ? "Текст с оглавлением"
-                                                                : "Похожая статья"}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
+            {/* Display selected products */}
+            {selectedProducts.length > 0 && (
+                <div className="space-y-4 text-black">
+                    <h2 className="text-xl font-semibold">Selected Products</h2>
+                    <div className="space-y-2">
+                        {selectedProducts.map((product, index) => (
+                            <div
+                                key={`selected-product-${index}`}
+                                className="flex items-center justify-between p-4 border rounded-md"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <Image
+                                        src={product.content.photo}
+                                        alt={product.content.name}
+                                        width={50}
+                                        height={50}
+                                        className="object-cover rounded-md"
+                                    />
+                                    <div>
+                                        <p className="font-medium">{product.content.name}</p>
+                                        <p className="text-sm text-gray-500">{product.content.price} ₽</p>
+                                    </div>
+                                </div>
                                 <button
                                     type="button"
-                                    className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
-                                    onClick={() => {
-                                        const newBlock = { ...block, id: Date.now().toString() }
-                                        setBlocks([...blocks.slice(0, index + 1), newBlock, ...blocks.slice(index + 1)])
-                                    }}
-                                >
-                                    <Copy size={16} />
-                                </button>
-                                <button
-                                    type="button"
-                                    className={`p-1 text-gray-500 hover:text-gray-700 transition-colors ${blocks.length === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
-                                    onClick={() => removeBlock(block.id)}
-                                    disabled={blocks.length === 1}
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-                            </div>
-                        </div>
-                        {renderBlockEditor(block)}
-                    </div>
-                ))}
-
-                <div className="flex flex-wrap gap-2 pt-4">
-                    <button
-                        type="button"
-                        onClick={() => addBlock("text")}
-                        className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
-                    >
-                        <Plus size={16} /> Текст
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => addBlock("image")}
-                        className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
-                    >
-                        <ImageIcon size={16} /> Изображение
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => addBlock("video")}
-                        className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
-                    >
-                        <Video size={16} /> Видео
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => addBlock("quote")}
-                        className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
-                    >
-                        <Quote size={16} /> Цитата
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => addBlock("link")}
-                        className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
-                    >
-                        <LinkIcon size={16} /> Ссылка
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setShowProductSelect(true)}
-                        className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
-                    >
-                        <ShoppingBag size={16} /> Товар
-                    </button>
-                    {showProductSelect && (
-                        <div className="w-full mt-2">
-                            <CustomSelect
-                                options={products.map((product) => ({ value: product.id.toString(), label: product.name }))}
-                                value=""
-                                onChange={(value) => {
-                                    const product = products.find((p) => p.id.toString() === value)
-                                    if (product) {
-                                        addBlock("product", product)
+                                    onClick={() =>
+                                        setSelectedProducts((prev) => prev.filter((_, i) => i !== index))
                                     }
-                                }}
-                                placeholder="Выберите товар"
-                            />
-                        </div>
-                    )}
-                    <button
-                        type="button"
-                        onClick={() => addBlock("relatedArticle")}
-                        className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
-                    >
-                        <Copy size={16} /> Похожая статья
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => addBlock("tableOfContents")}
-                        className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
-                    >
-                        <List size={16} /> Текст с оглавлением
-                    </button>
+                                    className="text-red-500 hover:text-red-600"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                 </div>
+            )}
+
+            <div className="space-y-4 text-black">
+                <h2 className="text-xl font-semibold">Article Content</h2>
+                <ReactQuill
+                    ref={quillRef}
+                    value={content}
+                    onChange={setContent}
+                    modules={quillModules}
+                    placeholder="Type article content..."
+                    className="border border-gray-300 rounded-lg h-[500px]"
+                />
             </div>
+
+            {/* Product Selector Modal */}
+            {showProductSelector && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+                        <h2 className="text-xl font-bold mb-4">Select Products</h2>
+                        {products.length > 0 ? (
+                            <div className="space-y-4">
+                                {products.map((product) => (
+                                    <div
+                                        key={product.id}
+                                        className="flex items-center gap-4 p-2 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                                        onClick={() => handleProductInsert(product)}
+                                    >
+                                        <Image
+                                            src={product.photo || "default-image-url.jpg"}
+                                            alt={product.name}
+                                            width={50}
+                                            height={50}
+                                            className="object-cover rounded-md"
+                                        />
+                                        <div>
+                                            <p className="font-medium">{product.name}</p>
+                                            <p className="text-sm text-gray-500">{product.price} </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-gray-500">No products found.</p>
+                        )}
+                        <button
+                            type="button"
+                            onClick={() => setShowProductSelector(false)}
+                            className="mt-4 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </form>
     )
 }

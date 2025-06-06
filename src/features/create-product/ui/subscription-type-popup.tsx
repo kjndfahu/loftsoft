@@ -40,7 +40,7 @@ export const SubscriptionTypePopup: React.FC<SubscriptionTypePopupProps> = ({ on
     return (
         <div className="relative" ref={popupRef}>
             <div
-                className="flex w-full h-[46px] items-center justify-between px-4 border-[1px] border-[#B9BCCB] rounded-[20px] cursor-pointer"
+                className="flex w-full text-black h-[46px] items-center justify-between px-4 border-[1px] border-[#B9BCCB] rounded-[20px] cursor-pointer"
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <span className="truncate">

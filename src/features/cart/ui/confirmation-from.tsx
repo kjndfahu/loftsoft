@@ -5,7 +5,7 @@ import { createOrder } from "@/enteties/orders/orders";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
-import Cookies from "js-cookie"; // Import js-cookie
+import Cookies from "js-cookie";
 
 interface OrderItem {
     id: string;
@@ -79,16 +79,31 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
 
         const result = await createOrder(email, items);
 
-        setIsSubmitting(false);
-
         if (!result.success) {
             setError(result.error || "Не удалось создать заказ");
+            setIsSubmitting(false);
         } else {
             // Store email in cookies
             Cookies.set("userEmail", email, { expires: 7 }); // Expires in 7 days
             await sendTelegramNotification(email, items);
             clearCart();
-            router.push("/successful-payment");
+
+            // Prepare PayAnyWay payment parameters
+            const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            const payAnyWayUrl = "https://payanyway.com/merchant/payment";
+            const params = new URLSearchParams({
+                MNT_ID: "10338738", // Your merchant ID from the image
+                MNT_CURRENCY_CODE: "THB", // Currency code from the image
+                MNT_AMOUNT: totalAmount.toString(),
+                MNT_DESCRIPTION: `Order from ${email}`,
+                MNT_TEST_MODE: "0", // Set to "1" for test mode if needed
+                MNT_SIGNATURE: "7na7Tr4r8%#2", // Your signature from the image
+                MNT_SUCCESS_URL: "https://loftsoft.store/successful-payment",
+                MNT_FAIL_URL: "https://loftsoft.store/failed-payment",
+            }).toString();
+
+            // Redirect to PayAnyWay payment page
+            window.location.href = `${payAnyWayUrl}?${params}`;
         }
     };
 
