@@ -89,13 +89,14 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
         await sendTelegramNotification(email, items);
         clearCart();
 
-        const payAnyWayUrl = "https://payanyway.ru/merchant/pay"; // Уточните у поддержки
+        const payAnyWayUrl = "https://payanyway.ru/assistant.html"; // Уточните у поддержки
         const merchantId = "10338738";
         const secretKey = "7hqyTp4r8%#2";
         const orderId = result.orderId || Date.now().toString();
         const amount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const currency = "RUB";
         const returnUrl = "https://loftsoft.store/successfull-payment";
+        const subscriberId = email; // Используем email как идентификатор покупателя
 
         const signatureData = `${merchantId}:${orderId}:${amount.toFixed(2)}:${currency}:${secretKey}`;
         const signature = require('crypto').createHash('md5').update(signatureData).digest('hex');
@@ -112,7 +113,8 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
             MNT_SUCCESS_URL: returnUrl,
             MNT_FAIL_URL: returnUrl,
             MNT_DESCRIPTION: `Order #${orderId} from ${email}`,
-            MNT_CMS: "custom", // Указываем кастомную CMS
+            MNT_SUBSCRIBER_ID: subscriberId,
+            MNT_CMS: "custom",
         }).toString();
 
         const paymentUrl = `${payAnyWayUrl}?${payAnyWayParams}`;
