@@ -89,31 +89,34 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
         await sendTelegramNotification(email, items);
         clearCart();
 
-        const payAnyWayUrl = "https://payanyway.ru/merchant/pay";
+        const payAnyWayUrl = "https://payanyway.ru/merchant/pay"; // Уточните у поддержки
         const merchantId = "10338738";
         const secretKey = "7ha7Tr4r8%#2";
-        const orderId = result.orderId || Date.now().toString(); // Убедимся, что orderId — строка
+        const orderId = result.orderId || Date.now().toString();
         const amount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const currency = "RUB";
         const returnUrl = "https://loftsoft.store/successful-payment";
 
         const signatureData = `${merchantId}:${orderId}:${amount.toFixed(2)}:${currency}:${secretKey}`;
         const signature = require('crypto').createHash('md5').update(signatureData).digest('hex');
+        console.log("Signature Data:", signatureData);
+        console.log("Signature:", signature);
 
         const payAnyWayParams = new URLSearchParams({
             MNT_ID: merchantId,
-            MNT_TRANSACTION_ID: String(orderId), // Явно преобразуем в строку
-            MNT_AMOUNT: amount.toFixed(2), // Уже строка
+            MNT_TRANSACTION_ID: orderId,
+            MNT_AMOUNT: amount.toFixed(2),
             MNT_CURRENCY_CODE: currency,
             MNT_TEST_MODE: "1",
-            MNT_SIGNATURE: String(signature), // Явно преобразуем в строку
+            MNT_SIGNATURE: signature,
             MNT_SUCCESS_URL: returnUrl,
             MNT_FAIL_URL: returnUrl,
             MNT_DESCRIPTION: `Order #${orderId} from ${email}`,
+            MNT_CMS: "custom", // Указываем кастомную CMS
         }).toString();
 
         const paymentUrl = `${payAnyWayUrl}?${payAnyWayParams}`;
-        console.log("Payment URL:", paymentUrl); // Для отладки
+        console.log("Payment URL:", paymentUrl);
         window.location.href = paymentUrl;
     };
 
