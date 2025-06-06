@@ -82,40 +82,40 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
         if (!result.success) {
             setError(result.error || "Не удалось создать заказ");
             setIsSubmitting(false);
-        } else {
-            // Store email in cookies
-            Cookies.set("userEmail", email, { expires: 7 }); // Expires in 7 days
-            await sendTelegramNotification(email, items);
-            clearCart();
-
-            // Check if PayAnyWay is reachable (basic check)
-            const payAnyWayUrl = "https://payanyway.com/merchant/payment";
-            try {
-                const response = await fetch(payAnyWayUrl, { method: "HEAD" });
-                if (!response.ok) {
-                    throw new Error("PayAnyWay is not reachable");
-                }
-
-                // Prepare PayAnyWay payment parameters
-                const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-                const params = new URLSearchParams({
-                    MNT_ID: "10338738",
-                    MNT_CURRENCY_CODE: "THB",
-                    MNT_AMOUNT: totalAmount.toString(),
-                    MNT_DESCRIPTION: `Order from ${email}`,
-                    MNT_TEST_MODE: "0",
-                    MNT_SIGNATURE: "7na7Tr4r8%#2",
-                    MNT_SUCCESS_URL: "https://loftsoft.store/successful-payment",
-                    MNT_FAIL_URL: "https://loftsoft.store/failed-payment",
-                }).toString();
-
-                // Redirect to PayAnyWay payment page
-                window.location.href = `${payAnyWayUrl}?${params}`;
-            } catch (err) {
-                setError("Payment service is currently unavailable. Please try again later or contact support.");
-                setIsSubmitting(false);
-            }
+            return;
         }
+
+        // Store email in cookies
+        Cookies.set("userEmail", email, { expires: 7 }); // Expires in 7 days
+        await sendTelegramNotification(email, items);
+        clearCart();
+
+        // PayAnyWay integration
+        const payAnyWayUrl = "https://payanyway.ru/merchant/pay";
+        const merchantId = "10338738"; // Replace with your actual Merchant ID from PayAnyWay
+        const secretKey = "7ha7Tr4r8%#2"; // Replace with your actual Secret Key from PayAnyWay
+        const orderId = result.orderId || Date.now().toString(); // Ensure orderId is a string
+        const amount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const currency = "RUB";
+        const returnUrl = "https://loftsoft.store/successful-payment";
+
+        const signatureData = `${merchantId}:${orderId}:${amount}:${currency}:${secretKey}`;
+        const signature = require('crypto').createHash('md5').update(signatureData).digest('hex');
+
+        const payAnyWayParams = new URLSearchParams({
+            MNT_ID: merchantId,
+            MNT_TRANSACTION_ID: orderId.toString(), // Ensure it's a string
+            MNT_AMOUNT: amount.toFixed(2), // Ensure it's a string
+            MNT_CURRENCY_CODE: currency,
+            MNT_TEST_MODE: "0", // Set to "1" for test mode if needed
+            MNT_SIGNATURE: signature,
+            MNT_SUCCESS_URL: returnUrl,
+            MNT_FAIL_URL: returnUrl, // You can set a different fail URL if needed
+            MNT_DESCRIPTION: `Order #${orderId} from ${email}`,
+        }).toString();
+
+        const paymentUrl = `${payAnyWayUrl}?${payAnyWayParams}`;
+        window.location.href = paymentUrl;
     };
 
     return (
