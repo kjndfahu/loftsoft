@@ -85,32 +85,30 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
             return;
         }
 
-        // Store email in cookies
-        Cookies.set("userEmail", email, { expires: 7 }); // Expires in 7 days
+        Cookies.set("userEmail", email, { expires: 7 });
         await sendTelegramNotification(email, items);
         clearCart();
 
-        // PayAnyWay integration
         const payAnyWayUrl = "https://payanyway.ru/merchant/pay";
-        const merchantId = "10338738"; // Replace with your actual Merchant ID from PayAnyWay
-        const secretKey = "7ha7Tr4r8%#2"; // Replace with your actual Secret Key from PayAnyWay
+        const merchantId = "10338738";
+        const secretKey = "7ha7Tr4r8%#2";
         const orderId = result.orderId || Date.now().toString(); // Ensure orderId is a string
         const amount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const currency = "RUB";
         const returnUrl = "https://loftsoft.store/successful-payment";
 
-        const signatureData = `${merchantId}:${orderId}:${amount}:${currency}:${secretKey}`;
+        const signatureData = `${merchantId}:${orderId}:${amount.toFixed(2)}:${currency}:${secretKey}`;
         const signature = require('crypto').createHash('md5').update(signatureData).digest('hex');
 
         const payAnyWayParams = new URLSearchParams({
             MNT_ID: merchantId,
-            MNT_TRANSACTION_ID: orderId.toString(), // Ensure it's a string
-            MNT_AMOUNT: amount.toFixed(2), // Ensure it's a string
+            MNT_TRANSACTION_ID: orderId.toString(), // Explicitly convert to string
+            MNT_AMOUNT: amount.toFixed(2), // Already a string due to toFixed
             MNT_CURRENCY_CODE: currency,
-            MNT_TEST_MODE: "0", // Set to "1" for test mode if needed
-            MNT_SIGNATURE: signature,
+            MNT_TEST_MODE: "1",
+            MNT_SIGNATURE: signature.toString(), // Ensure signature is a string
             MNT_SUCCESS_URL: returnUrl,
-            MNT_FAIL_URL: returnUrl, // You can set a different fail URL if needed
+            MNT_FAIL_URL: returnUrl,
             MNT_DESCRIPTION: `Order #${orderId} from ${email}`,
         }).toString();
 
