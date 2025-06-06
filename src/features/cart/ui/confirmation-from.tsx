@@ -91,28 +91,29 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
 
         const payAnyWayUrl = "https://payanyway.ru/merchant/pay";
         const merchantId = "10338738";
-        const secretKey = "7hqyTp4r8%#2";
-        const orderId = result.orderId || Date.now().toString(); // Ensure orderId is a string
+        const secretKey = "7ha7Tr4r8%#2";
+        const orderId = result.orderId || Date.now().toString(); // Убедимся, что orderId — строка
         const amount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const currency = "RUB";
-        const returnUrl = "https://loftsoft.store/successfull-payment";
+        const returnUrl = "https://loftsoft.store/successful-payment";
 
         const signatureData = `${merchantId}:${orderId}:${amount.toFixed(2)}:${currency}:${secretKey}`;
         const signature = require('crypto').createHash('md5').update(signatureData).digest('hex');
 
         const payAnyWayParams = new URLSearchParams({
             MNT_ID: merchantId,
-            MNT_TRANSACTION_ID: orderId.toString(), // Explicitly convert to string
-            MNT_AMOUNT: amount.toFixed(2), // Already a string due to toFixed
+            MNT_TRANSACTION_ID: String(orderId), // Явно преобразуем в строку
+            MNT_AMOUNT: amount.toFixed(2), // Уже строка
             MNT_CURRENCY_CODE: currency,
             MNT_TEST_MODE: "1",
-            MNT_SIGNATURE: signature.toString(), // Ensure signature is a string
+            MNT_SIGNATURE: String(signature), // Явно преобразуем в строку
             MNT_SUCCESS_URL: returnUrl,
             MNT_FAIL_URL: returnUrl,
             MNT_DESCRIPTION: `Order #${orderId} from ${email}`,
         }).toString();
 
         const paymentUrl = `${payAnyWayUrl}?${payAnyWayParams}`;
+        console.log("Payment URL:", paymentUrl); // Для отладки
         window.location.href = paymentUrl;
     };
 
