@@ -89,16 +89,17 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
         await sendTelegramNotification(email, items);
         clearCart();
 
-        const payAnyWayUrl = "https://payanyway.ru/assistant.htm"; // Уточните у поддержки
+        const payAnyWayUrl = "https://payanyway.ru/assistant.htm";
         const merchantId = "10338738";
         const secretKey = "7hqyTp4r8%#2";
         const orderId = result.orderId || Date.now().toString();
         const amount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const currency = "RUB";
         const returnUrl = "https://loftsoft.store/successfull-payment";
-        const subscriberId = email; // Используем email как идентификатор покупателя
+        const subscriberId = email;
+        const testMode = "0";
 
-        const signatureData = `${merchantId}:${orderId}:${amount.toFixed(2)}:${currency}:${secretKey}`;
+        const signatureData = `${merchantId}${orderId}${amount.toFixed(2)}${currency}${subscriberId}${testMode}${secretKey}`;
         const signature = require('crypto').createHash('md5').update(signatureData).digest('hex');
         console.log("Signature Data:", signatureData);
         console.log("Signature:", signature);
@@ -108,7 +109,7 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
             MNT_TRANSACTION_ID: orderId,
             MNT_AMOUNT: amount.toFixed(2),
             MNT_CURRENCY_CODE: currency,
-            MNT_TEST_MODE: "0",
+            MNT_TEST_MODE: testMode,
             MNT_SIGNATURE: signature,
             MNT_SUCCESS_URL: returnUrl,
             MNT_FAIL_URL: returnUrl,
