@@ -89,7 +89,7 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
         await sendTelegramNotification(email, items);
         clearCart();
 
-        const payAnyWayUrl = "https://payanyway.ru/assistant.html"; // Уточните у поддержки
+        const payAnyWayUrl = "https://payanyway.ru/assistant.htm"; // Уточните у поддержки
         const merchantId = "10338738";
         const secretKey = "7hqyTp4r8%#2";
         const orderId = result.orderId || Date.now().toString();
@@ -108,7 +108,7 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
             MNT_TRANSACTION_ID: orderId,
             MNT_AMOUNT: amount.toFixed(2),
             MNT_CURRENCY_CODE: currency,
-            MNT_TEST_MODE: "1",
+            MNT_TEST_MODE: "0",
             MNT_SIGNATURE: signature,
             MNT_SUCCESS_URL: returnUrl,
             MNT_FAIL_URL: returnUrl,
