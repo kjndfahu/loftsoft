@@ -2,11 +2,11 @@
 
 import { PayType } from "@/features/cart/ui/pay-type";
 import { createOrder } from "@/enteties/orders/orders";
+import { generatePaymentUrl } from "@/server-actions"; // Adjust path as needed
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import Cookies from "js-cookie";
-import crypto from 'crypto';
 
 interface OrderItem {
     id: string;
@@ -90,40 +90,16 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
         await sendTelegramNotification(email, items);
         clearCart();
 
-        const payAnyWayUrl = "https://payanyway.ru/assistant.htm";
-        const merchantId = "10338738";
-        const secretKey = "7hqyTp4r8%#2";
-        const orderId = result.orderId || Date.now().toString();
-        const amount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-        const currency = "RUB";
-        const returnUrl = "https://loftsoft.store/successfull-payment";
-        const subscriberId = email;
-        const testMode = "0";
-
-        const signatureData = `${merchantId}${orderId}${amount.toFixed(2)}${currency}${subscriberId}${testMode}${secretKey}`;
-        const signature = await crypto.subtle.digest('MD5', new TextEncoder().encode(signatureData)).then((hash) => {
-            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-        });
-        console.log("Signature Data:", signatureData);
-        console.log("Signature:", signature);
-
-        const payAnyWayParams = new URLSearchParams({
-            MNT_ID: merchantId,
-            MNT_TRANSACTION_ID: orderId,
-            MNT_AMOUNT: amount.toFixed(2),
-            MNT_CURRENCY_CODE: currency,
-            MNT_TEST_MODE: testMode,
-            MNT_SIGNATURE: signature,
-            MNT_SUCCESS_URL: returnUrl,
-            MNT_FAIL_URL: returnUrl,
-            MNT_DESCRIPTION: `Order #${orderId} from ${email}`,
-            MNT_SUBSCRIBER_ID: subscriberId,
-            MNT_CMS: "custom",
-        }).toString();
-
-        const paymentUrl = `${payAnyWayUrl}?${payAnyWayParams}`;
-        console.log("Payment URL:", paymentUrl);
-        window.location.href = paymentUrl;
+        try {
+            const orderId = result.orderId || Date.now().toString();
+            const paymentUrl = await generatePaymentUrl(email, items, orderId);
+            console.log("Payment URL:", paymentUrl);
+            window.location.href = paymentUrl;
+        } catch (err) {
+            console.error("Error generating payment URL:", err);
+            setError("Не удалось создать платежную ссылку");
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -143,15 +119,18 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
                     />
                 </div>
             </div>
-            {items.some(item => item.type === 'SUBSCRIPTION') && (
+            {items.some((item) => item.type === "SUBSCRIPTION") && (
                 <div className="flex flex-col text-[12px] text-[#6A6B75] gap-[20px]">
                     <p>У вас есть подписка:</p>
                     <p>
-                        Необходимо будет указать логин и пароль от аккаунта, на который нужно активировать подписку.
-                        Один аккаунт не может быть использован для нескольких одинаковых подписок. Подробности указаны на страницах товаров.
+                        Необходимо будет указать логин и пароль от аккаунта, на который нужно
+                        активировать подписку. Один аккаунт не может быть использован для
+                        нескольких одинаковых подписок. Подробности указаны на страницах
+                        товаров.
                     </p>
                     <p>
-                        Наш специалист активирует подписку в ближайшее время. При вопросах обратитесь в поддержку. Спасибо за выбор нашего сервиса!
+                        Наш специалист активирует подписку в ближайшее время. При вопросах
+                        обратитесь в поддержку. Спасибо за выбор нашего сервиса!
                     </p>
                 </div>
             )}
@@ -161,7 +140,9 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
                 <p className="text-[14px] text-[#6A6B75]">
                     Ознакомлен и согласен с условиями{" "}
                     <Link href="/privacy-policy">
-                        <span className="font-bold text-[#161616]">политики конфиденциальности.</span>
+            <span className="font-bold text-[#161616]">
+              политики конфиденциальности.
+            </span>
                     </Link>
                 </p>
             </div>
