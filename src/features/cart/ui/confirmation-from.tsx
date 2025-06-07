@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import Cookies from "js-cookie";
+import crypto from 'crypto';
 
 interface OrderItem {
     id: string;
@@ -100,7 +101,9 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
         const testMode = "0";
 
         const signatureData = `${merchantId}${orderId}${amount.toFixed(2)}${currency}${subscriberId}${testMode}${secretKey}`;
-        const signature = require('crypto').createHash('md5').update(signatureData).digest('hex');
+        const signature = await crypto.subtle.digest('MD5', new TextEncoder().encode(signatureData)).then((hash) => {
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        });
         console.log("Signature Data:", signatureData);
         console.log("Signature:", signature);
 
