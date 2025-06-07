@@ -2,11 +2,12 @@
 
 import { PayType } from "@/features/cart/ui/pay-type";
 import { createOrder } from "@/enteties/orders/orders";
-import { generatePaymentUrl } from "@/server-actions"; // Adjust path as needed
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import Cookies from "js-cookie";
+import {generatePaymentUrl} from "@/enteties/payment-url";
 
 interface OrderItem {
     id: string;
