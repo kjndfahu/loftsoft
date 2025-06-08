@@ -16,7 +16,7 @@ interface OrderItem {
 
 export async function generatePaymentUrl(email: string, items: OrderItem[], orderId: string) {
     const merchantId = "10338738";
-    const secretKey = "7hqyTp4r8%#2"; // Замените на актуальный secretKey, например, "12345" из вашего примера
+    const secretKey = "12345"; // Используем secretKey из вашего примера
     const amount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const currency = "RUB";
     const subscriberId = email;
@@ -25,10 +25,14 @@ export async function generatePaymentUrl(email: string, items: OrderItem[], orde
     const paymentSystemUnitId = "2";
     const paymentSystemLimitIds = "0";
 
-    // Формируем строку для подписи: MNT_ID + MNT_TRANSACTION_ID + MNT_AMOUNT + MNT_CURRENCY_CODE + MNT_SUBSCRIBER_ID + MNT_TEST_MODE + secretKey
+    // Формируем строку для подписи
     const signatureData = `${merchantId}${orderId}${amount.toFixed(2)}${currency}${subscriberId}${testMode}${secretKey}`;
+    const signature = crypto.createHash('md5').update(signatureData).digest('hex');
 
+    // Логируем для отладки
     console.log("Signature Data:", signatureData);
+    console.log("Signature:", signature);
+    console.log("Expected Signature Data Example:", "1033873818111.00RUBxxx@gmail.com012345");
 
     const payAnyWayUrl = "https://payanyway.ru/assistant.htm";
     const payAnyWayParams = new URLSearchParams({
@@ -37,11 +41,13 @@ export async function generatePaymentUrl(email: string, items: OrderItem[], orde
         MNT_AMOUNT: amount.toFixed(2),
         MNT_CURRENCY_CODE: currency,
         MNT_TEST_MODE: testMode,
-        MNT_SIGNATURE: signatureData,
+        MNT_SIGNATURE: signature,
         MNT_SUCCESS_URL: returnUrl,
         MNT_FAIL_URL: returnUrl,
         MNT_DESCRIPTION: `Order #${orderId} from ${email}`,
-        MNT_SUBSCRIBER_ID: subscriberId
+        MNT_SUBSCRIBER_ID: subscriberId,
+        'paymentSystem.unitId': paymentSystemUnitId,
+        'paymentSystem.limitIds': paymentSystemLimitIds,
     }).toString();
 
     const paymentUrl = `${payAnyWayUrl}?${payAnyWayParams}`;
