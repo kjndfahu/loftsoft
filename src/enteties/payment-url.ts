@@ -27,10 +27,8 @@ export async function generatePaymentUrl(email: string, items: OrderItem[], orde
 
     // Формируем строку для подписи: MNT_ID + MNT_TRANSACTION_ID + MNT_AMOUNT + MNT_CURRENCY_CODE + MNT_SUBSCRIBER_ID + MNT_TEST_MODE + secretKey
     const signatureData = `${merchantId}${orderId}${amount.toFixed(2)}${currency}${subscriberId}${testMode}${secretKey}`;
-    const signature = crypto.createHash('md5').update(signatureData).digest('hex');
 
     console.log("Signature Data:", signatureData);
-    console.log("Signature:", signature);
 
     const payAnyWayUrl = "https://payanyway.ru/assistant.htm";
     const payAnyWayParams = new URLSearchParams({
@@ -39,13 +37,11 @@ export async function generatePaymentUrl(email: string, items: OrderItem[], orde
         MNT_AMOUNT: amount.toFixed(2),
         MNT_CURRENCY_CODE: currency,
         MNT_TEST_MODE: testMode,
-        MNT_SIGNATURE: signature,
+        MNT_SIGNATURE: signatureData,
         MNT_SUCCESS_URL: returnUrl,
         MNT_FAIL_URL: returnUrl,
         MNT_DESCRIPTION: `Order #${orderId} from ${email}`,
-        MNT_SUBSCRIBER_ID: subscriberId,
-        'paymentSystem.unitId': paymentSystemUnitId,
-        'paymentSystem.limitIds': paymentSystemLimitIds,
+        MNT_SUBSCRIBER_ID: subscriberId
     }).toString();
 
     const paymentUrl = `${payAnyWayUrl}?${payAnyWayParams}`;
