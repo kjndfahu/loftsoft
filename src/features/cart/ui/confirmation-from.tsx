@@ -1,13 +1,13 @@
+// confirmation-from.tsx
 "use client";
 
 import { PayType } from "@/features/cart/ui/pay-type";
 import { createOrder } from "@/enteties/orders/orders";
-
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import Cookies from "js-cookie";
-import {generatePaymentUrl} from "@/enteties/payment-url";
+import { generatePaymentUrl } from "@/enteties/payment-url";
 
 interface OrderItem {
     id: string;
@@ -26,7 +26,7 @@ interface ConfirmationFromProps {
     clearCart: () => void;
 }
 
-export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) => {
+export const ConfirmationFrom = ({ items }: ConfirmationFromProps) => {
     const [email, setEmail] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -89,7 +89,6 @@ export const ConfirmationFrom = ({ items, clearCart }: ConfirmationFromProps) =>
 
         Cookies.set("userEmail", email, { expires: 7 });
         await sendTelegramNotification(email, items);
-        clearCart();
 
         try {
             const orderId = result.orderId || Date.now().toString();
