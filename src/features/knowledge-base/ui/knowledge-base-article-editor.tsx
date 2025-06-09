@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ImageIcon, List, Bold, Italic, LinkIcon, Save, ArrowLeft, Plus, Trash2 } from "lucide-react"
+import { ImageIcon, List, Bold, Italic, LinkIcon, Save, ArrowLeft, Plus, Trash2, VideoIcon } from "lucide-react"
 import Image from "next/image"
 import { createArticle, updateArticle, uploadKnowledgeBaseMedia } from "@/enteties/knowledge-base/knowledge-base"
 
@@ -14,7 +14,7 @@ interface Category {
 
 interface ContentBlock {
     id: string
-    type: "text" | "image" | "list"
+    type: "text" | "image" | "list" | "video"
     content: any
 }
 
@@ -68,7 +68,7 @@ export const KnowledgeBaseArticleEditor = ({
     }, [article])
 
     // Add a new content block
-    const addBlock = (type: "text" | "image" | "list") => {
+    const addBlock = (type: "text" | "image" | "list" | "video") => {
         const newBlock: ContentBlock = {
             id: Date.now().toString(),
             type,
@@ -92,7 +92,7 @@ export const KnowledgeBaseArticleEditor = ({
         setBlocks(blocks.map((block) => (block.id === id ? { ...block, content } : block)))
     }
 
-    // Handle media upload for a block
+    // Handle media upload for a block (image or video)
     const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>, blockId: string) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0]
@@ -112,6 +112,7 @@ export const KnowledgeBaseArticleEditor = ({
 
                     formData.append("file", file)
                     formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
+                    formData.append("resource_type", "video") // Specify resource_type as video for Cloudinary
 
                     const uploadResult = await uploadKnowledgeBaseMedia(formData)
                     if (uploadResult.success) {
@@ -119,11 +120,11 @@ export const KnowledgeBaseArticleEditor = ({
                         updatedBlocks[blockIndex].content = uploadResult.url
                         setBlocks(updatedBlocks)
                     } else {
-                        throw new Error(`Failed to upload image: ${uploadResult.error}`)
+                        throw new Error(`Failed to upload media: ${uploadResult.error}`)
                     }
                 } catch (error) {
-                    console.error("Error uploading image:", error)
-                    alert(`Failed to upload image: ${error instanceof Error ? error.message : String(error)}`)
+                    console.error("Error uploading media:", error)
+                    alert(`Failed to upload media: ${error instanceof Error ? error.message : String(error)}`)
                 } finally {
                     setIsLoading(false)
                 }
@@ -176,16 +177,17 @@ export const KnowledgeBaseArticleEditor = ({
 
             // Upload any pending media files
             const updatedBlocks = await Promise.all(blocks.map(async (block) => {
-                if (block.type === "image" && mediaFiles[block.id] && !block.content) {
+                if ((block.type === "image" || block.type === "video") && mediaFiles[block.id] && !block.content) {
                     const formData = new FormData()
                     formData.append("file", mediaFiles[block.id])
                     formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET)
+                    formData.append("resource_type", block.type === "video" ? "video" : "image")
 
                     const uploadResult = await uploadKnowledgeBaseMedia(formData)
                     if (uploadResult.success) {
                         return { ...block, content: uploadResult.url }
                     } else {
-                        throw new Error(`Failed to upload image for block ${block.id}: ${uploadResult.error}`)
+                        throw new Error(`Failed to upload media for block ${block.id}: ${uploadResult.error}`)
                     }
                 }
                 return block
@@ -343,6 +345,39 @@ export const KnowledgeBaseArticleEditor = ({
                     </div>
                 )
 
+            case "video":
+                return (
+                    <div className="space-y-4">
+                        {block.content ? (
+                            <video controls className="w-full h-64">
+                                <source src={block.content} type="video/mp4" />
+                                Your browser does not support the video tag.
+                            </video>
+                        ) : (
+                            <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
+                                <VideoIcon className="mx-auto h-12 w-12 text-gray-400" />
+                                <p className="mt-2 text-sm text-gray-500">Нажмите для загрузки видео</p>
+                                <input
+                                    type="file"
+                                    accept="video/*"
+                                    onChange={(e) => handleMediaUpload(e, block.id)}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                            </div>
+                        )}
+                        {block.content && (
+                            <div className="flex justify-between items-center">
+                                <input
+                                    type="file"
+                                    accept="video/*"
+                                    onChange={(e) => handleMediaUpload(e, block.id)}
+                                    className="text-sm p-2 border border-gray-300 rounded-md"
+                                />
+                            </div>
+                        )}
+                    </div>
+                )
+
             case "list":
                 return (
                     <div className="space-y-2">
@@ -399,9 +434,7 @@ export const KnowledgeBaseArticleEditor = ({
                 <button
                     type="submit"
                     disabled={isSubmitting || !title || !categoryId}
-                    className={`flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors ml-auto ${
-                        isSubmitting || !title || !categoryId ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors ml-auto ${isSubmitting || !title || !categoryId ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                     {isLoading ? "Сохранение..." : isEdit ? "Обновить статью" : "Сохранить статью"}
                     <Save size={16} />
@@ -461,7 +494,7 @@ export const KnowledgeBaseArticleEditor = ({
                             <div className="flex items-center gap-2">
                                 <span className="font-medium">Блок {index + 1}:</span>
                                 <span className="text-sm text-gray-500">
-                                    {block.type === "text" ? "Текст" : block.type === "image" ? "Изображение" : "Список"}
+                                    {block.type === "text" ? "Текст" : block.type === "image" ? "Изображение" : block.type === "video" ? "Видео" : "Список"}
                                 </span>
                             </div>
                             <button
@@ -491,6 +524,13 @@ export const KnowledgeBaseArticleEditor = ({
                         className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
                     >
                         <ImageIcon size={16} /> Изображение
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => addBlock("video")}
+                        className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-sm"
+                    >
+                        <VideoIcon size={16} /> Видео
                     </button>
                     <button
                         type="button"

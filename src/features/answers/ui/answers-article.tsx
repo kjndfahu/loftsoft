@@ -28,14 +28,17 @@ export const AnswersArticle: FC<Props> = ({ categoryName, categoryEmoji, article
             return parsedContent.map((item) => {
                 switch (item.type) {
                     case "text":
-                        return (
+                        // Split content by new lines and render each line with HTML
+                        const lines = (typeof item.content === "string" ? item.content : "")
+                            .split("\n")
+                            .filter(line => line.trim() !== ""); // Remove empty lines
+                        return lines.map((line, index) => (
                             <p
-                                key={item.id}
+                                key={`${item.id}-${index}`}
                                 className="md:text-[14px] text-[12px] text-[#666666] ml-4"
-                            >
-                                {typeof item.content === "string" ? item.content : ""}
-                            </p>
-                        );
+                                dangerouslySetInnerHTML={{ __html: line }}
+                            />
+                        ));
                     case "image":
                         return (
                             <img
@@ -44,6 +47,17 @@ export const AnswersArticle: FC<Props> = ({ categoryName, categoryEmoji, article
                                 alt="Article image"
                                 className="md:max-w-[80%] max-w-[90%] mx-auto my-4 rounded-lg"
                             />
+                        );
+                    case "video":
+                        return (
+                            <video
+                                key={item.id}
+                                controls
+                                className="md:max-w-[80%] max-w-[90%] mx-auto my-4 rounded-lg"
+                            >
+                                <source src={typeof item.content === "string" ? item.content : ""} type="video/mp4" />
+                                Your browser does not support the video tag.
+                            </video>
                         );
                     case "list":
                         try {
@@ -58,7 +72,7 @@ export const AnswersArticle: FC<Props> = ({ categoryName, categoryEmoji, article
                                     className="md:text-[14px] text-[12px] text-[#666666] ml-8 list-disc"
                                 >
                                     {items.map((listItem: string, index: number) => (
-                                        <li key={`${item.id}-${index}`}>{listItem}</li>
+                                        <li key={`${item.id}-${index}`} dangerouslySetInnerHTML={{ __html: listItem }} />
                                     ))}
                                 </ul>
                             );
