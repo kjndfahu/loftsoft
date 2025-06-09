@@ -20,7 +20,7 @@ export async function sendAdminResponseEmail(
         const email = formData.get('email')?.toString();
         const adminResponse = formData.get('response')?.toString();
         const requestId = formData.get('requestId')?.toString();
-        const mainMail = 'admin@loftsoft.store';
+        const mainMail = 'info@loftsoft.store';
 
         if (!email) {
             return {
@@ -73,7 +73,7 @@ export async function sendAdminResponseEmail(
                                 <p style="color: #333333; font-size: 16px; line-height: 1.5; margin: 0 0 15px;">Уважаемый пользователь,</p>
                                 <p style="color: #333333; font-size: 16px; line-height: 1.5; margin: 0 0 15px;">Благодарим вас за вашу заявку. Мы внимательно рассмотрели ваш запрос, и вот наш ответ:</p>
                                 <p style="color: #333333; font-size: 16px; line-height: 1.5; margin: 0 0 15px; background-color: #f9f9f9; padding: 15px; border-left: 4px solid #005B8B;">${adminResponse}</p>
-                                <p style="color: #333333; font-size: 16px; line-height: 1.5; margin: 0 0 15px;">Если у вас есть дополнительные вопросы, пожалуйста, свяжитесь с нами по адресу <a href="mailto:admin@loftsoft.store" style="color: #005B8B; text-decoration: none;">admin@loftsoft.store</a>.</p>
+                                <p style="color: #333333; font-size: 16px; line-height: 1.5; margin: 0 0 15px;">Если у вас есть дополнительные вопросы, пожалуйста, свяжитесь с нами по адресу <a href="mailto:info@loftsoft.store" style="color: #005B8B; text-decoration: none;">info@loftsoft.store</a>.</p>
                                 <p style="color: #333333; font-size: 16px; line-height: 1.5; margin: 0;">С уважением,</p>
                                 <p style="color: #333333; font-size: 16px; line-height: 1.5; margin: 0;">Команда LoftSoft</p>
                             </td>
