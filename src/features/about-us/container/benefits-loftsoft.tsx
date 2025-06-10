@@ -30,7 +30,7 @@ export const BenefitsLoftsoft = () => {
                 </div>
                 <div className="flex mds:flex-row flex-col mds:gap-6 gap-3 w-full">
                     <div
-                        className="flex flex-col aspect-424/460 justify-end bg-[#c7dcff] bg-guarantee bg-cover bg-no-repeat bg-[position:0px] relative gap-4 mds:p-10 p-6 md:h-[460px] md:w-[424px] mds:w-[332px] mds:h-[350px] h-[240px] rounded-[20px] before:content-[''] before:absolute before:inset-0 before:bg-guarantee before:bg-cover before:bg-no-repeat before:rotate-180 before:z-[-1]">
+                        className="flex flex-col aspect-424/460 justify-end bg-[#c7dcff] relative gap-4 mds:p-10 p-6 md:h-[460px] md:w-[424px] mds:w-[332px] mds:h-[350px] h-[240px] rounded-[20px] before:content-[''] before:absolute before:inset-0 before:bg-guarantee before:bg-cover before:bg-no-repeat before:rotate-180 before:z-[-1]">
                         <h2 className="text-[#161616] md:text-[27px] text-[18px] md:leading-[33px] leading-[22px] font-semibold">Полная
                             гарантия</h2>
                         <p className="md:text-[16px] text-[14px] md:leading-6 leading-4 text-[#333438]">Мы предоставляем
