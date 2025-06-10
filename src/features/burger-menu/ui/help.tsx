@@ -22,7 +22,7 @@ export const Help = () => {
     }
     return (
         <div className="flex w-full sm:px-5">
-            <div className="flex w-full bg-white rounded-t-[15px] sm:rounded-b-[15px] shadow-lg flex-col gap-[10px] p-5">
+            <div className="flex sm:w-full w-[96vw] bg-white rounded-t-[15px] sm:rounded-b-[15px] shadow-lg flex-col gap-[10px] p-5">
                 <div className="flex items-center justify-between">
                     <h4 className="text-[16px] text-[#161616] font-semibold">Помощь</h4>
                     <CrossLogo className="w-[20px] h-[20px]" />
