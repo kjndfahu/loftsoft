@@ -110,7 +110,7 @@ export const ConfirmationFrom = ({ items }: ConfirmationFromProps) => {
                 </label>
                 <div className="px-[15px] py-[10px] border-[1px] border-[#B9BCCB] rounded-full">
                     <input
-                        className="bg-transparent outline-0 text-[#161616]"
+                        className="bg-transparent w-full outline-0 text-[#161616]"
                         placeholder="Annagrill@gmail.com"
                         type="text"
                         id="email"

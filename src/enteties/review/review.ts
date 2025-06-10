@@ -15,6 +15,96 @@ function isValidUrl(url: string): boolean {
     }
 }
 
+export async function getItemReviews(itemId?: number) {
+    try {
+        const reviews = await prisma.review.findMany({
+            where: itemId ? { itemId } : {}, // Filter by itemId if provided
+            include: {
+                user: true,
+                item: true,
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+        });
+
+        const compressedReviews = await Promise.all(
+            reviews.map(async (review) => {
+                let photos = [];
+                try {
+                    if (review.photo) {
+                        photos = JSON.parse(review.photo);
+                        if (!Array.isArray(photos)) {
+                            photos = [review.photo];
+                        }
+
+                        photos = await Promise.all(
+                            photos.map(async (photoPath) => {
+                                const outputPath = path.join("compressed", path.basename(photoPath));
+
+                                try {
+                                    await fs.access(outputPath);
+                                    return outputPath;
+                                } catch {
+                                    try {
+                                        await sharp(photoPath)
+                                            .resize({ width: 300 })
+                                            .jpeg({ quality: 80 })
+                                            .toFile(outputPath);
+                                        return outputPath;
+                                    } catch (err) {
+                                        console.error(`Error compressing image ${photoPath}:`, err);
+                                        return photoPath;
+                                    }
+                                }
+                            })
+                        );
+                    }
+                } catch (e) {
+                    if (review.photo) {
+                        photos = [review.photo];
+                    }
+                    console.error("Error parsing photo JSON:", e);
+                }
+
+                return {
+                    id: review.id,
+                    text: review.text,
+                    photo: review.photo,
+                    photos,
+                    grade: review.grade,
+                    createdAt: review.createdAt.toISOString(),
+                    user: review.user
+                        ? {
+                            id: review.user.id,
+                            email: review.user.email,
+                        }
+                        : null,
+                    item: review.item
+                        ? {
+                            id: review.item.id,
+                            name: review.item.name,
+                        }
+                        : null,
+                };
+            })
+        );
+
+        return {
+            success: true,
+            reviews: compressedReviews,
+        };
+    } catch (error) {
+        console.error("Error fetching reviews:", error);
+        return {
+            success: false,
+            error: "Failed to fetch reviews",
+        };
+    } finally {
+        await prisma.$disconnect();
+    }
+}
+
 export async function createReview(formData: FormData): Promise<{
     success: boolean;
     review?: any;

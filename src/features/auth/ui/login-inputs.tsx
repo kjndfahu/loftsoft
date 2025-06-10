@@ -32,7 +32,7 @@ export const LoginInputs = ({ formData, errors, handleChange, generalError }: Lo
                         value={formData.email}
                         onChange={handleChange}
                         placeholder="Ваша почта"
-                        className="text-[14px] text-[#161616] outline-0 w-full"
+                        className="text-[14px] text-[#161616] outline-0 w-full focus:outline-none"
                         type="email"
                     />
                 </div>
@@ -50,7 +50,7 @@ export const LoginInputs = ({ formData, errors, handleChange, generalError }: Lo
                         value={formData.password}
                         onChange={handleChange}
                         placeholder="Минимум 8 символов"
-                        className="text-[14px] text-[#161616] outline-0 w-full"
+                        className="text-[14px] text-[#161616] outline-0 w-full focus:outline-none"
                         type={showPassword ? "text" : "password"}
                     />
                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="ml-2 text-gray-500">

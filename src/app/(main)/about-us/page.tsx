@@ -23,7 +23,6 @@ export default async function AboutUsPage() {
         <div
             className="flex overflow-x-hidden flex-col pb-20 mds:pt-[150px] pt-[80px] xxl:px-[250px] xl:px-[150px] mdbvp:px-[100px] sml:px-[50px] px-[20px] mds:gap-[120px] gap-[60px]">
             <Hero/>
-            <Banner/>
             <BenefitsLoftsoft/>
             <div className="flex flex-col md:gap-8 gap-5">
                 <ReviewsInfo reviews={reviews}/>
@@ -57,6 +56,7 @@ export default async function AboutUsPage() {
                     <RatingVisualization reviews={reviews}/>
                 </div>
             </div>
+            <Banner/>
             <FaqBlock/>
             <LicenseInformationBlock/>
         </div>
