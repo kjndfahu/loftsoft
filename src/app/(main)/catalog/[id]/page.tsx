@@ -5,6 +5,7 @@ import { notFound } from "next/navigation"
 import { fetchProduct } from "@/enteties/product/product"
 import { ItemFaqBlock } from "@/features/product-page/ui/item-faq-block"
 import { ProductReviews } from "@/features/catalog/ui/product-review"
+import { getItemReviews } from "@/enteties/review/review"
 
 export default async function ItemPage({ params }: { params: { id: string } }) {
     const itemId = Number.parseInt(params.id)
@@ -19,8 +20,14 @@ export default async function ItemPage({ params }: { params: { id: string } }) {
         notFound()
     }
 
+    // Fetch reviews for the specific item
+    const reviewResponse = await getItemReviews(itemId)
+
     // Debug: Log the item to check for undefined properties
     console.log("Fetched item:", item.category)
+
+    // Extract reviews or set to empty array if fetch failed or no reviews
+    const reviews = reviewResponse.success && reviewResponse.reviews ? reviewResponse.reviews : []
 
     return (
         <div className="flex flex-col pb-20 mds:pt-[150px] pt-[80px] xxl:px-[250px] xl:px-[150px] mdbvp:px-[100px] sml:px-[50px] px-[20px] gap-10">
@@ -28,7 +35,7 @@ export default async function ItemPage({ params }: { params: { id: string } }) {
             <ProductContainer item={item} />
             <RecomendationList relatedProducts={item.relatedProducts} />
             <ItemFaqBlock item={item} />
-            <ProductReviews itemId={item.id} /> {/* Pass itemId to ProductReviews */}
+            {reviews.length > 0 && <ProductReviews itemId={item.id} reviews={reviews} />}
         </div>
     )
 }

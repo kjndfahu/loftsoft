@@ -9,7 +9,7 @@ interface Props {
 
 export const CategoryBlock: React.FC<Props> = ({ title, description, photo }) => {
     return (
-        <div className="flex flex-col relative rounded-b-[20px] items-center pt-10 bg-[#F5F7FF] w-full lg:h-[321px] md:h-[250px] sm:h-[321px] h-[250px] rounded-[20px]">
+        <div className="flex flex-col overflow-hidden relative rounded-b-[20px] items-center pt-10 bg-[#F5F7FF] w-full lg:h-[321px] md:h-[250px] sm:h-[321px] h-[250px] rounded-[20px]">
             <div className="flex flex-col items-center gap-[6px]">
                 <h2 className="sml:text-[27px] text-[20px] sml:leading-[50px] leading-[25px] font-semibold text-[#161616]">
                     {title}

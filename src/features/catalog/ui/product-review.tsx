@@ -1,8 +1,7 @@
 "use client"
 
 import { Review } from "@/features/product-page/ui/review"
-import { useEffect, useState } from "react"
-import { getItemReviews } from "@/enteties/review/review"
+import { useState } from "react"
 import RatingVisualization from "@/features/reviews/ui/rating-visualization"
 
 interface ReviewData {
@@ -24,51 +23,14 @@ interface ReviewData {
 
 interface ProductReviewsProps {
     itemId: number
+    reviews: ReviewData[]
 }
 
-export const ProductReviews = ({ itemId }: ProductReviewsProps) => {
-    const [reviews, setReviews] = useState<ReviewData[]>([])
+export const ProductReviews = ({ itemId, reviews }: ProductReviewsProps) => {
     const [visibleReviewsCount, setVisibleReviewsCount] = useState(4) // Initially show 4 reviews
-    const [isLoading, setIsLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-
-    useEffect(() => {
-        const fetchReviews = async () => {
-            setIsLoading(true)
-            try {
-                const response = await getItemReviews(itemId) // Pass itemId to filter reviews
-                if (response.success && response.reviews) {
-                    setReviews(response.reviews)
-                } else {
-                    setError(response.error || "Failed to load reviews")
-                }
-            } catch (err) {
-                setError("Failed to fetch reviews")
-                console.error(err)
-            } finally {
-                setIsLoading(false)
-            }
-        }
-
-        fetchReviews()
-    }, [itemId]) // Add itemId to dependency array
 
     const handleShowMore = () => {
         setVisibleReviewsCount((prev) => prev + 4) // Load 4 more reviews
-    }
-
-    if (isLoading) {
-        return (
-            <div className="flex flex-col gap-4">
-                {[...Array(4)].map((_, index) => (
-                    <div key={index} className="animate-pulse w-full rounded-[16px] h-[210px] bg-[#F5F7FF]"></div>
-                ))}
-            </div>
-        )
-    }
-
-    if (error) {
-        return <div>Error: {error}</div>
     }
 
     return (

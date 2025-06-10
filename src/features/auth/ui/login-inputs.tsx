@@ -38,8 +38,9 @@ export const LoginInputs = ({ formData, errors, handleChange, generalError }: Lo
                 </div>
             </div>
             <div className="flex flex-col gap-1">
-                <label className={`text-[12px] ${generalError ? 'text-[#E71730]' : 'text-[#A4A8BA]'} `} htmlFor="password">
-                    Пароль
+                <label className={`text-[12px] ${generalError ? 'text-[#E71730]' : 'text-[#A4A8BA]'} `}
+                       htmlFor="password">
+                Пароль
                 </label>
                 <div
                     className={`flex items-center justify-between rounded-full border-[1px] ${generalError ? "border-[#E71730]" : "border-[#B9BCCB]"} px-[15px] py-[10px]`}
