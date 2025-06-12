@@ -26,53 +26,51 @@ model User {
 }
 
 model Item {
-  id              Int              @id @default(autoincrement())
-  name            String
-  price           String
-  newPrice        String?
-  photo           String
-  description     String?
-  categoryId      Int?
-  purchasedCount  Int              @default(0)
-  category        Category?        @relation(fields: [categoryId], references: [id])
-  type            Type[]
-  licenseType     String[]         @default([])
-  deviceCounts    Int[]            @default([])
-  characteristics Characteristic[]
-  distributives   Distributive[]
-  questions       QuestionAnswer[]
-  popularProducts PopularProduct[]
-  articles        Article[]
-  reviews         Review[]
-  relatedProducts Item[]           @relation("RelatedProducts")
-  relatedBy       Item[]           @relation("RelatedProducts")
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  orderItems      OrderItem[] // Relation to OrderItem model
-  autorelease     Boolean          @default(false) // New field with default false
+  id               Int              @id @default(autoincrement())
+  name             String
+  pricesByDuration Json[] // Changed to store array of { durationId: string, price: string }
+  photos           String[] // Changed to store array of photo URLs
+  description      String?
+  categoryId       Int?
+  purchasedCount   Int              @default(0)
+  category         Category?        @relation(fields: [categoryId], references: [id])
+  type             Type[]
+  licenseType      String[]         @default([])
+  deviceCounts     Int[]            @default([])
+  characteristics  Characteristic[]
+  distributives    Distributive[]
+  questions        QuestionAnswer[]
+  popularProducts  PopularProduct[]
+  articles         Article[]
+  reviews          Review[]
+  relatedProducts  Item[]           @relation("RelatedProducts")
+  relatedBy        Item[]           @relation("RelatedProducts")
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  orderItems       OrderItem[]
+  autorelease      Boolean          @default(false)
 }
 
 model Characteristic {
-  id     Int    @id @default(autoincrement())
-  title  String
-  value  String
-  itemId Int
-  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
-
+  id        Int      @id @default(autoincrement())
+  title     String
+  value     String
+  itemId    Int
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Distributive {
-  id          Int     @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   displayName String
   fileUrl     String
+  iconUrl     String?
   logoUrl     String?
   itemId      Int
-  item        Item    @relation(fields: [itemId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  item        Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model QuestionAnswer {

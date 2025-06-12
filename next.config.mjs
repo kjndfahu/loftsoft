@@ -1,13 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    reactStrictMode: false, // Moved to root level
     eslint: {
         ignoreDuringBuilds: true,
-        reactStrictMode:false
-    },
-    experimental: {
-        serverActions: {
-            bodySizeLimit: '70mb',
-        },
     },
     typescript: {
         ignoreBuildErrors: true,
