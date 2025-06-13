@@ -9,22 +9,24 @@ export interface Category {
     updateAt: Date;
 }
 
+// Updated Product interface to match server-side
 export interface Product {
     id: number;
     name: string;
-    price: string;
-    photo: string;
+    pricesByDuration: { durationId: string; price: string }[];
+    photos: string[];
     description?: string | null;
     categoryId?: number | null;
     type: string[];
-    licenseType: string;
+    licenseType: string[]; // Changed to string[]
     createdAt: Date;
     updatedAt: Date;
     category?: Category | null;
-    characteristics: any[];
-    distributives: any[];
+    characteristics: { id: number; title: string; value: string }[];
+    distributives: { id: number; displayName: string; fileUrl: string }[];
     averageRating: number;
     purchaseCount: number;
+    deviceCounts: number[];
 }
 
 export const ItemsGrid = ({ products }: { products: Product[] }) => {
