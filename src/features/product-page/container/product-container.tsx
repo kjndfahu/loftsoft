@@ -6,7 +6,7 @@ import ProductSpecifications from "@/features/product-page/ui/product-specificat
 import { Distributive } from "@/features/product-page/ui/distributive"
 import { PurchaseBlock } from "@/features/product-page/ui/purchase-block"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect, useMemo } from "react"
 
 interface ProductContainerProps {
     item: {
@@ -21,15 +21,15 @@ interface ProductContainerProps {
         characteristics: { id: number; title: string; value: string }[]
         distributives: { id: number; displayName: string; fileUrl: string }[]
         averageRating: number
-        reviews: { id: number; grade: number }[] // Added to derive reviewCount
+        reviews: { id: number; grade: number }[]
     }
 }
 
 const licenseTypeLabels: Record<string, string> = {
     PERPETUAL: "Бессрочно",
-    ONE_MONTH: "1 м.",
-    THREE_MONTHS: "3 м.",
-    SIX_MONTHS: "6 м.",
+    ONE_MONTH: "1 месяц",
+    THREE_MONTHS: "3 месяца",
+    SIX_MONTHS: "6 месяцев",
     ONE_YEAR: "1 год",
     TWO_YEARS: "2 года",
     THREE_YEARS: "3 года",
@@ -38,27 +38,43 @@ const licenseTypeLabels: Record<string, string> = {
 }
 
 export const ProductContainer = ({ item }: ProductContainerProps) => {
+    const [selectedType, setSelectedType] = useState<string>(item.type[0] || "KEY")
     const [selectedLicenseType, setSelectedLicenseType] = useState<string>(item.licenseType[0] || "")
     const [selectedDeviceCount, setSelectedDeviceCount] = useState<number>(item.deviceCounts[0] || 1)
 
-    // Find the price for the selected license type
-    const selectedPrice = item.pricesByDuration.find(
-        (price) => price.durationId === selectedLicenseType
-    )?.price || item.pricesByDuration[0]?.price || "0"
+    // Validate selectedLicenseType against pricesByDuration
+    useEffect(() => {
+        if (
+            selectedLicenseType &&
+            !item.pricesByDuration.some((price) => price.durationId === selectedLicenseType)
+        ) {
+            const validLicenseType = item.pricesByDuration[0]?.durationId || item.licenseType[0] || ""
+            setSelectedLicenseType(validLicenseType)
+        }
+    }, [item.pricesByDuration, item.licenseType, selectedLicenseType])
+
+    // Memoize selected price to avoid recomputation
+    const selectedPrice = useMemo(() => {
+        const priceEntry = item.pricesByDuration.find(
+            (price) => price.durationId === selectedLicenseType
+        )
+        return priceEntry?.price || item.pricesByDuration[0]?.price || "0"
+    }, [item.pricesByDuration, selectedLicenseType])
 
     // Calculate star rating display
     const fullStars = Math.floor(item.averageRating)
     const hasHalfStar = item.averageRating % 1 >= 0.5
-    const reviewCount = item.reviews.length // Derive review count from reviews
+    const reviewCount = item.reviews.length
 
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
             <div style={{ aspectRatio: 384 / 537 }} className="self-center aspect-384/537 relative bg-gray-400 md:w-[30%] sm:w-[33%] sm:w-[400px] w-[236px] rounded-[20px]">
                 <Image
-                    src={item.photos[0] || "/placeholder.svg"} // Use first photo
+                    src={item.photos[0] || "/placeholder.svg"}
                     alt={item.name}
                     fill
                     className="object-cover rounded-[20px]"
+                    loading="lazy"
                 />
             </div>
             <div className="flex md:w-[37%] w-full flex-col md:gap-6 gap-4">
@@ -86,8 +102,8 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                                 key={count}
                                 onClick={() => setSelectedDeviceCount(count)}
                                 className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors text-black border-[1px] ${
-                                    selectedDeviceCount === count ? "border-[#5069E8]" : "border-[#DBDEEF]"
-                                }`}
+    selectedDeviceCount === count ? "border-[#5069E8]" : "border-[#DBDEEF]"
+}`}
                             >
                                 <span>{count} ПК</span>
                             </button>
@@ -102,8 +118,8 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                                 key={licenseType}
                                 onClick={() => setSelectedLicenseType(licenseType)}
                                 className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors text-black border-[1px] ${
-                                    selectedLicenseType === licenseType ? "border-[#5069E8]" : "border-[#DBDEEF]"
-                                }`}
+    selectedLicenseType === licenseType ? "border-[#5069E8]" : "border-[#DBDEEF]"
+}`}
                             >
                                 <span>{licenseTypeLabels[licenseType]}</span>
                             </button>
@@ -117,11 +133,17 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             <PurchaseBlock
                 id={item.id.toString()}
                 name={item.name}
-                price={selectedPrice} // Pass the selected price
+                price={selectedPrice}
                 photos={item.photos}
                 type={item.type}
-                licenseType={[selectedLicenseType]}
-                deviceCounts={[selectedDeviceCount]}
+                selectedType={selectedType}
+                setSelectedType={setSelectedType}
+                licenseType={item.licenseType}
+                selectedLicenseType={selectedLicenseType}
+                setSelectedLicenseType={setSelectedLicenseType}
+                deviceCounts={item.deviceCounts}
+                selectedDeviceCount={selectedDeviceCount}
+                setSelectedDeviceCount={setSelectedDeviceCount}
             />
         </div>
     )
