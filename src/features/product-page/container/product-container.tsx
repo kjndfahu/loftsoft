@@ -8,21 +8,20 @@ import { PurchaseBlock } from "@/features/product-page/ui/purchase-block"
 import Image from "next/image"
 import { useState } from "react"
 
-type ProductContainerProps = {
+interface ProductContainerProps {
     item: {
         id: number
         name: string
-        price: string
-        newPrice: string
-        photos: string[] // Updated to array of photos
-        description?: string
-        type: string[] // Subscription types
-        licenseType: string[] // License terms
-        deviceCounts: number[] // Device counts
-        characteristics: { title: string; value: string }[]
-        distributives: { displayName: string; fileUrl: string }[]
-        averageRating: number // Added average rating
-        reviewCount: number // Added review count
+        pricesByDuration: { durationId: string; price: string }[]
+        photos: string[]
+        description?: string | null
+        type: string[]
+        licenseType: string[]
+        deviceCounts: number[]
+        characteristics: { id: number; title: string; value: string }[]
+        distributives: { id: number; displayName: string; fileUrl: string }[]
+        averageRating: number
+        reviews: { id: number; grade: number }[] // Added to derive reviewCount
     }
 }
 
@@ -41,62 +40,27 @@ const licenseTypeLabels: Record<string, string> = {
 export const ProductContainer = ({ item }: ProductContainerProps) => {
     const [selectedLicenseType, setSelectedLicenseType] = useState<string>(item.licenseType[0] || "")
     const [selectedDeviceCount, setSelectedDeviceCount] = useState<number>(item.deviceCounts[0] || 1)
-    const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number>(0) // Track selected photo index
+
+    // Find the price for the selected license type
+    const selectedPrice = item.pricesByDuration.find(
+        (price) => price.durationId === selectedLicenseType
+    )?.price || item.pricesByDuration[0]?.price || "0"
 
     // Calculate star rating display
     const fullStars = Math.floor(item.averageRating)
     const hasHalfStar = item.averageRating % 1 >= 0.5
-
-    // Get the current main photo
-    const currentPhoto = item.photos[selectedPhotoIndex] || "/placeholder.svg"
+    const reviewCount = item.reviews.length // Derive review count from reviews
 
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
-            <div className="flex md:flex-row flex-col md:gap-4 gap-2">
-                {/* Thumbnails */}
-                <div className="flex flex-col gap-2 md:w-[80px] w-full">
-                    {item.photos.map((photo, index) => (
-                        <div
-                            key={index}
-                            className={`relative w-full aspect-[384/537] bg-gray-400 rounded-[10px] cursor-pointer overflow-hidden ${
-                                selectedPhotoIndex === index ? "border-2 border-[#5069E8]" : ""
-                            }`}
-                            onClick={() => setSelectedPhotoIndex(index)}
-                        >
-                            <Image
-                                src={photo || "/placeholder.svg"}
-                                alt={`${item.name} thumbnail ${index + 1}`}
-                                fill
-                                className="object-cover rounded-[10px]"
-                                loading="lazy"
-                            />
-                        </div>
-                    ))}
-                    {item.photos.length === 0 && (
-                        <div className="relative w-full aspect-[384/537] bg-gray-400 rounded-[10px]">
-                            <Image
-                                src="/placeholder.svg"
-                                alt={`${item.name} thumbnail`}
-                                fill
-                                className="object-cover rounded-[10px]"
-                                loading="lazy"
-                            />
-                        </div>
-                    )}
-                </div>
-
-                {/* Main Image */}
-                <div style={{ aspectRatio: 384 / 537 }} className="self-center relative bg-gray-400 md:w-[30%] sm:w-[33%] sm:w-[400px] w-[236px] rounded-[20px]">
-                    <Image
-                        src={currentPhoto}
-                        alt={item.name}
-                        fill
-                        className="object-cover rounded-[20px]"
-                        loading="lazy"
-                    />
-                </div>
+            <div style={{ aspectRatio: 384 / 537 }} className="self-center aspect-384/537 relative bg-gray-400 md:w-[30%] sm:w-[33%] sm:w-[400px] w-[236px] rounded-[20px]">
+                <Image
+                    src={item.photos[0] || "/placeholder.svg"} // Use first photo
+                    alt={item.name}
+                    fill
+                    className="object-cover rounded-[20px]"
+                />
             </div>
-
             <div className="flex md:w-[37%] w-full flex-col md:gap-6 gap-4">
                 <div className="flex flex-col gap-[10px]">
                     <h3 className="md:text-[24px] text-[20px] font-semibold text-[#161616]">{item.name}</h3>
@@ -111,7 +75,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                                 />
                             ))}
                         </div>
-                        <span className="text-[16px] text-[#6A6B75]">{item.reviewCount} отзыв</span>
+                        <span className="text-[16px] text-[#6A6B75]">{reviewCount} отзыв{reviewCount !== 1 ? "ов" : ""}</span>
                     </div>
                 </div>
                 <div className="flex flex-col gap-3">
@@ -153,9 +117,8 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             <PurchaseBlock
                 id={item.id.toString()}
                 name={item.name}
-                newPrice={item.newPrice}
-                oldPrice={item.price || undefined}
-                photo={currentPhoto} // Pass the current main photo
+                price={selectedPrice} // Pass the selected price
+                photos={item.photos}
                 type={item.type}
                 licenseType={[selectedLicenseType]}
                 deviceCounts={[selectedDeviceCount]}

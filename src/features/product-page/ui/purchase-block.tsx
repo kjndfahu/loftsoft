@@ -5,18 +5,17 @@ import { PriceBlock } from "@/features/product-page/ui/price-block"
 import { PostBlock } from "@/features/product-page/ui/post-block"
 import { useState } from "react"
 
-type PurchaseBlockProps = {
+interface PurchaseBlockProps {
     id?: string
     name?: string
-    newPrice: string
-    oldPrice?: string
-    photos: string[] // Updated to array
-    type: string[] // Subscription types
-    licenseType: string[] // Selected license term
-    deviceCounts: number[] // Selected device count
+    price: string // Selected price based on license type
+    photos: string[] // Changed to photos array
+    type: string[]
+    licenseType: string[]
+    deviceCounts: number[]
 }
 
-export const PurchaseBlock = ({ id, name, newPrice, oldPrice, photos, type, licenseType, deviceCounts }: PurchaseBlockProps) => {
+export const PurchaseBlock = ({ id, name, price, photos, type, licenseType, deviceCounts }: PurchaseBlockProps) => {
     const [selectedType, setSelectedType] = useState<string>(type[0] || "KEY")
 
     return (
@@ -24,9 +23,8 @@ export const PurchaseBlock = ({ id, name, newPrice, oldPrice, photos, type, lice
             <PriceBlock
                 id={id}
                 name={name}
-                price={newPrice}
-                oldPrice={oldPrice}
-                photos={photos} // Pass photos array
+                price={price}
+                photo={photos[0]} // Use first photo
                 type={selectedType}
                 licenseType={licenseType[0] || ""}
                 deviceCount={deviceCounts[0] || 1}
