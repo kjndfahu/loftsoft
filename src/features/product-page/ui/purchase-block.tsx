@@ -3,59 +3,44 @@
 import { SubType } from "@/features/product-page/ui/sub-type"
 import { PriceBlock } from "@/features/product-page/ui/price-block"
 import { PostBlock } from "@/features/product-page/ui/post-block"
+import { useState } from "react"
 
-interface PurchaseBlockProps {
+type PurchaseBlockProps = {
     id?: string
     name?: string
-    price: string
-    photos: string[]
-    type: string[]
-    selectedType: string
-    setSelectedType: (type: string) => void
-    licenseType: string[]
-    selectedLicenseType: string
-    setSelectedLicenseType: (licenseType: string) => void
-    deviceCounts: number[]
-    selectedDeviceCount: number
-    setSelectedDeviceCount: (count: number) => void
+    newPrice: string
+    oldPrice?: string
+    photos: string[] // Updated to array
+    type: string[] // Subscription types
+    licenseType: string[] // Selected license term
+    deviceCounts: number[] // Selected device count
 }
 
-export const PurchaseBlock = ({
-                                  id,
-                                  name,
-                                  price,
-                                  photos,
-                                  type,
-                                  selectedType,
-                                  setSelectedType,
-                                  licenseType,
-                                  selectedLicenseType,
-                                  setSelectedLicenseType,
-                                  deviceCounts,
-                                  selectedDeviceCount,
-                                  setSelectedDeviceCount,
-                              }: PurchaseBlockProps) => {
+export const PurchaseBlock = ({ id, name, newPrice, oldPrice, photos, type, licenseType, deviceCounts }: PurchaseBlockProps) => {
+    const [selectedType, setSelectedType] = useState<string>(type[0] || "KEY")
+
     return (
         <div className="flex md:w-[27%] sm:w-[500px] w-full flex-col gap-[10px]">
             <PriceBlock
                 id={id}
                 name={name}
-                price={price}
-                photo={photos[0]}
+                price={newPrice}
+                oldPrice={oldPrice}
+                photos={photos} // Pass photos array
                 type={selectedType}
-                licenseType={selectedLicenseType}
-                deviceCount={selectedDeviceCount}
+                licenseType={licenseType[0] || ""}
+                deviceCount={deviceCounts[0] || 1}
             />
             <SubType
                 availableTypes={type}
                 selectedType={selectedType}
                 setSelectedType={setSelectedType}
-                licenseTypes={licenseType}
-                selectedLicenseType={selectedLicenseType}
-                setSelectedLicenseType={setSelectedLicenseType}
-                deviceCounts={deviceCounts}
-                selectedDeviceCount={selectedDeviceCount}
-                setSelectedDeviceCount={setSelectedDeviceCount}
+                licenseTypes={[]}
+                selectedLicenseType={""}
+                setSelectedLicenseType={() => {}}
+                deviceCounts={[]}
+                selectedDeviceCount={0}
+                setSelectedDeviceCount={() => {}}
             />
             <PostBlock />
         </div>

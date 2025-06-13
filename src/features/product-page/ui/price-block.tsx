@@ -4,24 +4,26 @@ import { useCartStore } from "../../../../store/use-cart-store"
 import { Logos } from "@/shared/icons"
 import { showToast } from "@/shared/custom-toast"
 
-interface PriceBlockProps {
+type PriceBlockProps = {
     price?: string
     id?: string
     name?: string
-    photo?: string
+    photos: string[] // Updated to array
     type?: string
     licenseType?: string
     deviceCount?: number
+    oldPrice: string
 }
 
 export const PriceBlock = ({
                                price,
                                id = "default-id",
                                name = "Лицензионный ключ",
-                               photo,
+                               photos,
                                type,
                                licenseType,
                                deviceCount,
+                               oldPrice,
                            }: PriceBlockProps) => {
     const addItem = useCartStore((state) => state.addItem)
 
@@ -29,8 +31,9 @@ export const PriceBlock = ({
         addItem({
             id,
             name,
-            price: price ? Number(price) : 0,
-            photo,
+            price: price ? Number(price) : Number(oldPrice),
+            oldPrice: Number(oldPrice),
+            photo: photos[0] || undefined, // Use first photo for cart
             type,
             licenseType,
             deviceCount,
@@ -40,14 +43,25 @@ export const PriceBlock = ({
         })
     }
 
-    const displayedPrice = price ? Number(price) : 0
+    const hasDiscount = !!price
+    const displayedPrice = price ? Number(price) : Number(oldPrice)
+    const originalPrice = Number(oldPrice)
+    const discountPercentage = hasDiscount ? Math.round(((originalPrice - displayedPrice) / originalPrice) * 100) : 0
 
     return (
         <div className="flex flex-col bg-[#F5F7FF] rounded-[20px] gap-[30px] md:p-6 p-4">
             <div className="flex items-end gap-2">
                 <h4 className="md:text-[36px] md:leading-[40px] text-[27px] leading-[30px] font-semibold text-[#161616]">
-                    {displayedPrice.toLocaleString("ru-RU")} ₽
+                    {displayedPrice}₽
                 </h4>
+                {hasDiscount && (
+                    <div className="flex gap-1 items-center text-[#E71730] text-[16px] font-medium">
+                        <div className="flex text-[11px] bg-[#FEECEE] rounded-full px-1.5 py-1">
+                            -{discountPercentage}%
+                        </div>
+                        <p className="text-[#858692] line-through font-medium">/{originalPrice}₽</p>
+                    </div>
+                )}
             </div>
             <div className="flex flex-col w-full items-center self-center gap-[12px]">
                 <button

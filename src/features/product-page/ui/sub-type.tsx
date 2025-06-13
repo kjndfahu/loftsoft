@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useState, useEffect } from "react"
 
 interface SubTypeProps {
     availableTypes: string[]
@@ -44,10 +44,15 @@ export const SubType = ({
                             setSelectedDeviceCount,
                         }: SubTypeProps) => {
     useEffect(() => {
-        // Set default selections if current ones are invalid
+        // Ensure selectedType is valid
         if (availableTypes.length > 0 && !availableTypes.includes(selectedType)) {
             setSelectedType(availableTypes[0])
         }
+        // Ensure selectedLicenseType is valid
+        if (licenseTypes.length > 0 && !licenseTypes.includes(selectedLicenseType)) {
+            setSelectedLicenseType(licenseTypes[0])
+        }
+        // Ensure selectedDeviceCount is valid
         if (deviceCounts.length > 0 && !deviceCounts.includes(selectedDeviceCount)) {
             setSelectedDeviceCount(deviceCounts[0])
         }
@@ -55,6 +60,9 @@ export const SubType = ({
         availableTypes,
         selectedType,
         setSelectedType,
+        licenseTypes,
+        selectedLicenseType,
+        setSelectedLicenseType,
         deviceCounts,
         selectedDeviceCount,
         setSelectedDeviceCount,
@@ -93,8 +101,6 @@ export const SubType = ({
                                 className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors text-black border-[1px] ${
                                     selectedType === type ? "border-[#5069E8]" : "border-[#DBDEEF]"
                                 }`}
-                                aria-label={`Выбрать тип подписки ${subscriptionTypeLabels[type] || type}`}
-                                aria-pressed={selectedType === type}
                             >
                                 <span>{subscriptionTypeLabels[type] || type}</span>
                             </button>
@@ -115,8 +121,6 @@ export const SubType = ({
                                 className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors text-black border-[1px] ${
                                     selectedLicenseType === licenseType ? "border-[#5069E8]" : "border-[#DBDEEF]"
                                 }`}
-                                aria-label={`Выбрать срок лицензии ${licenseTypeLabels[licenseType] || licenseType}`}
-                                aria-pressed={selectedLicenseType === licenseType}
                             >
                                 <span>{licenseTypeLabels[licenseType] || licenseType}</span>
                             </button>
@@ -137,8 +141,6 @@ export const SubType = ({
                                 className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors text-black border-[1px] ${
                                     selectedDeviceCount === count ? "border-[#5069E8]" : "border-[#DBDEEF]"
                                 }`}
-                                aria-label={`Выбрать количество устройств ${count} ПК`}
-                                aria-pressed={selectedDeviceCount === count}
                             >
                                 <span>{count} ПК</span>
                             </button>
