@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { getProductsByCategory } from "@/entities/product"
+
 import { CreateProductBtn } from "@/features/create-product/ui/create-product-btn"
 import { ProductList } from "@/features/create-product/container/product-list"
+import {getProductsByCategory} from "@/enteties/product/product";
 
 // Define Product interface to match server-side
 interface Product {
