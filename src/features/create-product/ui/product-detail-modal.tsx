@@ -3,18 +3,21 @@
 import { CrossLogo } from "@/shared/icons"
 import Image from "next/image"
 
+// Updated Product interface to match server-side
 interface Product {
     id: number
     name: string
-    price: string
-    photo: string
-    description: string
-    categoryId: number
+    pricesByDuration: { durationId: string; price: string }[]
+    photos: string[]
+    description?: string | null
+    categoryId?: number | null
     type: string[]
-    licenseType: string
+    licenseType: string[] // Changed to string[]
     characteristics: { id: number; title: string; value: string }[]
     distributives: { id: number; displayName: string; fileUrl: string }[]
-    category: { id: string; title: string }
+    category?: { id: string; title: string }
+    averageRating: number
+    purchaseCount: number
 }
 
 interface ProductDetailModalProps {
@@ -30,7 +33,7 @@ export function ProductDetailModal({ product, isOpen, onClose }: ProductDetailMo
         return new Intl.NumberFormat("ru-RU").format(Number(price)) + " ₽"
     }
 
-    const getLicenseTypeText = (type: string) => {
+    const getLicenseTypeText = (types: string[]) => {
         const licenseMap: Record<string, string> = {
             PERPETUAL: "Бессрочно",
             ONE_MONTH: "1 месяц",
@@ -38,7 +41,7 @@ export function ProductDetailModal({ product, isOpen, onClose }: ProductDetailMo
             SIX_MONTHS: "6 месяцев",
             ONE_YEAR: "1 год",
         }
-        return licenseMap[type] || type
+        return types.map((type) => licenseMap[type] || type).join(", ")
     }
 
     const getSubscriptionTypeText = (types: string[]) => {
@@ -68,14 +71,16 @@ export function ProductDetailModal({ product, isOpen, onClose }: ProductDetailMo
                         <div>
                             <div className="relative h-[300px] w-full rounded-[16px] overflow-hidden mb-4">
                                 <Image
-                                    src={product.photo || "/placeholder.svg"}
+                                    src={product.photos[0] || "/placeholder.svg"} // Use first photo
                                     alt={product.name}
                                     fill
                                     style={{ objectFit: "cover" }}
                                 />
                             </div>
 
-                            <div className="text-2xl font-bold mb-4">{formatPrice(product.price)}</div>
+                            <div className="text-2xl font-bold mb-4">
+                                {product.pricesByDuration[0]?.price ? formatPrice(product.pricesByDuration[0].price) : "Цена не указана"}
+                            </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div className="border border-[#DBDEEF] rounded-[16px] p-3">

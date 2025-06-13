@@ -1,27 +1,28 @@
 "use client"
 
 import { useState } from "react"
-import {ProductEditModal} from "@/features/create-product/ui/product-edit-modal";
-import {ProductCard} from "@/features/create-product/ui/product-card";
-import {Item} from "@prisma/client";
+import { ProductEditModal } from "@/features/create-product/ui/product-edit-modal"
+import { ProductCard } from "@/features/create-product/ui/product-card"
 
-
+// Updated Product interface to match server-side
 interface Product {
     id: number
     name: string
-    price: string
-    photo: string
-    description: string | null
-    categoryId: number | null
+    pricesByDuration: { durationId: string; price: string }[]
+    photos: string[]
+    description?: string | null
+    categoryId?: number | null
     type: string[]
-    licenseType: string
+    licenseType: string[] // Changed to string[] to match server
     characteristics: { id: number; title: string; value: string }[]
     distributives: { id: number; displayName: string; fileUrl: string }[]
-    category: { id: string; title: string }
+    category?: { id: string; title: string } // Optional to handle cases where category is null
+    averageRating: number
+    purchaseCount: number
 }
 
 interface ProductListProps {
-    products: Item[]
+    products: Product[] // Updated to use the new Product interface
 }
 
 export function ProductList({ products }: ProductListProps) {
