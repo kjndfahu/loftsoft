@@ -38,29 +38,6 @@ export interface Product {
     purchaseCount: number; // Add purchaseCount
 }
 
-export async function findProducts(searchTerm: string): Promise<FindProduct[]> {
-    try {
-        const products = await prisma.item.findMany({
-            where: {
-                name: {
-                    contains: searchTerm,
-                    mode: "insensitive",
-                },
-            },
-            select: {
-                id: true,
-                name: true,
-                price: true,
-                photo: true,
-            },
-            take: 10,
-        })
-        return products
-    } catch (error) {
-        console.error("Error searching products:", error)
-        return []
-    }
-}
 
 export async function fetchProduct(id: number): Promise<Product | null> {
     try {
@@ -106,28 +83,18 @@ export async function fetchProduct(id: number): Promise<Product | null> {
 
 interface CreateProductData {
     name: string;
-    pricesByDuration: PriceByDuration[];
+    pricesByDuration: { durationId: string; price: string }[];
     photos: string[];
     description?: string;
     categoryId: number;
     type: string[];
     licenseType: string[];
-    licenseType: string[];
     deviceCounts: number[];
     characteristics?: { title: string; value: string }[];
     questions?: { question: string; answer: string }[];
-    distributives?: { displayName: string; string; fileUrl: string; iconUrl?: string; logoUrl?: string }[];
+    distributives?: { displayName: string; fileUrl: string; iconUrl?: string; logoUrl?: string }[];
     relatedProductIds?: number[];
     autorelease: boolean;
-}
-
-function isValidUrl(url: string): boolean {
-    try {
-        new URL(url)
-        return true
-    } catch {
-        return false
-    }
 }
 
 export async function createProduct(data: CreateProductData) {
@@ -145,15 +112,15 @@ export async function createProduct(data: CreateProductData) {
 
         // Validate photo URLs
         for (const photo of data.photos) {
-            if (!isValidUrl(url: photo)) {
-                return { success: false, error: "Invalid photo URL" };
+            if (!isValidUrl(photo)) {
+                return { success: false, error: `Invalid photo URL: ${photo}` };
             }
         }
 
         // Validate distributive URLs
         if (data.distributives) {
             for (const dist of data.distributives) {
-                if (!isValidUrl(url: dist.fileUrl)) {
+                if (!isValidUrl(dist.fileUrl)) {
                     return { success: false, error: `Invalid URL for distributive: ${dist.displayName}` };
                 }
             }
@@ -171,19 +138,19 @@ export async function createProduct(data: CreateProductData) {
                 deviceCounts: data.deviceCounts,
                 autorelease: data.autorelease,
                 characteristics: {
-                    create: data.characteristics?.map((char: { title: string; value: string }) => ({
+                    create: data.characteristics?.map((char) => ({
                         title: char.title,
                         value: char.value,
                     })) || [],
                 },
                 questions: {
-                    create: data.questions?.map((qa: { question: string; answer: string }) => ({
+                    create: data.questions?.map((qa) => ({
                         question: qa.question,
                         answer: qa.answer,
                     })) || [],
                 },
                 distributives: {
-                    create: data.distributives?.map((dist: { displayName: string; fileUrl: string; iconUrl?: string; logoUrl?: string }) => ({
+                    create: data.distributives?.map((dist) => ({
                         displayName: dist.displayName,
                         fileUrl: dist.fileUrl,
                         iconUrl: dist.iconUrl,
@@ -191,7 +158,7 @@ export async function createProduct(data: CreateProductData) {
                     })) || [],
                 },
                 relatedProducts: {
-                    connect: data.relatedProductIds?.map((id: number) => ({ id })) || [],
+                    connect: data.relatedProductIds?.map((id) => ({ id })) || [],
                 },
             },
             include: {
@@ -207,6 +174,44 @@ export async function createProduct(data: CreateProductData) {
     } catch (error: any) {
         console.error("Error creating product:", error);
         return { success: false, error: "Failed to create product" };
+    }
+}
+
+export async function findProducts(searchTerm: string) {
+    try {
+        const products = await prisma.item.findMany({
+            where: {
+                name: {
+                    contains: searchTerm,
+                    mode: "insensitive",
+                },
+            },
+            select: {
+                id: true,
+                name: true,
+                pricesByDuration: true,
+                photos: true,
+            },
+        });
+
+        return products.map((product) => ({
+            id: product.id,
+            name: product.name,
+            price: product.pricesByDuration[0]?.price || "0",
+            photo: product.photos[0] || "",
+        }));
+    } catch (error) {
+        console.error("Error finding products:", error);
+        return [];
+    }
+}
+
+function isValidUrl(url: string): boolean {
+    try {
+        new URL(url);
+        return true;
+    } catch {
+        return false;
     }
 }
 
