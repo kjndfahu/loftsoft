@@ -1,3 +1,4 @@
+// /src/components/create-product-form.tsx
 "use client";
 
 import type React from "react";
@@ -67,6 +68,7 @@ const subscriptionTypeMap = {
 } as const;
 
 const licenseDurationMap = {
+    perpetual: "PERPETUAL",
     "1month": "ONE_MONTH",
     "3months": "THREE_MONTHS",
     "6months": "SIX_MONTHS",
@@ -446,11 +448,11 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                         </label>
                     </div>
 
-                    <div className=" Whitman, Josephflex flex-col gap-3">
+                    <div className="flex flex-col gap-3">
                         <SubscriptionTypePopup onSelect={handleSubscriptionTypeSelect} selectedTypes={selectedSubscriptionTypes} />
                         <div>
                             <h4 className="text-[14px] font-semibold text-[#161616] mb-2">Срок лицензии:</h4>
-                            <LicenseDuration_popup onSelect={handleLicenseDurationSelect} selectedDurations={selectedLicenseDurations} />
+                            <LicenseDurationPopup onSelect={handleLicenseDurationSelect} selectedDurations={selectedLicenseDurations} />
                             {selectedLicenseDurations.map((duration) => (
                                 <div key={duration.id} className="flex items-center gap-2 mt-2">
                                     <span>{duration.title}</span>

@@ -1,12 +1,13 @@
-"use client"
+// /src/components/license-duration-popup.tsx
+"use client";
 
-import type React from "react"
-import { useState, useEffect, useRef } from "react"
-import { ChevronDown, Check } from "lucide-react"
+import type React from "react";
+import { useState, useEffect, useRef } from "react";
+import { ChevronDown, Check } from "lucide-react";
 
 export interface LicenseDuration {
-    id: string
-    title: string
+    id: string;
+    title: string;
 }
 
 const LICENSE_DURATIONS: LicenseDuration[] = [
@@ -19,29 +20,29 @@ const LICENSE_DURATIONS: LicenseDuration[] = [
     { id: "3years", title: "3 года" },
     { id: "4years", title: "4 года" },
     { id: "5years", title: "5 лет" },
-]
+];
 
 interface LicenseDurationPopupProps {
-    onSelect: (duration: LicenseDuration) => void
-    selectedDurations: LicenseDuration[]
+    onSelect: (duration: LicenseDuration) => void;
+    selectedDurations: LicenseDuration[];
 }
 
 export const LicenseDurationPopup: React.FC<LicenseDurationPopupProps> = ({ onSelect, selectedDurations }) => {
-    const [isOpen, setIsOpen] = useState(false)
-    const popupRef = useRef<HTMLDivElement>(null)
+    const [isOpen, setIsOpen] = useState(false);
+    const popupRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
-                setIsOpen(false)
+                setIsOpen(false);
             }
-        }
+        };
 
-        document.addEventListener("mousedown", handleClickOutside)
+        document.addEventListener("mousedown", handleClickOutside);
         return () => {
-            document.removeEventListener("mousedown", handleClickOutside)
-        }
-    }, [])
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     return (
         <div className="relative" ref={popupRef}>
@@ -64,7 +65,7 @@ export const LicenseDurationPopup: React.FC<LicenseDurationPopupProps> = ({ onSe
                             key={duration.id}
                             className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between"
                             onClick={() => {
-                                onSelect(duration)
+                                onSelect(duration);
                             }}
                         >
                             <span className="truncate">{duration.title}</span>
@@ -76,5 +77,5 @@ export const LicenseDurationPopup: React.FC<LicenseDurationPopupProps> = ({ onSe
                 </div>
             )}
         </div>
-    )
-}
+    );
+};
