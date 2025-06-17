@@ -81,6 +81,15 @@ const licenseDurationMap = {
 
 const deviceCountOptions = [1, 2, 3, 4, 5];
 
+function isValidUrl(url: string): boolean {
+    try {
+        new URL(url);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => {
     const [images, setImages] = useState<string[]>([]);
     const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -326,14 +335,23 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
             setIsSubmitting(true);
             setError(null);
 
+            // Log distributiveFiles for debugging
+            console.log("Distributive Files:", distributiveFiles);
+
             const uploadedDistributives = distributiveFiles
-                .filter((dist) => dist.fileUrl && (dist.customName || dist.displayName))
+                .filter((dist) => dist.fileUrl && isValidUrl(dist.fileUrl))
                 .map((dist) => ({
-                    displayName: dist.customName || dist.displayName,
+                    displayName: dist.customName || dist.displayName || "Distributive",
                     fileUrl: dist.fileUrl!,
                     iconUrl: dist.iconUrl,
                     logoUrl: dist.logoUrl,
                 }));
+
+            if (distributiveFiles.some(dist => dist.fileUrl && !isValidUrl(dist.fileUrl))) {
+                setError("Один или несколько URL дистрибутивов недействительны");
+                setIsSubmitting(false);
+                return;
+            }
 
             const result = await createProduct({
                 name: title,

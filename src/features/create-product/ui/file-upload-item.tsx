@@ -1,9 +1,11 @@
-import type { FC } from "react";
-import { useRef, useState } from "react";
-import { X, CheckCircle } from "lucide-react";
-import { uploadFileToGCS } from "@/enteties/auth/upload-to-gcs";
+// /src/components/file-upload-item.tsx
+"use client";
 
-interface Props {
+import type React from "react";
+import { useState, useRef } from "react";
+import { UploadIcon, X } from "lucide-react";
+
+interface FileUploadItemProps {
     index: number;
     fileName: string;
     fileUrl?: string;
@@ -12,134 +14,82 @@ interface Props {
     onUploadSuccess: (index: number, fileUrl: string) => void;
 }
 
-export const FileUploadItem: FC<Props> = ({ index, fileName, fileUrl, onChange, onRemove, onUploadSuccess }) => {
+export const FileUploadItem: React.FC<FileUploadItemProps> = ({ index, fileName, fileUrl, onChange, onRemove, onUploadSuccess }) => {
+    const [isUrlInput, setIsUrlInput] = useState(!!fileUrl);
+    const [url, setUrl] = useState(fileUrl || "");
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [uploading, setUploading] = useState(false);
-    const [uploadSuccess, setUploadSuccess] = useState(false);
-    const [urlInput, setUrlInput] = useState("");
-    const [useUrl, setUseUrl] = useState(false);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
         if (file) {
-            setUploading(true);
-            setUploadSuccess(false);
-            console.log("File selected in FileUploadItem:", file?.name, "Size:", file?.size);
+            onChange(index, file, file.name, undefined, false);
+            try {
+                const formData = new FormData();
+                const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+                const uploadUrl = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
 
-            const arrayBuffer = await file.arrayBuffer();
-            const fileData = {
-                name: file.name,
-                type: file.type,
-                content: Array.from(new Uint8Array(arrayBuffer)),
-            };
+                if (!uploadPreset || !uploadUrl) {
+                    throw new Error("Cloudinary configuration is missing");
+                }
 
-            const result = await uploadFileToGCS(fileData);
-            setUploading(false);
+                formData.append("file", file);
+                formData.append("upload_preset", uploadPreset);
 
-            if (result.success && result.fileUrl) {
-                onChange(index, file, fileName, result.fileUrl, false);
-                onUploadSuccess(index, result.fileUrl);
-                setUploadSuccess(true);
-                setTimeout(() => setUploadSuccess(false), 3000);
-            } else {
-                console.error("Failed to upload file:", result.error);
-                onChange(index, null, fileName, undefined, false);
+                const response = await fetch(uploadUrl, {
+                    method: "POST",
+                    body: formData,
+                });
+
+                const data = await response.json();
+                if (data.secure_url) {
+                    onUploadSuccess(index, data.secure_url);
+                } else {
+                    throw new Error("Failed to upload file");
+                }
+            } catch (error) {
+                console.error("Error uploading file:", error);
             }
         }
     };
 
     const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setUrlInput(e.target.value);
-    };
-
-    const handleUrlSubmit = () => {
-        if (urlInput && isValidUrl(urlInput)) {
-            onChange(index, null, fileName, urlInput, true);
-            onUploadSuccess(index, urlInput);
-            setUploadSuccess(true);
-            setTimeout(() => setUploadSuccess(false), 3000);
-        } else {
-            console.error("Invalid URL");
-        }
-    };
-
-    const isValidUrl = (url: string): boolean => {
-        try {
-            new URL(url);
-            return true;
-        } catch {
-            return false;
-        }
-    };
-
-    const handleDisplayNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        onChange(index, null, e.target.value, fileUrl, useUrl);
-    };
-
-    const handleClick = () => {
-        fileInputRef.current?.click();
+        const newUrl = e.target.value;
+        setUrl(newUrl);
+        onChange(index, null, newUrl ? "URL Distributive" : "", newUrl, true);
     };
 
     return (
-        <div className="flex flex-col gap-2 border-[1px] border-[#B9BCCB] rounded-[10px] p-2">
-            <div className="flex items-center gap-2">
-                <input
-                    type="text"
-                    value={fileName}
-                    onChange={handleDisplayNameChange}
-                    placeholder="Название дистрибутива"
-                    className="flex-1 bg-transparent outline-0 text-[#161616]"
-                />
-                <button
-                    type="button"
-                    onClick={() => setUseUrl(!useUrl)}
-                    className="px-3 py-1 bg-[#DBDEEF] rounded-[10px] text-[#161616]"
-                >
-                    {useUrl ? "Загрузить файл" : "Указать URL"}
-                </button>
-                <button type="button" onClick={() => onRemove(index)} className="text-[#161616]">
-                    <X className="w-4 h-4" />
-                </button>
-            </div>
-            {useUrl ? (
-                <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+            {isUrlInput ? (
+                <div className="flex-1">
                     <input
                         type="text"
-                        value={urlInput}
+                        placeholder="Введите URL дистрибутива"
+                        value={url}
                         onChange={handleUrlChange}
-                        placeholder="Вставьте URL дистрибутива"
-                        className="flex-1 px-3 py-1 border-[1px] border-[#B9BCCB] rounded-[10px] text-[#161616]"
+                        className="w-full px-3 py-2 border-[1px] border-[#B9BCCB] rounded-[10px]"
                     />
-                    <button
-                        type="button"
-                        onClick={handleUrlSubmit}
-                        className="px-3 py-1 bg-[#161616] text-white rounded-[10px]"
-                        disabled={!urlInput}
-                    >
-                        Добавить
-                    </button>
                 </div>
             ) : (
-                <div className="flex items-center gap-2">
-                    <button
-                        type="button"
-                        onClick={handleClick}
-                        className="px-3 py-1 bg-[#DBDEEF] rounded-[10px] text-[#161616]"
-                        disabled={uploading}
-                    >
-                        {uploading ? "Загрузка..." : fileUrl ? "Перезагрузить" : "Выбрать файл"}
-                    </button>
+                <div
+                    className="flex-1 px-3 py-2 border-[1px] border-[#B9BCCB] rounded-[10px] cursor-pointer"
+                    onClick={() => fileInputRef.current?.click()}
+                >
+                    <span className="truncate">{fileName || "Выберите файл"}</span>
                     <input
                         type="file"
                         ref={fileInputRef}
                         onChange={handleFileChange}
-                        accept=".exe"
                         className="hidden"
                     />
-                    {uploadSuccess && <CheckCircle className="w-5 h-5 text-green-500" />}
-                    {fileUrl && !uploadSuccess && <span className="text-green-500 text-sm">Загружено</span>}
                 </div>
             )}
+            <button type="button" onClick={() => setIsUrlInput(!isUrlInput)} className="text-[#161616]">
+                {isUrlInput ? "Загрузить файл" : "Ввести URL"}
+            </button>
+            <button type="button" onClick={() => onRemove(index)} className="text-[#161616]">
+                <X className="w-4 h-4" />
+            </button>
         </div>
     );
 };
