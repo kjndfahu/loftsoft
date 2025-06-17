@@ -2,6 +2,8 @@
 
 import { prisma } from "../../../prisma/prisma-client"
 
+// Function to create a new product
+
 interface FindProduct {
     id: number
     name: string
@@ -21,17 +23,19 @@ type QuestionAnswer = {
 export interface Product {
     id: number;
     name: string;
-    pricesByDuration: { durationId: string; price: string }[];
-    photos: string[];
+    price: string;
+    photo: string;
     description?: string | null;
     categoryId?: number | null;
     type: string[];
-    licenseType: string[];
-    deviceCounts: number[];
+    licenseType: string;
+    createdAt: Date;
+    updatedAt: Date;
+    category?: any;
     characteristics: any[];
     distributives: any[];
-    averageRating: number;
-    purchaseCount: number;
+    averageRating: number; // Add averageRating
+    purchaseCount: number; // Add purchaseCount
 }
 
 export async function findProducts(searchTerm: string): Promise<FindProduct[]> {
@@ -47,14 +51,11 @@ export async function findProducts(searchTerm: string): Promise<FindProduct[]> {
                 id: true,
                 name: true,
                 price: true,
-                photos: true,
+                photo: true,
             },
             take: 10,
         })
-        return products.map(product => ({
-            ...product,
-            photo: product.photos[0] || ""
-        }))
+        return products
     } catch (error) {
         console.error("Error searching products:", error)
         return []
@@ -87,16 +88,15 @@ export async function fetchProduct(id: number): Promise<Product | null> {
             return null;
         }
 
+        // Calculate average rating
         const totalRating = item.reviews.reduce((sum, review) => sum + review.grade, 0);
         const averageRating = item.reviews.length > 0 ? totalRating / item.reviews.length : 0;
         const reviewCount = item.reviews.length;
 
         return {
             ...item,
-            pricesByDuration: item.pricesByDuration,
-            photos: item.photos,
-            averageRating: Number(averageRating.toFixed(1)),
-            purchaseCount: item.purchasedCount,
+            averageRating: Number(averageRating.toFixed(1)), // Round to 1 decimal place
+            reviewCount,
         };
     } catch (error) {
         console.error("Error fetching product:", error);
@@ -106,8 +106,9 @@ export async function fetchProduct(id: number): Promise<Product | null> {
 
 interface CreateProductData {
     name: string
-    pricesByDuration: { durationId: string; price: string }[]
-    photos: string[]
+    price: string
+    newPrice?: string
+    photo: string
     description?: string
     categoryId: number
     type: string[]
@@ -115,7 +116,7 @@ interface CreateProductData {
     deviceCounts: number[]
     characteristics?: { title: string; value: string }[]
     questions?: { question: string; answer: string }[]
-    distributives?: { displayName: string; fileUrl: string; iconUrl?: string; logoUrl?: string }[]
+    distributives?: { displayName: string; fileUrl: string; logoUrl:string }[]
     relatedProductIds?: number[]
     autorelease: boolean
 }
@@ -131,40 +132,48 @@ function isValidUrl(url: string): boolean {
 
 export async function createProduct(data: CreateProductData) {
     try {
+        // Validation of required fields
         if (
             !data.name ||
-            !data.pricesByDuration.length ||
-            !data.photos.length ||
+            !data.price ||
+            !data.photo ||
             !data.categoryId ||
             !data.type.length ||
-            !data.licenseType.length
+            !data.licenseType.length ||
+            !data.deviceCounts.length
         ) {
             return { success: false, error: "Missing required fields" }
         }
 
-        for (const photo of data.photos) {
-            if (!isValidUrl(photo)) {
-                return { success: false, error: "Invalid photo URL" }
-            }
+        // Validate photo URL
+        if (!isValidUrl(data.photo)) {
+            return { success: false, error: "Invalid photo URL" }
         }
 
-        if (data.distributives && data.distributives.length > 0) {
+        // Validate distributive URLs and ensure they are GCS URLs
+        if (data.distributives) {
             for (const dist of data.distributives) {
                 if (!isValidUrl(dist.fileUrl)) {
                     return { success: false, error: `Invalid URL for distributive: ${dist.displayName}` }
                 }
+                // Validate that the URL is from the configured GCS bucket
+                if (!dist.fileUrl.includes(`storage.googleapis.com/${process.env.GOOGLE_CLOUD_BUCKET_NAME}`)) {
+                    return { success: false, error: `Distributive URL must be from the configured GCS bucket: ${dist.displayName}` }
+                }
             }
         }
 
+        // Create product
         const product = await prisma.item.create({
             data: {
                 name: data.name,
-                pricesByDuration: data.pricesByDuration,
-                photos: data.photos,
+                price: data.price,
+                newPrice: data.newPrice,
+                photo: data.photo,
                 description: data.description || "",
                 categoryId: data.categoryId,
                 type: data.type,
-                licenseType: data.licenseType,
+                licenseType: data.type,
                 deviceCounts: data.deviceCounts,
                 autorelease: data.autorelease,
                 characteristics: {
@@ -183,7 +192,6 @@ export async function createProduct(data: CreateProductData) {
                     create: data.distributives?.map((dist) => ({
                         displayName: dist.displayName,
                         fileUrl: dist.fileUrl,
-                        iconUrl: dist.iconUrl,
                         logoUrl: dist.logoUrl
                     })) || [],
                 },
@@ -204,6 +212,22 @@ export async function createProduct(data: CreateProductData) {
     } catch (error) {
         console.error("Error creating product:", error)
         return { success: false, error: "Failed to create product" }
+    }
+}
+
+// Function to upload distributive file
+export async function uploadDistributiveFile(formData: FormData) {
+    try {
+        const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+        })
+
+        const data = await response.json()
+        return data
+    } catch (error) {
+        console.error("Error uploading distributive file:", error)
+        return { success: false, error: "Failed to upload distributive file" }
     }
 }
 
@@ -265,10 +289,10 @@ export async function getSortedProducts(categoryId: number | null, filter: strin
                 orderBy = { orderItems: { _count: "desc" } };
                 break;
             case "price_asc":
-                orderBy = { pricesByDuration: { _min: { price: "asc" } } };
+                orderBy = { price: "asc" };
                 break;
             case "price_desc":
-                orderBy = { pricesByDuration: { _max: { price: "desc" } } };
+                orderBy = { price: "desc" };
                 break;
             default:
                 orderBy = { createdAt: "desc" };
@@ -410,8 +434,8 @@ export async function searchProducts(searchQuery: string) {
             select: {
                 id: true,
                 name: true,
-                pricesByDuration: true,
-                photos: true,
+                price: true,
+                photo: true,
             },
             orderBy: {
                 createdAt: "desc",
@@ -421,11 +445,7 @@ export async function searchProducts(searchQuery: string) {
 
         return {
             success: true,
-            products: products.map(product => ({
-                ...product,
-                price: product.pricesByDuration[0]?.price || "",
-                photo: product.photos[0] || ""
-            })),
+            products,
         }
     } catch (error) {
         console.error("Error searching products:", error)

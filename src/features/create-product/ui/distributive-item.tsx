@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import type { FC } from "react";Add commentMore actions
 import { useRef, useState } from "react";
 import { UploadIcon, X } from "lucide-react";
 import Image from "next/image";
@@ -7,7 +7,7 @@ interface Props {
     index: number;
     displayName: string;
     fileUrl: string;
-    logoUrl?: string;
+    logoUrl?: string; // Add logoUrl as a prop
     onUpdate: (index: number, displayName: string, iconUrl?: string, logoUrl?: string) => void;
     onRemove: (index: number) => void;
 }
@@ -49,7 +49,7 @@ export const DistributiveDetails: FC<Props> = ({ index, displayName, fileUrl, lo
                 const data = await response.json();
                 if (data.secure_url) {
                     setIconUrl(data.secure_url);
-                    onUpdate(index, name, data.secure_url, logoUrl);
+                    onUpdate(index, name, data.secure_url, logoUrl); // Update with new icon and existing logo
                 }
             } catch (error) {
                 console.error("Ошибка при загрузке иконки:", error);
@@ -79,7 +79,7 @@ export const DistributiveDetails: FC<Props> = ({ index, displayName, fileUrl, lo
 
                 const data = await response.json();
                 if (data.secure_url) {
-                    onUpdate(index, name, iconUrl, data.secure_url);
+                    onUpdate(index, name, iconUrl, data.secure_url); // Update with existing icon and new logo
                 }
             } catch (error) {
                 console.error("Ошибка при загрузке логотипа:", error);
