@@ -1,4 +1,4 @@
-import type { FC } from "react";Add commentMore actions
+import type { FC } from "react";
 import { useRef, useState } from "react";
 import { UploadIcon, X } from "lucide-react";
 import Image from "next/image";
