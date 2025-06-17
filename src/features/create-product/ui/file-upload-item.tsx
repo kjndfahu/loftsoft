@@ -7,7 +7,7 @@ interface Props {
     index: number;
     fileName: string;
     fileUrl?: string;
-    onChange: (index: number, file: File | null, displayName: string, fileUrl?: string) => void;
+    onChange: (index: number, file: File | null, displayName: string, fileUrl?: string, isUrl?: boolean) => void;
     onRemove: (index: number) => void;
     onUploadSuccess: (index: number, fileUrl: string) => void;
 }
@@ -16,6 +16,8 @@ export const FileUploadItem: FC<Props> = ({ index, fileName, fileUrl, onChange, 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
     const [uploadSuccess, setUploadSuccess] = useState(false);
+    const [urlInput, setUrlInput] = useState("");
+    const [useUrl, setUseUrl] = useState(false);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
@@ -35,19 +37,43 @@ export const FileUploadItem: FC<Props> = ({ index, fileName, fileUrl, onChange, 
             setUploading(false);
 
             if (result.success && result.fileUrl) {
-                onChange(index, file, fileName, result.fileUrl);
+                onChange(index, file, fileName, result.fileUrl, false);
                 onUploadSuccess(index, result.fileUrl);
                 setUploadSuccess(true);
                 setTimeout(() => setUploadSuccess(false), 3000);
             } else {
                 console.error("Failed to upload file:", result.error);
-                onChange(index, null, fileName, undefined);
+                onChange(index, null, fileName, undefined, false);
             }
         }
     };
 
+    const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setUrlInput(e.target.value);
+    };
+
+    const handleUrlSubmit = () => {
+        if (urlInput && isValidUrl(urlInput)) {
+            onChange(index, null, fileName, urlInput, true);
+            onUploadSuccess(index, urlInput);
+            setUploadSuccess(true);
+            setTimeout(() => setUploadSuccess(false), 3000);
+        } else {
+            console.error("Invalid URL");
+        }
+    };
+
+    const isValidUrl = (url: string): boolean => {
+        try {
+            new URL(url);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
     const handleDisplayNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        onChange(index, null, e.target.value, fileUrl);
+        onChange(index, null, e.target.value, fileUrl, useUrl);
     };
 
     const handleClick = () => {
@@ -55,34 +81,65 @@ export const FileUploadItem: FC<Props> = ({ index, fileName, fileUrl, onChange, 
     };
 
     return (
-        <div className="flex items-center gap-2 border-[1px] border-[#B9BCCB] rounded-[10px] p-2">
-            <input
-                type="text"
-                value={fileName}
-                onChange={handleDisplayNameChange}
-                placeholder="Название дистрибутива"
-                className="flex-1 bg-transparent outline-0 text-[#161616]"
-            />
-            <button
-                type="button"
-                onClick={handleClick}
-                className="px-3 py-1 bg-[#DBDEEF] rounded-[10px] text-[#161616]"
-                disabled={uploading}
-            >
-                {uploading ? "Загрузка..." : fileUrl ? "Перезагрузить" : "Выбрать файл"}
-            </button>
-            <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                accept=".exe"
-                className="hidden"
-            />
-            {uploadSuccess && <CheckCircle className="w-5 h-5 text-green-500" />}
-            {fileUrl && !uploadSuccess && <span className="text-green-500 text-sm">Загружено</span>}
-            <button type="button" onClick={() => onRemove(index)} className="text-[#161616]">
-                <X className="w-4 h-4" />
-            </button>
+        <div className="flex flex-col gap-2 border-[1px] border-[#B9BCCB] rounded-[10px] p-2">
+            <div className="flex items-center gap-2">
+                <input
+                    type="text"
+                    value={fileName}
+                    onChange={handleDisplayNameChange}
+                    placeholder="Название дистрибутива"
+                    className="flex-1 bg-transparent outline-0 text-[#161616]"
+                />
+                <button
+                    type="button"
+                    onClick={() => setUseUrl(!useUrl)}
+                    className="px-3 py-1 bg-[#DBDEEF] rounded-[10px] text-[#161616]"
+                >
+                    {useUrl ? "Загрузить файл" : "Указать URL"}
+                </button>
+                <button type="button" onClick={() => onRemove(index)} className="text-[#161616]">
+                    <X className="w-4 h-4" />
+                </button>
+            </div>
+            {useUrl ? (
+                <div className="flex items-center gap-2">
+                    <input
+                        type="text"
+                        value={urlInput}
+                        onChange={handleUrlChange}
+                        placeholder="Вставьте URL дистрибутива"
+                        className="flex-1 px-3 py-1 border-[1px] border-[#B9BCCB] rounded-[10px] text-[#161616]"
+                    />
+                    <button
+                        type="button"
+                        onClick={handleUrlSubmit}
+                        className="px-3 py-1 bg-[#161616] text-white rounded-[10px]"
+                        disabled={!urlInput}
+                    >
+                        Добавить
+                    </button>
+                </div>
+            ) : (
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={handleClick}
+                        className="px-3 py-1 bg-[#DBDEEF] rounded-[10px] text-[#161616]"
+                        disabled={uploading}
+                    >
+                        {uploading ? "Загрузка..." : fileUrl ? "Перезагрузить" : "Выбрать файл"}
+                    </button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        accept=".exe"
+                        className="hidden"
+                    />
+                    {uploadSuccess && <CheckCircle className="w-5 h-5 text-green-500" />}
+                    {fileUrl && !uploadSuccess && <span className="text-green-500 text-sm">Загружено</span>}
+                </div>
+            )}
         </div>
     );
 };

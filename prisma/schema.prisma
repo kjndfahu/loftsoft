@@ -34,7 +34,7 @@ model Item {
   categoryId       Int?
   purchasedCount   Int              @default(0)
   category         Category?        @relation(fields: [categoryId], references: [id])
-  type             Type[]
+  type             String[] // Changed from Type[] to String[] for consistency
   licenseType      String[]         @default([])
   deviceCounts     Int[]            @default([])
   characteristics  Characteristic[]

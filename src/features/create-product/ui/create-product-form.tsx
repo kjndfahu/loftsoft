@@ -12,9 +12,8 @@ import { LicenseDurationPopup, type LicenseDuration } from "./license-duration-p
 import { CharacteristicItem } from "./characteristic-item";
 import { FileUploadItem } from "./file-upload-item";
 import { QuestionAnswerItem } from "./question-answer-item";
-
 import { createProduct, findProducts } from "@/enteties/product/product";
-import {DistributiveDetails} from "@/features/create-product/ui/distributive-item";
+import { DistributiveDetails } from "@/features/create-product/ui/distributive-item";
 
 interface Props {
     setIsOpen: (arg: boolean) => void;
@@ -44,8 +43,9 @@ interface DistributiveFile {
     displayName: string;
     fileUrl?: string;
     iconUrl?: string;
-    logoUrl?: string; // New field for logo URL
+    logoUrl?: string;
     customName?: string;
+    isUrl?: boolean;
 }
 
 interface Product {
@@ -53,6 +53,11 @@ interface Product {
     name: string;
     price: string;
     photo: string;
+}
+
+interface PriceByDuration {
+    durationId: string;
+    price: string;
 }
 
 const subscriptionTypeMap = {
@@ -75,20 +80,19 @@ const licenseDurationMap = {
 const deviceCountOptions = [1, 2, 3, 4, 5];
 
 export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => {
-    const [image, setImage] = useState<string | null>(null);
-    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [images, setImages] = useState<string[]>([]);
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [isHovering, setIsHovering] = useState(false);
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [price, setPrice] = useState("");
-    const [newPrice, setNewPrice] = useState("");
+    const [pricesByDuration, setPricesByDuration] = useState<PriceByDuration[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [selectedSubscriptionTypes, setSelectedSubscriptionTypes] = useState<SubscriptionType[]>([]);
     const [selectedLicenseDurations, setSelectedLicenseDurations] = useState<LicenseDuration[]>([]);
     const [selectedDeviceCounts, setSelectedDeviceCounts] = useState<number[]>([]);
     const [characteristics, setCharacteristics] = useState<Characteristic[]>([{ title: "", value: "" }]);
     const [questions, setQuestions] = useState<QuestionAnswer[]>([{ question: "", answer: "" }]);
-    const [distributiveFiles, setDistributiveFiles] = useState<DistributiveFile[]>([{ file: null, displayName: "", fileUrl: "" }]);
+    const [distributiveFiles, setDistributiveFiles] = useState<DistributiveFile[]>([{ file: null, displayName: "", fileUrl: "", isUrl: false }]);
     const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
     const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -119,37 +123,46 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     };
 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setImageFile(file);
+        const files = Array.from(e.target.files || []);
+        if (files.length) {
+            setImageFiles(prev => [...prev, ...files]);
             try {
-                const formData = new FormData();
-                const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-                const uploadUrl = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
+                const uploadPromises = files.map(async (file) => {
+                    const formData = new FormData();
+                    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+                    const uploadUrl = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
 
-                if (!uploadPreset || !uploadUrl) {
-                    throw new Error("Cloudinary configuration is missing");
-                }
+                    if (!uploadPreset || !uploadUrl) {
+                        throw new Error("Cloudinary configuration is missing");
+                    }
 
-                formData.append("file", file);
-                formData.append("upload_preset", uploadPreset);
+                    formData.append("file", file);
+                    formData.append("upload_preset", uploadPreset);
 
-                const response = await fetch(uploadUrl, {
-                    method: "POST",
-                    body: formData,
+                    const response = await fetch(uploadUrl, {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    const data = await response.json();
+                    if (data.secure_url) {
+                        return data.secure_url;
+                    }
+                    throw new Error("Failed to upload image");
                 });
 
-                const data = await response.json();
-                if (data.secure_url) {
-                    setImage(data.secure_url);
-                } else {
-                    setError("Ошибка при загрузке изображения");
-                }
+                const newImageUrls = await Promise.all(uploadPromises);
+                setImages(prev => [...prev, ...newImageUrls]);
             } catch (error) {
-                console.error("Ошибка при загрузке изображения:", error);
-                setError("Не удалось загрузить изображение");
+                console.error("Ошибка при загрузке изображений:", error);
+                setError("Не удалось загрузить изображения");
             }
         }
+    };
+
+    const handleRemoveImage = (index: number) => {
+        setImages(prev => prev.filter((_, i) => i !== index));
+        setImageFiles(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleCategorySelect = (category: Category) => {
@@ -165,10 +178,20 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     };
 
     const handleLicenseDurationSelect = (duration: LicenseDuration) => {
-        setSelectedLicenseDurations((prev) =>
-            prev.some((d) => d.id === duration.id)
-                ? prev.filter((d) => d.id !== duration.id)
-                : [...prev, duration]
+        setSelectedLicenseDurations((prev) => {
+            if (prev.some((d) => d.id === duration.id)) {
+                setPricesByDuration(prevPrices => prevPrices.filter(p => p.durationId !== duration.id));
+                return prev.filter((d) => d.id !== duration.id);
+            } else {
+                setPricesByDuration(prevPrices => [...prevPrices, { durationId: duration.id, price: "" }]);
+                return [...prev, duration];
+            }
+        });
+    };
+
+    const handlePriceByDurationChange = (durationId: string, price: string) => {
+        setPricesByDuration(prev =>
+            prev.map(p => p.durationId === durationId ? { ...p, price } : p)
         );
     };
 
@@ -183,15 +206,15 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     };
 
     const handleRemoveCharacteristic = (index: number) => {
-        const newCharacteristics = [...characteristics];
-        newCharacteristics.splice(index, 1);
-        setCharacteristics(newCharacteristics);
+        setCharacteristics(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleChangeCharacteristic = (index: number, title: string, value: string) => {
-        const newCharacteristics = [...characteristics];
-        newCharacteristics[index] = { title, value };
-        setCharacteristics(newCharacteristics);
+        setCharacteristics(prev => {
+            const newChars = [...prev];
+            newChars[index] = { title, value };
+            return newChars;
+        });
     };
 
     const handleAddQuestion = () => {
@@ -199,51 +222,53 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     };
 
     const handleRemoveQuestion = (index: number) => {
-        const newQuestions = [...questions];
-        newQuestions.splice(index, 1);
-        setQuestions(newQuestions);
+        setQuestions(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleChangeQuestion = (index: number, question: string, answer: string) => {
-        const newQuestions = [...questions];
-        newQuestions[index] = { question, answer };
-        setQuestions(newQuestions);
+        setQuestions(prev => {
+            const newQuestions = [...prev];
+            newQuestions[index] = { question, answer };
+            return newQuestions;
+        });
     };
 
     const handleAddFile = () => {
-        setDistributiveFiles([...distributiveFiles, { file: null, displayName: "", fileUrl: "" }]);
+        setDistributiveFiles([...distributiveFiles, { file: null, displayName: "", fileUrl: "", isUrl: false }]);
     };
 
     const handleRemoveFile = (index: number) => {
-        const newFiles = [...distributiveFiles];
-        newFiles.splice(index, 1);
-        setDistributiveFiles(newFiles);
+        setDistributiveFiles(prev => prev.filter((_, i) => i !== index));
     };
 
-    const handleChangeFile = (index: number, file: File | null, displayName: string, fileUrl?: string) => {
-        const newFiles = [...distributiveFiles];
-        newFiles[index] = { ...newFiles[index], file, displayName, fileUrl };
-        setDistributiveFiles(newFiles);
+    const handleChangeFile = (index: number, file: File | null, displayName: string, fileUrl?: string, isUrl?: boolean) => {
+        setDistributiveFiles(prev => {
+            const newFiles = [...prev];
+            newFiles[index] = { ...newFiles[index], file, displayName, fileUrl, isUrl };
+            return newFiles;
+        });
     };
 
     const handleUploadSuccess = (index: number, fileUrl: string) => {
-        const newFiles = [...distributiveFiles];
-        if (!newFiles[index].fileUrl) {
-            newFiles[index] = { ...newFiles[index], fileUrl };
-            setDistributiveFiles(newFiles);
-        }
+        setDistributiveFiles(prev => {
+            const newFiles = [...prev];
+            if (!newFiles[index].fileUrl) {
+                newFiles[index] = { ...newFiles[index], fileUrl, isUrl: false };
+            }
+            return newFiles;
+        });
     };
 
     const handleUpdateDistributive = (index: number, displayName: string, iconUrl?: string, logoUrl?: string) => {
-        const newFiles = [...distributiveFiles];
-        newFiles[index] = { ...newFiles[index], customName: displayName, iconUrl, logoUrl };
-        setDistributiveFiles(newFiles);
+        setDistributiveFiles(prev => {
+            const newFiles = [...prev];
+            newFiles[index] = { ...newFiles[index], customName: displayName, iconUrl, logoUrl };
+            return newFiles;
+        });
     };
 
     const handleRemoveDistributive = (index: number) => {
-        const newFiles = [...distributiveFiles];
-        newFiles.splice(index, 1);
-        setDistributiveFiles(newFiles);
+        setDistributiveFiles(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleRelatedProductSelect = (product: Product) => {
@@ -259,7 +284,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     };
 
     const handleRemoveRelatedProduct = (productId: number) => {
-        setRelatedProducts((prev) => prev.filter((p) => p.id !== productId));
+        setRelatedProducts(prev => prev.filter(p => p.id !== productId));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -270,8 +295,8 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
             return;
         }
 
-        if (!price) {
-            setError("Введите цену товара");
+        if (pricesByDuration.some(p => !p.price)) {
+            setError("Введите цену для каждого выбранного срока лицензии");
             return;
         }
 
@@ -290,13 +315,8 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
             return;
         }
 
-        if (selectedDeviceCounts.length === 0) {
-            setError("Выберите хотя бы одно количество устройств");
-            return;
-        }
-
-        if (!image) {
-            setError("Загрузите изображение товара");
+        if (images.length === 0) {
+            setError("Загрузите хотя бы одно изображение товара");
             return;
         }
 
@@ -310,20 +330,13 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                     displayName: dist.customName || dist.displayName,
                     fileUrl: dist.fileUrl!,
                     iconUrl: dist.iconUrl,
-                    logoUrl: dist.logoUrl, // Include logoUrl in the submission
+                    logoUrl: dist.logoUrl,
                 }));
-
-            if (uploadedDistributives.length === 0) {
-                setError("Добавьте хотя бы один дистрибутив");
-                setIsSubmitting(false);
-                return;
-            }
 
             const result = await createProduct({
                 name: title,
-                price,
-                newPrice: newPrice || undefined,
-                photo: image,
+                pricesByDuration: pricesByDuration,
+                photos: images,
                 description,
                 categoryId: Number.parseInt(selectedCategory.id),
                 type: selectedSubscriptionTypes.map(
@@ -371,35 +384,38 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
 
             <div className="flex sml:flex-row flex-col gap-6">
                 <div className="flex flex-col gap-4 sml:w-1/2 w-full">
-                    <div
-                        className={`relative h-[250px] rounded-[16px] overflow-hidden ${image ? "" : "bg-[#B9BCCB]"} cursor-pointer transition-all duration-200 ${isHovering && !image ? "bg-[#A4A8BA]" : ""} flex items-center justify-center`}
-                        onClick={handleImageClick}
-                        onMouseEnter={() => setIsHovering(true)}
-                        onMouseLeave={() => setIsHovering(false)}
-                    >
-                        {image ? (
-                            <>
-                                <Image src={image} alt="Product image" fill style={{ objectFit: "cover" }} />
-                                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
-                                    <div className="bg-white p-2 rounded-full opacity-0 hover:opacity-100 transition-all duration-200">
-                                        <UploadIcon className="w-6 h-6 text-[#161616]" />
-                                    </div>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center text-white">
-                                <UploadIcon className="w-10 h-10 mb-2" />
-                                <p className="text-sm font-medium">Нажмите, чтобы загрузить изображение</p>
-                                <p className="text-xs opacity-70 mt-1">Рекомендуемый размер: 424x133px</p>
+                    <div className="flex flex-wrap gap-4">
+                        {images.map((image, index) => (
+                            <div key={index} className="relative w-[100px] h-[100px]">
+                                <Image src={image} alt={`Product image ${index + 1}`} fill style={{ objectFit: "cover" }} />
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveImage(index)}
+                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
                             </div>
-                        )}
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleImageChange}
-                            accept="image/*"
-                            className="hidden"
-                        />
+                        ))}
+                        <div
+                            className={`relative w-[100px] h-[100px] rounded-[16px] overflow-hidden bg-[#B9BCCB] cursor-pointer transition-all duration-200 ${isHovering ? "bg-[#A4A8BA]" : ""} flex items-center justify-center`}
+                            onClick={handleImageClick}
+                            onMouseEnter={() => setIsHovering(true)}
+                            onMouseLeave={() => setIsHovering(false)}
+                        >
+                            <div className="flex flex-col items-center justify-center text-white">
+                                <UploadIcon className="w-6 h-6 mb-1" />
+                                <p className="text-xs">Добавить фото</p>
+                            </div>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleImageChange}
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                            />
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -410,27 +426,6 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                                 type="text"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        <div className="px-[15px] flex-1 py-[10px] border-[1px] border-[#B9BCCB] rounded-[20px]">
-                            <input
-                                className="bg-transparent w-full outline-0 text-[#161616]"
-                                placeholder="Цена"
-                                type="number"
-                                value={price}
-                                onChange={(e) => setPrice(e.target.value)}
-                            />
-                        </div>
-                        <div className="px-[15px] flex-1 py-[10px] border-[1px] border-[#B9BCCB] rounded-[20px]">
-                            <input
-                                className="bg-transparent w-full outline-0 text-[#161616]"
-                                placeholder="Новая цена (необязательно)"
-                                type="number"
-                                value={newPrice}
-                                onChange={(e) => setNewPrice(e.target.value)}
                             />
                         </div>
                     </div>
@@ -451,11 +446,26 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                         </label>
                     </div>
 
-                    <div className="flex flex-col gap-3">
+                    <div className=" Whitman, Josephflex flex-col gap-3">
                         <SubscriptionTypePopup onSelect={handleSubscriptionTypeSelect} selectedTypes={selectedSubscriptionTypes} />
-                        <LicenseDurationPopup onSelect={handleLicenseDurationSelect} selectedDurations={selectedLicenseDurations} />
+                        <div>
+                            <h4 className="text-[14px] font-semibold text-[#161616] mb-2">Срок лицензии:</h4>
+                            <LicenseDuration_popup onSelect={handleLicenseDurationSelect} selectedDurations={selectedLicenseDurations} />
+                            {selectedLicenseDurations.map((duration) => (
+                                <div key={duration.id} className="flex items-center gap-2 mt-2">
+                                    <span>{duration.title}</span>
+                                    <input
+                                        type="number"
+                                        placeholder="Цена"
+                                        value={pricesByDuration.find(p => p.durationId === duration.id)?.price || ""}
+                                        onChange={(e) => handlePriceByDurationChange(duration.id, e.target.value)}
+                                        className="px-3 py-1 border-[1px] border-[#B9BCCB] rounded-[10px] w-[100px]"
+                                    />
+                                </div>
+                            ))}
+                        </div>
                         <div className="flex flex-wrap gap-2">
-                            <h4 className="text-[14px] font-semibold text-[#161616] w-full">Количество устройств:</h4>
+                            <h4 className="text-[14px] font-semibold text-[#161616] w-full">Количество устройств (необязательно):</h4>
                             {deviceCountOptions.map((count) => (
                                 <button
                                     key={count}
@@ -534,7 +544,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
 
                     <div>
                         <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-[16px] font-semibold text-[#161616]">Дистрибутивы:</h4>
+                            <h4 className="text-[16px] font-semibold text-[#161616]">Дистрибутивы (необязательно):</h4>
                             <button
                                 type="button"
                                 onClick={handleAddFile}
@@ -559,7 +569,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                                             index={index}
                                             displayName={file.customName || file.displayName}
                                             fileUrl={file.fileUrl}
-                                            logoUrl={file.logoUrl} // Pass logoUrl
+                                            logoUrl={file.logoUrl}
                                             onUpdate={handleUpdateDistributive}
                                             onRemove={handleRemoveDistributive}
                                         />

@@ -105,20 +105,20 @@ export async function fetchProduct(id: number): Promise<Product | null> {
 }
 
 interface CreateProductData {
-    name: string
-    price: string
-    newPrice?: string
-    photo: string
-    description?: string
-    categoryId: number
-    type: string[]
-    licenseType: string[]
-    deviceCounts: number[]
-    characteristics?: { title: string; value: string }[]
-    questions?: { question: string; answer: string }[]
-    distributives?: { displayName: string; fileUrl: string; logoUrl:string }[]
-    relatedProductIds?: number[]
-    autorelease: boolean
+    name: string;
+    pricesByDuration: PriceByDuration[];
+    photos: string[];
+    description?: string;
+    categoryId: number;
+    type: string[];
+    licenseType: string[];
+    licenseType: string[];
+    deviceCounts: number[];
+    characteristics?: { title: string; value: string }[];
+    questions?: { question: string; answer: string }[];
+    distributives?: { displayName: string; string; fileUrl: string; iconUrl?: string; logoUrl?: string }[];
+    relatedProductIds?: number[];
+    autorelease: boolean;
 }
 
 function isValidUrl(url: string): boolean {
@@ -132,71 +132,66 @@ function isValidUrl(url: string): boolean {
 
 export async function createProduct(data: CreateProductData) {
     try {
-        // Validation of required fields
         if (
             !data.name ||
-            !data.price ||
-            !data.photo ||
+            !data.pricesByDuration.length ||
+            !data.photos.length ||
             !data.categoryId ||
             !data.type.length ||
-            !data.licenseType.length ||
-            !data.deviceCounts.length
+            !data.licenseType.length
         ) {
-            return { success: false, error: "Missing required fields" }
+            return { success: false, error: "Missing required fields" };
         }
 
-        // Validate photo URL
-        if (!isValidUrl(data.photo)) {
-            return { success: false, error: "Invalid photo URL" }
+        // Validate photo URLs
+        for (const photo of data.photos) {
+            if (!isValidUrl(url: photo)) {
+                return { success: false, error: "Invalid photo URL" };
+            }
         }
 
-        // Validate distributive URLs and ensure they are GCS URLs
+        // Validate distributive URLs
         if (data.distributives) {
             for (const dist of data.distributives) {
-                if (!isValidUrl(dist.fileUrl)) {
-                    return { success: false, error: `Invalid URL for distributive: ${dist.displayName}` }
-                }
-                // Validate that the URL is from the configured GCS bucket
-                if (!dist.fileUrl.includes(`storage.googleapis.com/${process.env.GOOGLE_CLOUD_BUCKET_NAME}`)) {
-                    return { success: false, error: `Distributive URL must be from the configured GCS bucket: ${dist.displayName}` }
+                if (!isValidUrl(url: dist.fileUrl)) {
+                    return { success: false, error: `Invalid URL for distributive: ${dist.displayName}` };
                 }
             }
         }
 
-        // Create product
         const product = await prisma.item.create({
             data: {
                 name: data.name,
-                price: data.price,
-                newPrice: data.newPrice,
-                photo: data.photo,
+                pricesByDuration: data.pricesByDuration,
+                photos: data.photos,
                 description: data.description || "",
                 categoryId: data.categoryId,
                 type: data.type,
-                licenseType: data.type,
+                licenseType: data.licenseType,
                 deviceCounts: data.deviceCounts,
                 autorelease: data.autorelease,
                 characteristics: {
-                    create: data.characteristics?.map((char) => ({
+                    create: data.characteristics?.map((char: { title: string; value: string }) => ({
                         title: char.title,
                         value: char.value,
                     })) || [],
                 },
                 questions: {
-                    create: data.questions?.map((qa) => ({
+                    create: data.questions?.map((qa: { question: string; answer: string }) => ({
                         question: qa.question,
                         answer: qa.answer,
                     })) || [],
                 },
                 distributives: {
-                    create: data.distributives?.map((dist) => ({
+                    create: data.distributives?.map((dist: { displayName: string; fileUrl: string; iconUrl?: string; logoUrl?: string }) => ({
                         displayName: dist.displayName,
                         fileUrl: dist.fileUrl,
-                        logoUrl: dist.logoUrl
+                        iconUrl: dist.iconUrl,
+                        logoUrl: dist.logoUrl,
                     })) || [],
                 },
                 relatedProducts: {
-                    connect: data.relatedProductIds?.map((id) => ({ id })) || [],
+                    connect: data.relatedProductIds?.map((id: number) => ({ id })) || [],
                 },
             },
             include: {
@@ -206,12 +201,12 @@ export async function createProduct(data: CreateProductData) {
                 category: true,
                 relatedProducts: true,
             },
-        })
+        });
 
-        return { success: true, product }
-    } catch (error) {
-        console.error("Error creating product:", error)
-        return { success: false, error: "Failed to create product" }
+        return { success: true, product };
+    } catch (error: any) {
+        console.error("Error creating product:", error);
+        return { success: false, error: "Failed to create product" };
     }
 }
 
