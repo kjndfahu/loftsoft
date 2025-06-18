@@ -8,10 +8,10 @@ import { useState } from "react"
 interface PurchaseBlockProps {
     id?: string
     name?: string
-    price: string // Selected price based on license type
-    photos: string[] // Changed to photos array
+    price: string
+    photos: string[]
     type: string[]
-    licenseType: string[]
+    licenseType: string // Changed to single string
     deviceCounts: number[]
 }
 
@@ -24,21 +24,21 @@ export const PurchaseBlock = ({ id, name, price, photos, type, licenseType, devi
                 id={id}
                 name={name}
                 price={price}
-                photo={photos[0]} // Use first photo
+                photo={photos[0]}
                 type={selectedType}
-                licenseType={licenseType[0] || ""}
+                licenseType={licenseType}
                 deviceCount={deviceCounts[0] || 1}
             />
             <SubType
                 availableTypes={type}
                 selectedType={selectedType}
                 setSelectedType={setSelectedType}
-                licenseTypes={[]}
-                selectedLicenseType={""}
-                setSelectedLicenseType={() => {}}
+                licenseTypes={[]} // Empty to prevent license type selection here
+                selectedLicenseType={licenseType}
+                setSelectedLicenseType={() => {}} // No-op to prevent changes
                 deviceCounts={[]}
-                selectedDeviceCount={0}
-                setSelectedDeviceCount={() => {}}
+                selectedDeviceCount={deviceCounts[0] || 1}
+                setSelectedDeviceCount={() => {}} // No-op to prevent changes
             />
             <PostBlock />
         </div>

@@ -21,7 +21,7 @@ interface ProductContainerProps {
         characteristics: { id: number; title: string; value: string }[]
         distributives: { id: number; displayName: string; fileUrl: string }[]
         averageRating: number
-        reviews: { id: number; grade: number }[] // Added to derive reviewCount
+        reviews: { id: number; grade: number }[]
     }
 }
 
@@ -49,13 +49,13 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     // Calculate star rating display
     const fullStars = Math.floor(item.averageRating)
     const hasHalfStar = item.averageRating % 1 >= 0.5
-    const reviewCount = item.reviews.length // Derive review count from reviews
+    const reviewCount = item.reviews.length
 
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
             <div style={{ aspectRatio: 384 / 537 }} className="self-center aspect-384/537 relative bg-gray-400 md:w-[30%] sm:w-[33%] sm:w-[400px] w-[236px] rounded-[20px]">
                 <Image
-                    src={item.photos[0] || "/placeholder.svg"} // Use first photo
+                    src={item.photos[0] || "/placeholder.svg"}
                     alt={item.name}
                     fill
                     className="object-cover rounded-[20px]"
@@ -117,10 +117,10 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             <PurchaseBlock
                 id={item.id.toString()}
                 name={item.name}
-                price={selectedPrice} // Pass the selected price
+                price={selectedPrice}
                 photos={item.photos}
                 type={item.type}
-                licenseType={[selectedLicenseType]}
+                licenseType={selectedLicenseType} // Pass as single string
                 deviceCounts={[selectedDeviceCount]}
             />
         </div>

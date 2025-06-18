@@ -2,8 +2,6 @@
 
 import { prisma } from "../../../prisma/prisma-client"
 
-// Function to create a new product
-
 interface FindProduct {
     id: number
     name: string
@@ -21,23 +19,25 @@ type QuestionAnswer = {
 }
 
 export interface Product {
-    id: number;
-    name: string;
-    price: string;
-    photo: string;
-    description?: string | null;
-    categoryId?: number | null;
-    type: string[];
-    licenseType: string;
-    createdAt: Date;
-    updatedAt: Date;
-    category?: any;
-    characteristics: any[];
-    distributives: any[];
-    averageRating: number; // Add averageRating
-    purchaseCount: number; // Add purchaseCount
+    id: number
+    name: string
+    pricesByDuration: { durationId: string; price: string }[]
+    photos: string[]
+    description?: string | null
+    categoryId?: number | null
+    type: string[]
+    licenseType: string[]
+    deviceCounts: number[]
+    createdAt: Date
+    updatedAt: Date
+    category?: { id: number; title: string } | null
+    characteristics: { id: number; title: string; value: string }[]
+    distributives: { id: number; displayName: string; fileUrl: string; iconUrl?: string; logoUrl?: string }[]
+    averageRating: number
+    purchaseCount: number
+    relatedProducts: Product[]
+    reviews: { id: number; grade: number }[]
 }
-
 
 export async function fetchProduct(id: number): Promise<Product | null> {
     try {
@@ -55,65 +55,72 @@ export async function fetchProduct(id: number): Promise<Product | null> {
                 questions: true,
                 reviews: {
                     select: {
+                        id: true,
                         grade: true,
                     },
                 },
             },
-        });
+        })
 
         if (!item) {
-            return null;
+            return null
         }
 
-        // Calculate average rating
-        const totalRating = item.reviews.reduce((sum, review) => sum + review.grade, 0);
-        const averageRating = item.reviews.length > 0 ? totalRating / item.reviews.length : 0;
-        const reviewCount = item.reviews.length;
+        const totalRating = item.reviews.reduce((sum, review) => sum + review.grade, 0)
+        const averageRating = item.reviews.length > 0 ? totalRating / item.reviews.length : 0
 
         return {
             ...item,
-            averageRating: Number(averageRating.toFixed(1)), // Round to 1 decimal place
-            reviewCount,
-        };
+            pricesByDuration: item.pricesByDuration || [],
+            photos: item.photos || [],
+            type: item.type || [],
+            licenseType: item.licenseType || [],
+            deviceCounts: item.deviceCounts || [],
+            averageRating: Number(averageRating.toFixed(1)),
+            purchaseCount: item.orderItems?.reduce((sum, orderItem) => sum + (orderItem.quantity || 0), 0) || 0,
+            reviews: item.reviews || [],
+        }
     } catch (error) {
-        console.error("Error fetching product:", error);
-        return null;
+        console.error("Error fetching product:", error)
+        return null
     }
 }
 
 interface CreateProductData {
-    name: string;
-    pricesByDuration: { durationId: string; price: string }[];
-    photos: string[];
-    description?: string;
-    categoryId: number;
-    type: string[];
-    licenseType: string[];
-    deviceCounts: number[];
-    characteristics?: { title: string; value: string }[];
-    questions?: { question: string; answer: string }[];
-    distributives?: { displayName: string; fileUrl: string; iconUrl?: string; logoUrl?: string }[];
-    relatedProductIds?: number[];
-    autorelease: boolean;
+    name: string
+    pricesByDuration: { durationId: string; price: string }[]
+    photos: string[]
+    description?: string
+    categoryId: number
+    type: string[]
+    licenseType: string[]
+    deviceCounts: number[]
+    characteristics?: { title: string; value: string }[]
+    questions?: { question: string; answer: string }[]
+    distributives?: { displayName: string; fileUrl: string; iconUrl?: string; logoUrl?: string }[]
+    relatedProductIds?: number[]
+    autorelease: boolean
 }
 
 export async function createProduct(data: CreateProductData) {
     try {
+        // Validate required fields
         if (
             !data.name ||
             !data.pricesByDuration.length ||
             !data.photos.length ||
             !data.categoryId ||
             !data.type.length ||
-            !data.licenseType.length
+            !data.licenseType.length ||
+            !data.deviceCounts.length
         ) {
-            return { success: false, error: "Missing required fields" };
+            return { success: false, error: "Missing required fields" }
         }
 
         // Validate photo URLs
         for (const photo of data.photos) {
             if (!isValidUrl(photo)) {
-                return { success: false, error: `Invalid photo URL: ${photo}` };
+                return { success: false, error: `Invalid photo URL: ${photo}` }
             }
         }
 
@@ -121,8 +128,47 @@ export async function createProduct(data: CreateProductData) {
         if (data.distributives) {
             for (const dist of data.distributives) {
                 if (!isValidUrl(dist.fileUrl)) {
-                    return { success: false, error: `Invalid URL for distributive: ${dist.displayName}` };
+                    return { success: false, error: `Invalid file URL for distributive: ${dist.displayName}` }
                 }
+                if (dist.iconUrl && !isValidUrl(dist.iconUrl)) {
+                    return { success: false, error: `Invalid icon URL for distributive: ${dist.displayName}` }
+                }
+                if (dist.logoUrl && !isValidUrl(dist.logoUrl)) {
+                    return { success: false, error: `Invalid logo URL for distributive: ${dist.displayName}` }
+                }
+            }
+        }
+
+        // Validate pricesByDuration
+        for (const price of data.pricesByDuration) {
+            if (!price.durationId || !/^\d+(\.\d{1,2})?$/.test(price.price)) {
+                return { success: false, error: `Invalid price format for duration ${price.durationId}: ${price.price}` }
+            }
+        }
+
+        // Validate deviceCounts
+        for (const count of data.deviceCounts) {
+            if (!Number.isInteger(count) || count <= 0) {
+                return { success: false, error: `Invalid device count: ${count}` }
+            }
+        }
+
+        // Validate categoryId
+        const category = await prisma.category.findUnique({ where: { id: data.categoryId } })
+        if (!category) {
+            return { success: false, error: `Category with ID ${data.categoryId} does not exist` }
+        }
+
+        // Validate relatedProductIds
+        if (data.relatedProductIds && data.relatedProductIds.length > 0) {
+            const existingProducts = await prisma.item.findMany({
+                where: { id: { in: data.relatedProductIds } },
+                select: { id: true },
+            })
+            const existingIds = existingProducts.map((p) => p.id)
+            const invalidIds = data.relatedProductIds.filter((id) => !existingIds.includes(id))
+            if (invalidIds.length > 0) {
+                return { success: false, error: `Invalid related product IDs: ${invalidIds.join(", ")}` }
             }
         }
 
@@ -166,14 +212,38 @@ export async function createProduct(data: CreateProductData) {
                 questions: true,
                 distributives: true,
                 category: true,
-                relatedProducts: true,
+                relatedProducts: {
+                    include: {
+                        category: true,
+                    },
+                },
+                reviews: {
+                    select: {
+                        id: true,
+                        grade: true,
+                    },
+                },
             },
-        });
+        })
 
-        return { success: true, product };
+        const totalRating = product.reviews.reduce((sum, review) => sum + review.grade, 0)
+        const averageRating = product.reviews.length > 0 ? totalRating / product.reviews.length : 0
+
+        return {
+            success: true,
+            product: {
+                ...product,
+                averageRating: Number(averageRating.toFixed(1)),
+                purchaseCount: 0, // New product, no purchases yet
+                reviews: product.reviews || [],
+            },
+        }
     } catch (error: any) {
-        console.error("Error creating product:", error);
-        return { success: false, error: "Failed to create product" };
+        console.error("Error creating product:", error)
+        if (error.code === "P2002") {
+            return { success: false, error: "Product creation failed: Unique constraint violation" }
+        }
+        return { success: false, error: `Failed to create product: ${error.message}` }
     }
 }
 
@@ -192,30 +262,29 @@ export async function findProducts(searchTerm: string) {
                 pricesByDuration: true,
                 photos: true,
             },
-        });
+        })
 
         return products.map((product) => ({
             id: product.id,
             name: product.name,
             price: product.pricesByDuration[0]?.price || "0",
             photo: product.photos[0] || "",
-        }));
+        }))
     } catch (error) {
-        console.error("Error finding products:", error);
-        return [];
+        console.error("Error finding products:", error)
+        return []
     }
 }
 
 function isValidUrl(url: string): boolean {
     try {
-        new URL(url);
-        return true;
+        new URL(url)
+        return true
     } catch {
-        return false;
+        return false
     }
 }
 
-// Function to upload distributive file
 export async function uploadDistributiveFile(formData: FormData) {
     try {
         const response = await fetch("/api/upload", {
@@ -241,6 +310,7 @@ export async function getProductsByCategory(categoryId?: number | null) {
                 distributives: true,
                 reviews: {
                     select: {
+                        id: true,
                         grade: true,
                     },
                 },
@@ -253,49 +323,55 @@ export async function getProductsByCategory(categoryId?: number | null) {
             orderBy: {
                 createdAt: "desc",
             },
-        });
+        })
 
         const productsWithStats = products.map((product) => {
-            const reviews = Array.isArray(product.reviews) ? product.reviews : [];
-            const totalRating = reviews.reduce((sum, review) => sum + (review.grade || 0), 0);
-            const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0;
-            const purchaseCount = product.orderItems.reduce((sum, orderItem) => sum + (orderItem.quantity || 0), 0);
+            const reviews = Array.isArray(product.reviews) ? product.reviews : []
+            const totalRating = reviews.reduce((sum, review) => sum + (review.grade || 0), 0)
+            const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0
+            const purchaseCount = product.orderItems.reduce((sum, orderItem) => sum + (orderItem.quantity || 0), 0)
 
             return {
                 ...product,
+                pricesByDuration: product.pricesByDuration || [],
+                photos: product.photos || [],
+                type: product.type || [],
+                licenseType: product.licenseType || [],
+                deviceCounts: product.deviceCounts || [],
                 averageRating: Number(averageRating.toFixed(1)) || 0,
                 purchaseCount,
-            };
-        });
+                reviews: product.reviews || [],
+            }
+        })
 
-        return { success: true, products: productsWithStats };
+        return { success: true, products: productsWithStats }
     } catch (error) {
-        console.error("Error fetching products by category:", error);
-        return { success: false, error: "Error fetching products", products: [] };
+        console.error("Error fetching products by category:", error)
+        return { success: false, error: "Error fetching products", products: [] }
     }
 }
 
 export async function getSortedProducts(categoryId: number | null, filter: string) {
     try {
-        let orderBy: any = { createdAt: "desc" };
+        let orderBy: any = { createdAt: "desc" }
         switch (filter) {
             case "rating":
-                orderBy = { reviews: { _count: "desc" } };
-                break;
+                orderBy = { reviews: { _count: "desc" } }
+                break
             case "popularity":
-                orderBy = { purchasedCount: "desc" };
-                break;
+                orderBy = { orderItems: { _count: "desc" } } // Fixed: Align with purchaseCount
+                break
             case "purchases":
-                orderBy = { orderItems: { _count: "desc" } };
-                break;
+                orderBy = { orderItems: { _count: "desc" } }
+                break
             case "price_asc":
-                orderBy = { price: "asc" };
-                break;
+                orderBy = { pricesByDuration: { _min: { price: "asc" } } } // Simplified
+                break
             case "price_desc":
-                orderBy = { price: "desc" };
-                break;
+                orderBy = { pricesByDuration: { _max: { price: "desc" } } } // Simplified
+                break
             default:
-                orderBy = { createdAt: "desc" };
+                orderBy = { createdAt: "desc" }
         }
 
         const products = await prisma.item.findMany({
@@ -306,6 +382,7 @@ export async function getSortedProducts(categoryId: number | null, filter: strin
                 distributives: true,
                 reviews: {
                     select: {
+                        id: true,
                         grade: true,
                     },
                 },
@@ -316,25 +393,31 @@ export async function getSortedProducts(categoryId: number | null, filter: strin
                 },
             },
             orderBy,
-        });
+        })
 
         const productsWithStats = products.map((product) => {
-            const reviews = Array.isArray(product.reviews) ? product.reviews : [];
-            const totalRating = reviews.reduce((sum, review) => sum + (review.grade || 0), 0);
-            const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0;
-            const purchaseCount = product.orderItems.reduce((sum, orderItem) => sum + (orderItem.quantity || 0), 0);
+            const reviews = Array.isArray(product.reviews) ? product.reviews : []
+            const totalRating = reviews.reduce((sum, review) => sum + (review.grade || 0), 0)
+            const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0
+            const purchaseCount = product.orderItems.reduce((sum, orderItem) => sum + (orderItem.quantity || 0), 0)
 
             return {
                 ...product,
+                pricesByDuration: product.pricesByDuration || [],
+                photos: product.photos || [],
+                type: product.type || [],
+                licenseType: product.licenseType || [],
+                deviceCounts: product.deviceCounts || [],
                 averageRating: Number(averageRating.toFixed(1)) || 0,
                 purchaseCount,
-            };
-        });
+                reviews: product.reviews || [],
+            }
+        })
 
-        return { success: true, products: productsWithStats };
+        return { success: true, products: productsWithStats }
     } catch (error) {
-        console.error("Error fetching sorted products:", error);
-        return { success: false, error: "Error fetching products", products: [] };
+        console.error("Error fetching sorted products:", error)
+        return { success: false, error: "Error fetching products", products: [] }
     }
 }
 
@@ -345,13 +428,43 @@ export async function getAllProducts() {
                 category: true,
                 characteristics: true,
                 distributives: true,
+                reviews: {
+                    select: {
+                        id: true,
+                        grade: true,
+                    },
+                },
+                orderItems: {
+                    select: {
+                        quantity: true,
+                    },
+                },
             },
             orderBy: {
                 createdAt: "desc",
             },
         })
 
-        return { success: true, products }
+        const productsWithStats = products.map((product) => {
+            const reviews = Array.isArray(product.reviews) ? product.reviews : []
+            const totalRating = reviews.reduce((sum, review) => sum + (review.grade || 0), 0)
+            const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0
+            const purchaseCount = product.orderItems.reduce((sum, orderItem) => sum + (orderItem.quantity || 0), 0)
+
+            return {
+                ...product,
+                pricesByDuration: product.pricesByDuration || [],
+                photos: product.photos || [],
+                type: product.type || [],
+                licenseType: product.licenseType || [],
+                deviceCounts: product.deviceCounts || [],
+                averageRating: Number(averageRating.toFixed(1)) || 0,
+                purchaseCount,
+                reviews: product.reviews || [],
+            }
+        })
+
+        return { success: true, products: productsWithStats }
     } catch (error) {
         console.error("Error fetching all products:", error)
         return { success: false, error: "Error fetching products", products: [] }
@@ -379,6 +492,12 @@ export async function searchProductsAndCategories(searchQuery: string) {
                 category: true,
                 characteristics: true,
                 distributives: true,
+                reviews: {
+                    select: {
+                        id: true,
+                        grade: true,
+                    },
+                },
             },
             orderBy: {
                 createdAt: "desc",
@@ -399,9 +518,27 @@ export async function searchProductsAndCategories(searchQuery: string) {
             take: 5,
         })
 
+        const productsWithStats = products.map((product) => {
+            const reviews = Array.isArray(product.reviews) ? product.reviews : []
+            const totalRating = reviews.reduce((sum, review) => sum + (review.grade || 0), 0)
+            const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0
+
+            return {
+                ...product,
+                pricesByDuration: product.pricesByDuration || [],
+                photos: product.photos || [],
+                type: product.type || [],
+                licenseType: product.licenseType || [],
+                deviceCounts: product.deviceCounts || [],
+                averageRating: Number(averageRating.toFixed(1)) || 0,
+                purchaseCount: product.orderItems?.reduce((sum, orderItem) => sum + (orderItem.quantity || 0), 0) || 0,
+                reviews: product.reviews || [],
+            }
+        })
+
         return {
             success: true,
-            products,
+            products: productsWithStats,
             categories,
         }
     } catch (error) {
@@ -434,8 +571,8 @@ export async function searchProducts(searchQuery: string) {
             select: {
                 id: true,
                 name: true,
-                price: true,
-                photo: true,
+                pricesByDuration: true,
+                photos: true,
             },
             orderBy: {
                 createdAt: "desc",
@@ -445,7 +582,12 @@ export async function searchProducts(searchQuery: string) {
 
         return {
             success: true,
-            products,
+            products: products.map((product) => ({
+                id: product.id,
+                name: product.name,
+                price: product.pricesByDuration[0]?.price || "0",
+                photo: product.photos[0] || "",
+            })),
         }
     } catch (error) {
         console.error("Error searching products:", error)
