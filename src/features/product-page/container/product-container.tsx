@@ -25,13 +25,11 @@ interface ProductContainerProps {
     }
 }
 
-const durationLabels: Record<string, string> = {
-    "1year": "1 год",
-    "2years": "2 года",
-    "3years": "3 года",
-    "4years": "4 года",
-    "5years": "5 лет",
-}
+// Helper function to convert durationId to Russian label
+const getDurationLabel = (durationId: string): string => {
+    const years = parseInt(durationId.replace("years", ""));
+    return years === 1 ? `${years} год` : `${years} года`;
+};
 
 export const ProductContainer = ({ item }: ProductContainerProps) => {
     const [selectedDurationId, setSelectedDurationId] = useState<string>(item.pricesByDuration[0]?.durationId || "")
@@ -54,7 +52,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                     {item.photos.slice(1).map((photo, index) => (
                         <div
                             key={index}
-                            style={{aspectRatio: 1 / 1}}
+                            style={{ aspectRatio: 1 / 1 }}
                             className="relative bg-gray-400 w-[76px] h-[76px] rounded-[8px] overflow-hidden"
                         >
                             <Image
@@ -67,7 +65,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                     ))}
                 </div>
 
-                <div style={{aspectRatio: 384 / 537}} className="relative bg-gray-400 rounded-[20px] overflow-hidden">
+                <div style={{ aspectRatio: 384 / 537 }} className="relative bg-gray-400 rounded-[20px] overflow-hidden">
                     <Image
                         src={item.photos[0] || "/placeholder.svg"}
                         alt={item.name}
@@ -75,14 +73,12 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                         className="object-cover rounded-[20px]"
                     />
                 </div>
-
             </div>
             <div className="flex md:w-[37%] w-full flex-col md:gap-6 gap-4">
                 <div className="flex flex-col gap-[10px]">
                     <h3 className="md:text-[24px] text-[20px] font-semibold text-[#161616]">{item.name}</h3>
                     <div className="flex items-center gap-2">
-                        <span
-                            className="md:text-[16px] text-[14px] text-[#FFAC33]">{item.averageRating.toFixed(1)}</span>
+                        <span className="md:text-[16px] text-[14px] text-[#FFAC33]">{item.averageRating.toFixed(1)}</span>
                         <div className="flex gap-[6px]">
                             {[...Array(5)].map((_, index) => (
                                 <ReviewStar
@@ -114,7 +110,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                 <div className="flex flex-col gap-3">
                     <span className="md:text-[14px] text-[13px] text-[#161616]">Срок лицензии:</span>
                     <div className="flex flex-wrap gap-[10px]">
-                        {Object.entries(durationLabels).map(([durationId, label]) => (
+                        {item.pricesByDuration.map(({ durationId }) => (
                             <button
                                 key={durationId}
                                 onClick={() => setSelectedDurationId(durationId)}
@@ -122,7 +118,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                                     selectedDurationId === durationId ? "border-[#5069E8]" : "border-[#DBDEEF]"
                                 }`}
                             >
-                                <span>{label}</span>
+                                <span>{getDurationLabel(durationId)}</span>
                             </button>
                         ))}
                     </div>
