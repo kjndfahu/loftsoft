@@ -57,20 +57,21 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     }
 
     return (
-        <div className="flex flex-col items-center md:flex-row w-full md:gap-7 gap-4">
+        <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
             {/* Mobile Slider (below md breakpoint) */}
             <div className="md:hidden w-full">
-                <div className="relative  mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
-                    <div className="absolute inset-0">
+                <div className="relative" style={{ aspectRatio: 384 / 537 }}>
+                    <div className="absolute inset-0 flex justify-center items-center">
                         <Image
                             src={item.photos[activeSlide] || "/placeholder.svg"}
                             alt={item.name}
-                            fill
+                            width={300} // Adjustable width for centering
+                            height={537 * (300 / 384)} // Maintain aspect ratio
                             className="object-cover rounded-[20px]"
                         />
                     </div>
-                    {/* Curved overlay effect */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-[20px]"></div>
+                    {/* Multi-colored curved overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-blue-500 via-purple-500 to-pink-500 rounded-[20px] opacity-50"></div>
                 </div>
                 {/* Navigation dots */}
                 <div className="flex justify-center gap-2 mt-2">
@@ -82,10 +83,21 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                         ></button>
                     ))}
                 </div>
+                {/* Rating and Price (placeholder) */}
+                <div className="flex flex-col items-center mt-2 text-center">
+                    <div className="flex items-center gap-1">
+                        <span className="text-yellow-400">★ ★ ★ ★ ☆</span>
+                        <span className="text-gray-600">{item.averageRating.toFixed(1)} отзывов</span>
+                    </div>
+                    <div className="flex gap-2 mt-1">
+                        <span className="text-blue-600">1ПК</span>
+                        <span className="text-blue-600">2ПК</span>
+                    </div>
+                </div>
             </div>
 
             {/* Desktop Thumbnail Layout (above md breakpoint) */}
-            <div className="hidden md:flex md:w-[30%] w-full flex-row gap-4">
+            <div className="md:flex md:w-[30%] w-full flex-row gap-4">
                 <div className="flex flex-col gap-2">
                     {item.photos.slice(1).map((photo, index) => (
                         <div
@@ -102,7 +114,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                         </div>
                     ))}
                 </div>
-                <div style={{ aspectRatio: 384 / 537 }} className="relative bg-gray-400 rounded-[20px] overflow-hidden">
+                <div style={{ aspectRatio: 384 / 537 }} className="relative bg-gray-400 rounded-[20px] overflow-hidden flex-1">
                     <Image
                         src={item.photos[0] || "/placeholder.svg"}
                         alt={item.name}
