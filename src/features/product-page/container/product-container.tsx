@@ -28,12 +28,18 @@ interface ProductContainerProps {
 // Helper function to convert durationId to Russian label
 const getDurationLabel = (durationId: string): string => {
     const years = parseInt(durationId.replace("years", ""));
-    return years === 1 ? `${years} год` : `${years} года`;
+    const lastDigit = years % 10;
+    const lastTwoDigits = years % 100;
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) return `${years} лет`;
+    if (lastDigit === 1) return `${years} год`;
+    if (lastDigit >= 2 && lastDigit <= 4) return `${years} года`;
+    return `${years} лет`;
 };
 
 export const ProductContainer = ({ item }: ProductContainerProps) => {
     const [selectedDurationId, setSelectedDurationId] = useState<string>(item.pricesByDuration[0]?.durationId || "")
     const [selectedDeviceCount, setSelectedDeviceCount] = useState<number>(item.deviceCounts[0] || 1)
+    const [activeSlide, setActiveSlide] = useState(0)
 
     // Find the price for the selected duration
     const selectedPrice = item.pricesByDuration.find(
@@ -45,33 +51,35 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     const hasHalfStar = item.averageRating % 1 >= 0.5
     const reviewCount = item.reviews.length
 
+    // Handle slide change
+    const handleSlideChange = (index: number) => {
+        setActiveSlide(index)
+    }
+
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
-            <div className="flex flex-row md:w-[30%] w-full gap-4">
-                <div className="flex flex-col gap-2">
-                    {item.photos.slice(1).map((photo, index) => (
-                        <div
-                            key={index}
-                            style={{ aspectRatio: 1 / 1 }}
-                            className="relative bg-gray-400 w-[76px] h-[76px] rounded-[8px] overflow-hidden"
-                        >
-                            <Image
-                                src={photo || "/placeholder.svg"}
-                                alt={`${item.name} thumbnail ${index + 1}`}
-                                fill
-                                className="object-cover rounded-[20px]"
-                            />
-                        </div>
-                    ))}
+            <div className="md:w-[30%] w-full">
+                <div className="relative" style={{ aspectRatio: 384 / 537 }}>
+                    <div className="absolute inset-0">
+                        <Image
+                            src={item.photos[activeSlide] || "/placeholder.svg"}
+                            alt={item.name}
+                            fill
+                            className="object-cover rounded-[20px]"
+                        />
+                    </div>
+                    {/* Curved overlay effect */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-[20px]"></div>
                 </div>
-
-                <div style={{ aspectRatio: 384 / 537 }} className="relative bg-gray-400 rounded-[20px] overflow-hidden">
-                    <Image
-                        src={item.photos[0] || "/placeholder.svg"}
-                        alt={item.name}
-                        fill
-                        className="object-cover rounded-[20px]"
-                    />
+                {/* Navigation dots */}
+                <div className="flex justify-center gap-2 mt-2">
+                    {item.photos.map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => handleSlideChange(index)}
+                            className={`w-2 h-2 rounded-full ${activeSlide === index ? "bg-[#5069E8]" : "bg-gray-300"}`}
+                        ></button>
+                    ))}
                 </div>
             </div>
             <div className="flex md:w-[37%] w-full flex-col md:gap-6 gap-4">

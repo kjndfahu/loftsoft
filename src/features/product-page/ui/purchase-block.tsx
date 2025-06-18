@@ -19,7 +19,7 @@ export const PurchaseBlock = ({ id, name, price, photos, type, licenseType, devi
     const [selectedType, setSelectedType] = useState<string>(type[0] || "KEY")
 
     return (
-        <div className="flex md:w-[27%] sm:w-[500px] w-full flex-col gap-[10px]">
+        <div className="flex md:w-[27%] w-full flex-col gap-[10px]">
             <PriceBlock
                 id={id}
                 name={name}
