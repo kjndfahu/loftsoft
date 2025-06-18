@@ -26,8 +26,11 @@ interface ProductContainerProps {
 }
 
 const durationLabels: Record<string, string> = {
+    "1year": "1 год",
     "2years": "2 года",
     "3years": "3 года",
+    "4years": "4 года",
+    "5years": "5 лет",
 }
 
 export const ProductContainer = ({ item }: ProductContainerProps) => {
@@ -46,13 +49,33 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
 
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
-            <div style={{ aspectRatio: 384 / 537 }} className="self-center aspect-384/537 relative bg-gray-400 md:w-[30%] sm:w-[33%] sm:w-[400px] w-[236px] rounded-[20px]">
-                <Image
-                    src={item.photos[0] || "/placeholder.svg"}
-                    alt={item.name}
-                    fill
-                    className="object-cover rounded-[20px]"
-                />
+            <div className="flex flex-col md:w-[30%] w-full gap-4">
+                {/* Main Image */}
+                <div style={{ aspectRatio: 384 / 537 }} className="relative bg-gray-400 rounded-[20px] overflow-hidden">
+                    <Image
+                        src={item.photos[0] || "/placeholder.svg"}
+                        alt={item.name}
+                        fill
+                        className="object-cover rounded-[20px]"
+                    />
+                </div>
+                {/* Thumbnails */}
+                <div className="flex flex-col gap-2">
+                    {item.photos.slice(1).map((photo, index) => (
+                        <div
+                            key={index}
+                            style={{ aspectRatio: 1 / 1.5 }}
+                            className="relative bg-gray-400 rounded-[20px] overflow-hidden"
+                        >
+                            <Image
+                                src={photo || "/placeholder.svg"}
+                                alt={`${item.name} thumbnail ${index + 1}`}
+                                fill
+                                className="object-cover rounded-[20px]"
+                            />
+                        </div>
+                    ))}
+                </div>
             </div>
             <div className="flex md:w-[37%] w-full flex-col md:gap-6 gap-4">
                 <div className="flex flex-col gap-[10px]">
