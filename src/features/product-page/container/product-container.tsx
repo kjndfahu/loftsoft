@@ -58,7 +58,8 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
 
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
-            <div className="md:w-[30%] w-full">
+            {/* Mobile Slider (below md breakpoint) */}
+            <div className="md:hidden w-full">
                 <div className="relative" style={{ aspectRatio: 384 / 537 }}>
                     <div className="absolute inset-0">
                         <Image
@@ -82,6 +83,35 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                     ))}
                 </div>
             </div>
+
+            {/* Desktop Thumbnail Layout (above md breakpoint) */}
+            <div className="hidden md:flex md:w-[30%] w-full flex-row gap-4">
+                <div className="flex flex-col gap-2">
+                    {item.photos.slice(1).map((photo, index) => (
+                        <div
+                            key={index}
+                            style={{ aspectRatio: 1 / 1 }}
+                            className="relative bg-gray-400 w-[76px] h-[76px] rounded-[8px] overflow-hidden"
+                        >
+                            <Image
+                                src={photo || "/placeholder.svg"}
+                                alt={`${item.name} thumbnail ${index + 1}`}
+                                fill
+                                className="object-cover rounded-[8px]"
+                            />
+                        </div>
+                    ))}
+                </div>
+                <div style={{ aspectRatio: 384 / 537 }} className="relative bg-gray-400 rounded-[20px] overflow-hidden">
+                    <Image
+                        src={item.photos[0] || "/placeholder.svg"}
+                        alt={item.name}
+                        fill
+                        className="object-cover rounded-[20px]"
+                    />
+                </div>
+            </div>
+
             <div className="flex md:w-[37%] w-full flex-col md:gap-6 gap-4">
                 <div className="flex flex-col gap-[10px]">
                     <h3 className="md:text-[24px] text-[20px] font-semibold text-[#161616]">{item.name}</h3>
