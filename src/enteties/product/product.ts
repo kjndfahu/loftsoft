@@ -21,7 +21,7 @@ type QuestionAnswer = {
 export interface Product {
     id: number
     name: string
-    pricesByDuration: { durationId: string; price: string }[]
+    pricesByDuration: { durationId: string; price: { regular: string; discounted: string } }[]
     photos: string[]
     description?: string | null
     categoryId?: number | null
@@ -71,7 +71,10 @@ export async function fetchProduct(id: number): Promise<Product | null> {
 
         return {
             ...item,
-            pricesByDuration: item.pricesByDuration || [],
+            pricesByDuration: item.pricesByDuration.map(p => ({
+                durationId: p.durationId,
+                price: JSON.parse(p.price as string) || { regular: "0", discounted: "0" }
+            })) || [],
             photos: item.photos || [],
             type: item.type || [],
             licenseType: item.licenseType || [],
@@ -88,7 +91,7 @@ export async function fetchProduct(id: number): Promise<Product | null> {
 
 interface CreateProductData {
     name: string
-    pricesByDuration: { durationId: string; price: string }[]
+    pricesByDuration: { durationId: string; regularPrice: string; discountedPrice: string }[]
     photos: string[]
     description?: string
     categoryId: number
@@ -141,8 +144,8 @@ export async function createProduct(data: CreateProductData) {
 
         // Validate pricesByDuration
         for (const price of data.pricesByDuration) {
-            if (!price.durationId || !/^\d+(\.\d{1,2})?$/.test(price.price)) {
-                return { success: false, error: `Invalid price format for duration ${price.durationId}: ${price.price}` }
+            if (!price.durationId || !/^\d+(\.\d{1,2})?$/.test(price.regularPrice) || !/^\d+(\.\d{1,2})?$/.test(price.discountedPrice)) {
+                return { success: false, error: `Invalid price format for duration ${price.durationId}: ${price.regularPrice} or ${price.discountedPrice}` }
             }
         }
 
@@ -175,7 +178,10 @@ export async function createProduct(data: CreateProductData) {
         const product = await prisma.item.create({
             data: {
                 name: data.name,
-                pricesByDuration: data.pricesByDuration,
+                pricesByDuration: data.pricesByDuration.map(p => ({
+                    durationId: p.durationId,
+                    price: JSON.stringify({ regular: p.regularPrice, discounted: p.discountedPrice })
+                })),
                 photos: data.photos,
                 description: data.description || "",
                 categoryId: data.categoryId,
@@ -233,6 +239,10 @@ export async function createProduct(data: CreateProductData) {
             success: true,
             product: {
                 ...product,
+                pricesByDuration: product.pricesByDuration.map(p => ({
+                    durationId: p.durationId,
+                    price: JSON.parse(p.price as string) || { regular: "0", discounted: "0" }
+                })),
                 averageRating: Number(averageRating.toFixed(1)),
                 purchaseCount: 0, // New product, no purchases yet
                 reviews: product.reviews || [],
@@ -267,7 +277,7 @@ export async function findProducts(searchTerm: string) {
         return products.map((product) => ({
             id: product.id,
             name: product.name,
-            price: product.pricesByDuration[0]?.price || "0",
+            price: product.pricesByDuration[0]?.price ? JSON.parse(product.pricesByDuration[0].price as string).regular || "0" : "0",
             photo: product.photos[0] || "",
         }))
     } catch (error) {
@@ -333,7 +343,10 @@ export async function getProductsByCategory(categoryId?: number | null) {
 
             return {
                 ...product,
-                pricesByDuration: product.pricesByDuration || [],
+                pricesByDuration: product.pricesByDuration.map(p => ({
+                    durationId: p.durationId,
+                    price: JSON.parse(p.price as string) || { regular: "0", discounted: "0" }
+                })) || [],
                 photos: product.photos || [],
                 type: product.type || [],
                 licenseType: product.licenseType || [],

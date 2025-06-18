@@ -58,7 +58,8 @@ interface Product {
 
 interface PriceByDuration {
     durationId: string;
-    price: string;
+    regularPrice: string;
+    discountedPrice: string;
 }
 
 const subscriptionTypeMap = {
@@ -194,15 +195,15 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                 setPricesByDuration(prevPrices => prevPrices.filter(p => p.durationId !== duration.id));
                 return prev.filter((d) => d.id !== duration.id);
             } else {
-                setPricesByDuration(prevPrices => [...prevPrices, { durationId: duration.id, price: "" }]);
+                setPricesByDuration(prevPrices => [...prevPrices, { durationId: duration.id, regularPrice: "", discountedPrice: "" }]);
                 return [...prev, duration];
             }
         });
     };
 
-    const handlePriceByDurationChange = (durationId: string, price: string) => {
+    const handlePriceByDurationChange = (durationId: string, field: 'regularPrice' | 'discountedPrice', price: string) => {
         setPricesByDuration(prev =>
-            prev.map(p => p.durationId === durationId ? { ...p, price } : p)
+            prev.map(p => p.durationId === durationId ? { ...p, [field]: price } : p)
         );
     };
 
@@ -306,8 +307,8 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
             return;
         }
 
-        if (pricesByDuration.some(p => !p.price)) {
-            setError("Введите цену для каждого выбранного срока лицензии");
+        if (pricesByDuration.some(p => !p.regularPrice || !p.discountedPrice)) {
+            setError("Введите обе цены (обычную и скидочную) для каждого выбранного срока лицензии");
             return;
         }
 
@@ -334,9 +335,6 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
         try {
             setIsSubmitting(true);
             setError(null);
-
-            // Log distributiveFiles for debugging
-            console.log("Distributive Files:", distributiveFiles);
 
             const uploadedDistributives = distributiveFiles
                 .filter((dist) => dist.fileUrl && isValidUrl(dist.fileUrl))
@@ -471,18 +469,28 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                         <div>
                             <h4 className="text-[14px] font-semibold text-[#161616] mb-2">Срок лицензии:</h4>
                             <LicenseDurationPopup onSelect={handleLicenseDurationSelect} selectedDurations={selectedLicenseDurations} />
-                            {selectedLicenseDurations.map((duration) => (
-                                <div key={duration.id} className="flex items-center gap-2 mt-2">
-                                    <span>{duration.title}</span>
-                                    <input
-                                        type="number"
-                                        placeholder="Цена"
-                                        value={pricesByDuration.find(p => p.durationId === duration.id)?.price || ""}
-                                        onChange={(e) => handlePriceByDurationChange(duration.id, e.target.value)}
-                                        className="px-3 py-1 border-[1px] border-[#B9BCCB] rounded-[10px] w-[100px]"
-                                    />
-                                </div>
-                            ))}
+                            {selectedLicenseDurations.map((duration) => {
+                                const priceData = pricesByDuration.find(p => p.durationId === duration.id) || { regularPrice: "", discountedPrice: "" };
+                                return (
+                                    <div key={duration.id} className="flex items-center gap-2 mt-2">
+                                        <span>{duration.title}</span>
+                                        <input
+                                            type="number"
+                                            placeholder="Обычная цена"
+                                            value={priceData.regularPrice}
+                                            onChange={(e) => handlePriceByDurationChange(duration.id, 'regularPrice', e.target.value)}
+                                            className="px-3 py-1 border-[1px] border-[#B9BCCB] rounded-[10px] w-[100px]"
+                                        />
+                                        <input
+                                            type="number"
+                                            placeholder="Скидочная цена"
+                                            value={priceData.discountedPrice}
+                                            onChange={(e) => handlePriceByDurationChange(duration.id, 'discountedPrice', e.target.value)}
+                                            className="px-3 py-1 border-[1px] border-[#B9BCCB] rounded-[10px] w-[100px]"
+                                        />
+                                    </div>
+                                );
+                            })}
                         </div>
                         <div className="flex flex-wrap gap-2">
                             <h4 className="text-[14px] font-semibold text-[#161616] w-full">Количество устройств (необязательно):</h4>
@@ -675,4 +683,4 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
             </div>
         </form>
     );
-};
+}
