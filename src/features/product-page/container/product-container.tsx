@@ -70,8 +70,6 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                             className="object-cover rounded-[20px]"
                         />
                     </div>
-                    {/* Multi-colored curved overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-blue-500 via-purple-500 to-pink-500 rounded-[20px] opacity-50"></div>
                 </div>
                 {/* Navigation dots */}
                 <div className="flex justify-center gap-2 mt-2">
