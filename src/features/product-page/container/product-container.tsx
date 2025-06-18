@@ -59,18 +59,19 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
             {/* Mobile Slider (below md breakpoint) */}
-            <div className="md:hidden self-center items-center justify-center w-full">
-                <div className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
-                    <div className="absolute inset-0">
+            <div className="md:hidden mds:max-w-[540px] sml:max-w-[340px] max-w-[236px w-full">
+                <div className="relative" style={{ aspectRatio: 384 / 537 }}>
+                    <div className="absolute inset-0 flex justify-center items-center">
                         <Image
                             src={item.photos[activeSlide] || "/placeholder.svg"}
                             alt={item.name}
-                            fill
+                            width={300} // Adjustable width for centering
+                            height={537 * (300 / 384)} // Maintain aspect ratio
                             className="object-cover rounded-[20px]"
                         />
                     </div>
-                    {/* Curved overlay effect */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-[20px]"></div>
+                    {/* Multi-colored curved overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-blue-500 via-purple-500 to-pink-500 rounded-[20px] opacity-50"></div>
                 </div>
                 {/* Navigation dots */}
                 <div className="flex justify-center gap-2 mt-2">
@@ -81,6 +82,17 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                             className={`w-2 h-2 rounded-full ${activeSlide === index ? "bg-[#5069E8]" : "bg-gray-300"}`}
                         ></button>
                     ))}
+                </div>
+                {/* Rating and Price (placeholder) */}
+                <div className="flex flex-col items-center mt-2 text-center">
+                    <div className="flex items-center gap-1">
+                        <span className="text-yellow-400">★ ★ ★ ★ ☆</span>
+                        <span className="text-gray-600">{item.averageRating.toFixed(1)} отзывов</span>
+                    </div>
+                    <div className="flex gap-2 mt-1">
+                        <span className="text-blue-600">1ПК</span>
+                        <span className="text-blue-600">2ПК</span>
+                    </div>
                 </div>
             </div>
 
