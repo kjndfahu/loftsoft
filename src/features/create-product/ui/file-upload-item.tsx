@@ -1,53 +1,53 @@
 // /src/components/file-upload-item.tsx
 "use client";
 
-import type React from "react";
-import { useState, useRef } from "react";
-import { UploadIcon, X } from "lucide-react";
+import type { FC } from "react";
+import { useRef, useState } from "react";
+import { X, CheckCircle } from "lucide-react";
+import { uploadFileToGCS } from "@/enteties/auth/upload-to-gcs";
 
-interface FileUploadItemProps {
+interface Props {
     index: number;
     fileName: string;
     fileUrl?: string;
-    onChange: (index: number, file: File | null, displayName: string, fileUrl?: string, isUrl?: boolean) => void;
+    onChange: (index: number, file: File | null, displayName: string, fileUrl?: string) => void;
     onRemove: (index: number) => void;
     onUploadSuccess: (index: number, fileUrl: string) => void;
 }
 
-export const FileUploadItem: React.FC<FileUploadItemProps> = ({ index, fileName, fileUrl, onChange, onRemove, onUploadSuccess }) => {
+export const FileUploadItem: FC<Props> = ({ index, fileName, fileUrl, onChange, onRemove, onUploadSuccess }) => {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [uploading, setUploading] = useState(false);
+    const [uploadSuccess, setUploadSuccess] = useState(false);
     const [isUrlInput, setIsUrlInput] = useState(!!fileUrl);
     const [url, setUrl] = useState(fileUrl || "");
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [displayName, setDisplayName] = useState(fileName);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] || null;
         if (file) {
-            onChange(index, file, file.name, undefined, false);
-            try {
-                const formData = new FormData();
-                const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-                const uploadUrl = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
+            setUploading(true);
+            setUploadSuccess(false);
+            setDisplayName(file.name);
 
-                if (!uploadPreset || !uploadUrl) {
-                    throw new Error("Cloudinary configuration is missing");
-                }
+            const arrayBuffer = await file.arrayBuffer();
+            const fileData = {
+                name: file.name,
+                type: file.type,
+                content: Array.from(new Uint8Array(arrayBuffer)),
+            };
 
-                formData.append("file", file);
-                formData.append("upload_preset", uploadPreset);
+            const result = await uploadFileToGCS(fileData);
+            setUploading(false);
 
-                const response = await fetch(uploadUrl, {
-                    method: "POST",
-                    body: formData,
-                });
-
-                const data = await response.json();
-                if (data.secure_url) {
-                    onUploadSuccess(index, data.secure_url);
-                } else {
-                    throw new Error("Failed to upload file");
-                }
-            } catch (error) {
-                console.error("Error uploading file:", error);
+            if (result.success && result.fileUrl) {
+                onChange(index, file, displayName, result.fileUrl);
+                onUploadSuccess(index, result.fileUrl);
+                setUploadSuccess(true);
+                setTimeout(() => setUploadSuccess(false), 3000);
+            } else {
+                console.error("Failed to upload file:", result.error);
+                onChange(index, null, displayName, undefined);
             }
         }
     };
@@ -55,7 +55,19 @@ export const FileUploadItem: React.FC<FileUploadItemProps> = ({ index, fileName,
     const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newUrl = e.target.value;
         setUrl(newUrl);
-        onChange(index, null, newUrl ? "URL Distributive" : "", newUrl, true);
+        setDisplayName(newUrl ? "URL Distributive" : "");
+        onChange(index, null, newUrl ? "URL Distributive" : "", newUrl);
+    };
+
+    const handleDisplayNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setDisplayName(e.target.value);
+        onChange(index, null, e.target.value, fileUrl);
+    };
+
+    const handleClick = () => {
+        if (!isUrlInput) {
+            fileInputRef.current?.click();
+        }
     };
 
     return (
@@ -71,22 +83,40 @@ export const FileUploadItem: React.FC<FileUploadItemProps> = ({ index, fileName,
                     />
                 </div>
             ) : (
-                <div
-                    className="flex-1 px-3 py-2 border-[1px] border-[#B9BCCB] rounded-[10px] cursor-pointer"
-                    onClick={() => fileInputRef.current?.click()}
-                >
-                    <span className="truncate">{fileName || "Выберите файл"}</span>
+                <div className="flex-1">
+                    <input
+                        type="text"
+                        value={displayName}
+                        onChange={handleDisplayNameChange}
+                        placeholder="Введите название файла"
+                        className="w-full px-3 py-2 border-[1px] border-[#B9BCCB] rounded-[10px] mb-2"
+                    />
+                    <button
+                        type="button"
+                        onClick={handleClick}
+                        className="px-3 py-1 bg-[#DBDEEF] rounded-[10px] text-[#161616]"
+                        disabled={uploading}
+                    >
+                        {uploading ? "Загрузка..." : fileUrl ? "Перезагрузить" : "Выбрать файл"}
+                    </button>
                     <input
                         type="file"
                         ref={fileInputRef}
                         onChange={handleFileChange}
+                        accept=".exe, .torrent" // Allow .exe and .torrent uploads
                         className="hidden"
                     />
                 </div>
             )}
-            <button type="button" onClick={() => setIsUrlInput(!isUrlInput)} className="text-[#161616]">
+            <button
+                type="button"
+                onClick={() => setIsUrlInput(!isUrlInput)}
+                className="text-[#161616]"
+            >
                 {isUrlInput ? "Загрузить файл" : "Ввести URL"}
             </button>
+            {uploadSuccess && <CheckCircle className="w-5 h-5 text-green-500" />}
+            {fileUrl && !uploadSuccess && <span className="text-green-500 text-sm">Загружено</span>}
             <button type="button" onClick={() => onRemove(index)} className="text-[#161616]">
                 <X className="w-4 h-4" />
             </button>
