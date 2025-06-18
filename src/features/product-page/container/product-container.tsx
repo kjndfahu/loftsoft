@@ -49,23 +49,13 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
 
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
-            <div className="flex flex-col md:w-[30%] w-full gap-4">
-                {/* Main Image */}
-                <div style={{ aspectRatio: 384 / 537 }} className="relative bg-gray-400 rounded-[20px] overflow-hidden">
-                    <Image
-                        src={item.photos[0] || "/placeholder.svg"}
-                        alt={item.name}
-                        fill
-                        className="object-cover rounded-[20px]"
-                    />
-                </div>
-                {/* Thumbnails */}
+            <div className="flex flex-row md:w-[30%] w-full gap-4">
                 <div className="flex flex-col gap-2">
                     {item.photos.slice(1).map((photo, index) => (
                         <div
                             key={index}
-                            style={{ aspectRatio: 1 / 1.5 }}
-                            className="relative bg-gray-400 rounded-[20px] overflow-hidden"
+                            style={{aspectRatio: 1 / 1}}
+                            className="relative bg-gray-400 w-[76px] h-[76px] rounded-[8px] overflow-hidden"
                         >
                             <Image
                                 src={photo || "/placeholder.svg"}
@@ -76,12 +66,23 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                         </div>
                     ))}
                 </div>
+
+                <div style={{aspectRatio: 384 / 537}} className="relative bg-gray-400 rounded-[20px] overflow-hidden">
+                    <Image
+                        src={item.photos[0] || "/placeholder.svg"}
+                        alt={item.name}
+                        fill
+                        className="object-cover rounded-[20px]"
+                    />
+                </div>
+
             </div>
             <div className="flex md:w-[37%] w-full flex-col md:gap-6 gap-4">
                 <div className="flex flex-col gap-[10px]">
                     <h3 className="md:text-[24px] text-[20px] font-semibold text-[#161616]">{item.name}</h3>
                     <div className="flex items-center gap-2">
-                        <span className="md:text-[16px] text-[14px] text-[#FFAC33]">{item.averageRating.toFixed(1)}</span>
+                        <span
+                            className="md:text-[16px] text-[14px] text-[#FFAC33]">{item.averageRating.toFixed(1)}</span>
                         <div className="flex gap-[6px]">
                             {[...Array(5)].map((_, index) => (
                                 <ReviewStar
