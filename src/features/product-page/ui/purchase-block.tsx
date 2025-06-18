@@ -11,7 +11,7 @@ interface PurchaseBlockProps {
     price: string
     photos: string[]
     type: string[]
-    licenseType: string // Changed to single string
+    licenseType: string
     deviceCounts: number[]
 }
 
@@ -33,12 +33,12 @@ export const PurchaseBlock = ({ id, name, price, photos, type, licenseType, devi
                 availableTypes={type}
                 selectedType={selectedType}
                 setSelectedType={setSelectedType}
-                licenseTypes={[]} // Empty to prevent license type selection here
+                licenseTypes={[]}
                 selectedLicenseType={licenseType}
-                setSelectedLicenseType={() => {}} // No-op to prevent changes
+                setSelectedLicenseType={() => {}}
                 deviceCounts={[]}
                 selectedDeviceCount={deviceCounts[0] || 1}
-                setSelectedDeviceCount={() => {}} // No-op to prevent changes
+                setSelectedDeviceCount={() => {}}
             />
             <PostBlock />
         </div>

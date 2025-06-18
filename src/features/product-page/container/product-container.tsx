@@ -25,25 +25,18 @@ interface ProductContainerProps {
     }
 }
 
-const licenseTypeLabels: Record<string, string> = {
-    PERPETUAL: "Бессрочно",
-    ONE_MONTH: "1 м.",
-    THREE_MONTHS: "3 м.",
-    SIX_MONTHS: "6 м.",
-    ONE_YEAR: "1 год",
-    TWO_YEARS: "2 года",
-    THREE_YEARS: "3 года",
-    FOUR_YEARS: "4 года",
-    FIVE_YEARS: "5 лет",
+const durationLabels: Record<string, string> = {
+    "2years": "2 года",
+    "3years": "3 года",
 }
 
 export const ProductContainer = ({ item }: ProductContainerProps) => {
-    const [selectedLicenseType, setSelectedLicenseType] = useState<string>(item.licenseType[0] || "")
+    const [selectedDurationId, setSelectedDurationId] = useState<string>(item.pricesByDuration[0]?.durationId || "")
     const [selectedDeviceCount, setSelectedDeviceCount] = useState<number>(item.deviceCounts[0] || 1)
 
-    // Find the price for the selected license type
+    // Find the price for the selected duration
     const selectedPrice = item.pricesByDuration.find(
-        (price) => price.durationId === selectedLicenseType
+        (price) => price.durationId === selectedDurationId
     )?.price || item.pricesByDuration[0]?.price || "0"
 
     // Calculate star rating display
@@ -97,15 +90,15 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                 <div className="flex flex-col gap-3">
                     <span className="md:text-[14px] text-[13px] text-[#161616]">Срок лицензии:</span>
                     <div className="flex flex-wrap gap-[10px]">
-                        {item.licenseType.map((licenseType) => (
+                        {Object.entries(durationLabels).map(([durationId, label]) => (
                             <button
-                                key={licenseType}
-                                onClick={() => setSelectedLicenseType(licenseType)}
+                                key={durationId}
+                                onClick={() => setSelectedDurationId(durationId)}
                                 className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors text-black border-[1px] ${
-                                    selectedLicenseType === licenseType ? "border-[#5069E8]" : "border-[#DBDEEF]"
+                                    selectedDurationId === durationId ? "border-[#5069E8]" : "border-[#DBDEEF]"
                                 }`}
                             >
-                                <span>{licenseTypeLabels[licenseType]}</span>
+                                <span>{label}</span>
                             </button>
                         ))}
                     </div>
@@ -120,7 +113,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                 price={selectedPrice}
                 photos={item.photos}
                 type={item.type}
-                licenseType={selectedLicenseType} // Pass as single string
+                licenseType={selectedDurationId}
                 deviceCounts={[selectedDeviceCount]}
             />
         </div>
