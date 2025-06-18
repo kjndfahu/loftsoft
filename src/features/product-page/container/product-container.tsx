@@ -60,7 +60,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
             {/* Mobile Slider (below md breakpoint) */}
             <div className="md:hidden w-full">
-                <div className="relative" style={{ aspectRatio: 384 / 537 }}>
+                <div className="relative max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
                     <div className="absolute inset-0">
                         <Image
                             src={item.photos[activeSlide] || "/placeholder.svg"}
