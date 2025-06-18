@@ -363,7 +363,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                 licenseType: selectedLicenseDurations.map(
                     (duration) => licenseDurationMap[duration.id as keyof typeof licenseDurationMap]
                 ),
-                deviceCounts: selectedDeviceCounts,
+                deviceCounts: selectedDeviceCounts, // No length check, making it optional
                 characteristics: characteristics.filter((char) => char.title && char.value),
                 questions: questions.filter((q) => q.question && q.answer),
                 distributives: uploadedDistributives,
