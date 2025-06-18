@@ -114,8 +114,7 @@ export async function createProduct(data: CreateProductData) {
             !data.photos.length ||
             !data.categoryId ||
             !data.type.length ||
-            !data.licenseType.length ||
-            !data.deviceCounts.length
+            !data.licenseType.length 
         ) {
             return { success: false, error: "Missing required fields" }
         }
