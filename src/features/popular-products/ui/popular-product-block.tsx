@@ -1,4 +1,3 @@
-// popular-product-block.tsx
 "use client"
 
 import { useState, useTransition } from "react"
@@ -7,17 +6,7 @@ import { Modal } from "@/shared/modal"
 import { PopularProductModal } from "@/features/popular-products/ui/popular-product-modal"
 import { useRouter } from "next/navigation"
 import { removePopularProduct } from "@/enteties/popular-products/popular-products"
-
-interface Product {
-    id: number
-    name: string
-    price: string
-    photo: string
-    category?: {
-        id: number
-        title: string
-    }
-}
+import { Product } from "@/features/home/ui/items-grid"
 
 interface PopularProductProps {
     product?: {
@@ -25,7 +14,7 @@ interface PopularProductProps {
         item: Product
     }
     isEditable?: boolean
-    onProductChange?: () => void // Added to notify parent of changes
+    onProductChange?: () => void
 }
 
 export const PopularProductBlock = ({ product, isEditable = true, onProductChange }: PopularProductProps) => {
@@ -38,23 +27,63 @@ export const PopularProductBlock = ({ product, isEditable = true, onProductChang
 
         if (confirm("Вы уверены, что хотите удалить этот товар из популярных?")) {
             startTransition(async () => {
-                await removePopularProduct(product.id)
-                onProductChange?.() // Trigger re-fetch
-                router.refresh() // Fallback in case re-fetch fails
+                const result = await removePopularProduct(product.id)
+                if (result.success) {
+                    onProductChange?.()
+                    router.refresh()
+                } else {
+                    console.error("Failed to remove popular product:", result.error)
+                }
             })
         }
+    }
+
+    const formatPrice = (priceData: { regular: string; discounted: string } | undefined) => {
+        if (!priceData) return "Цена не указана"
+
+        const regularPrice = Number.parseFloat(priceData.regular)
+        const discountedPrice = priceData.discounted ? Number.parseFloat(priceData.discounted) : null
+
+        if (discountedPrice && discountedPrice < regularPrice) {
+            return (
+                <span>
+                    <span className="text-[#161616] line-through">
+                        {new Intl.NumberFormat("ru-RU").format(regularPrice)} ₽
+                    </span>{" "}
+                    <span className="text-[#5069E8] font-semibold">
+                        {new Intl.NumberFormat("ru-RU").format(discountedPrice)} ₽
+                    </span>
+                </span>
+            )
+        }
+        return (
+            <span className="text-[#161616]">
+                {new Intl.NumberFormat("ru-RU").format(regularPrice)} ₽
+            </span>
+        )
     }
 
     if (product) {
         return (
             <div className="flex flex-col w-full border-[1px] border-[#DBDEEF] rounded-[16px] overflow-hidden">
                 <div className="relative w-full h-[150px]">
-                    <Image src={product.item.photo || "/placeholder.svg"} alt={product.item.name} fill className="object-cover" />
+                    <Image
+                        src={product.item.photos[0] || "/placeholder.svg"}
+                        alt={product.item.name}
+                        fill
+                        className="object-cover"
+                        onError={(e) => {
+                            console.error(`Failed to load image for ${product.item.name}: ${product.item.photos[0]}`)
+                            e.currentTarget.src = "/placeholder.svg"
+                        }}
+                    />
                 </div>
                 <div className="p-3 text-black">
                     <p className="text-sm font-medium">{product.item.name}</p>
                     <p className="text-xs text-gray-500">{product.item.category?.title || "Категория"}</p>
-                    <p className="text-xs font-semibold mt-1">{product.item.price} ₽</p>
+                    <p className="text-xs font-semibold mt-1">
+                        {formatPrice(product.item.pricesByDuration[0]?.price)}
+                    </p>
                 </div>
                 {isEditable && (
                     <div className="flex border-t border-[#DBDEEF]">
