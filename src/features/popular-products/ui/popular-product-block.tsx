@@ -49,7 +49,7 @@ export const PopularProductBlock = ({ product, isEditable = true, onProductChang
         return (
             <div className="flex flex-col w-full border-[1px] border-[#DBDEEF] rounded-[16px] overflow-hidden">
                 <div className="relative w-full h-[150px]">
-                    <Image src={product.item.photo || "/placeholder.svg"} alt={product.item.name} fill className="object-cover" />
+                    <Image src={product.item.photo || "/placeholder.svg"} alt={product.item.photo} fill className="object-cover" />
                 </div>
                 <div className="p-3 text-black">
                     <p className="text-sm font-medium">{product.item.name}</p>
