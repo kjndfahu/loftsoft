@@ -42,10 +42,11 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     const [selectedDeviceCount, setSelectedDeviceCount] = useState<number>(item.deviceCounts[0] || 1)
     const [activeSlide, setActiveSlide] = useState(0)
 
-    // Debug: Log the photos array to check its contents
+    // Debug: Log the photos array and item data
     useEffect(() => {
+        console.log("Full item data:", item)
         console.log("Photos array:", item.photos)
-    }, [item.photos])
+    }, [item])
 
     // Find the price for the selected duration (use discounted if available, else regular)
     const selectedPriceObj = item.pricesByDuration.find(
@@ -70,8 +71,13 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
         setActiveSlide(index)
     }
 
-    // Fallback image URL (adjust path based on your project structure)
-    const getFallbackImage = () => "/placeholder.svg"
+    // Fallback image URL (adjust path or use external URL for testing)
+    const getFallbackImage = () => {
+        // Use an external placeholder for testing if local fallback fails
+        return process.env.NODE_ENV === "development"
+            ? "https://via.placeholder.com/236x537"
+            : "/placeholder.svg"
+    }
 
     return (
         <div className="flex flex-col items-center md:flex-row w-full md:gap-7 gap-4">
@@ -87,8 +93,9 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                             onError={(e) => {
                                 const target = e.target as HTMLImageElement
                                 target.src = getFallbackImage() // Fallback on error
-                                console.error("Image failed to load, using fallback:", item.photos[activeSlide])
+                                console.error("Mobile image failed to load, fallback applied. Original src:", item.photos[activeSlide])
                             }}
+                            onLoadingComplete={(img) => console.log("Mobile image loaded:", img.src)}
                         />
                     </div>
                     {/* Curved overlay effect */}
@@ -96,13 +103,17 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                 </div>
                 {/* Navigation dots */}
                 <div className="flex justify-center gap-2 mt-2">
-                    {item.photos.map((_, index) => (
-                        <button
-                            key={index}
-                            onClick={() => handleSlideChange(index)}
-                            className={`w-2 h-2 rounded-full ${activeSlide === index ? "bg-[#5069E8]" : "bg-gray-300"}`}
-                        ></button>
-                    ))}
+                    {item.photos.length > 0 ? (
+                        item.photos.map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => handleSlideChange(index)}
+                                className={`w-2 h-2 rounded-full ${activeSlide === index ? "bg-[#5069E8]" : "bg-gray-300"}`}
+                            ></button>
+                        ))
+                    ) : (
+                        <span className="text-red-500 text-sm">No photos available</span>
+                    )}
                 </div>
             </div>
 
@@ -123,8 +134,9 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                                 onError={(e) => {
                                     const target = e.target as HTMLImageElement
                                     target.src = getFallbackImage() // Fallback on error
-                                    console.error("Thumbnail failed to load, using fallback:", photo)
+                                    console.error("Desktop thumbnail failed to load, fallback applied. Original src:", photo)
                                 }}
+                                onLoadingComplete={(img) => console.log("Desktop thumbnail loaded:", img.src)}
                             />
                         </div>
                     ))}
@@ -138,8 +150,9 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                         onError={(e) => {
                             const target = e.target as HTMLImageElement
                             target.src = getFallbackImage() // Fallback on error
-                            console.error("Main image failed to load, using fallback:", item.photos[0])
+                            console.error("Desktop main image failed to load, fallback applied. Original src:", item.photos[0])
                         }}
+                        onLoadingComplete={(img) => console.log("Desktop main image loaded:", img.src)}
                     />
                 </div>
             </div>
