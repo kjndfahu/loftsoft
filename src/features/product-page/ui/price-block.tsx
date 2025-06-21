@@ -55,10 +55,10 @@ export const PriceBlock = ({
             <div className="flex flex-col items-start gap-2">
                 <div className="flex items-baseline gap-2">
                     <h4 className="md:text-[36px] md:leading-[40px] text-[27px] leading-[30px] font-semibold text-[#161616]">
-                        {discountedNum.toLocaleString("ru-RU")} ₽
+                        {discountedNum.toLocaleString("ru-RU")}<span className="text-[18px] font-medium">₽</span>
                     </h4>
-                    <span className="text-[16px] text-red-500">-{discountPercentage}%</span>
-                    <span className="text-[20px] text-gray-500">/ {regularNum.toLocaleString("ru-RU")} ₽</span>
+                    <div className="rounded-full px-[6px] bg-[#FEECEE] py-1 text-[11px] text-[#E71730]">-{discountPercentage}%</div>
+                    <span className="text-[20px] text-gray-500">/ {regularNum.toLocaleString("ru-RU")}₽</span>
                 </div>
             </div>
             <div className="flex flex-col w-full items-center self-center gap-[12px]">
@@ -69,10 +69,7 @@ export const PriceBlock = ({
                     Добавить в корзину
                 </button>
                 <div className="flex justify-center gap-2">
-                    <Logos name="visa" className="w-6 h-6 text-gray-400" />
-                    <Logos name="mastercard" className="w-6 h-6 text-gray-400" />
-                    <Logos name="mir" className="w-6 h-6 text-gray-400" />
-                    <Logos name="applePay" className="w-6 h-6 text-gray-400" />
+                    <Logos />
                 </div>
             </div>
         </div>
