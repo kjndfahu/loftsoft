@@ -109,47 +109,6 @@ export const SubType = ({
                 </div>
             )}
 
-            {/* License Type Selection */}
-            {licenseTypes.length > 0 && (
-                <div className="flex flex-col gap-3">
-                    <h4 className="md:text-[16px] text-[14px] font-semibold text-[#161616]">Срок лицензии</h4>
-                    <div className="flex flex-wrap gap-[6px]">
-                        {licenseTypes.map((licenseType) => (
-                            <button
-                                key={licenseType}
-                                onClick={() => setSelectedLicenseType(licenseType)}
-                                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors text-black border-[1px] ${
-                                    selectedLicenseType === licenseType ? "border-[#5069E8]" : "border-[#DBDEEF]"
-                                }`}
-                            >
-                                <span>{licenseTypeLabels[licenseType] || licenseType}</span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Device Count Selection */}
-            {deviceCounts.length > 0 && (
-                <div className="flex flex-col gap-3">
-                    <h4 className="md:text-[16px] text-[14px] font-semibold text-[#161616]">Количество устройств</h4>
-                    <div className="flex flex-wrap gap-[6px]">
-                        {deviceCounts.map((count) => (
-                            <button
-                                key={count}
-                                onClick={() => setSelectedDeviceCount(count)}
-                                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors text-black border-[1px] ${
-                                    selectedDeviceCount === count ? "border-[#5069E8]" : "border-[#DBDEEF]"
-                                }`}
-                            >
-                                <span>{count} ПК</span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Dynamic Purchase Message */}
             <p className="text-[12px] font-medium text-[#4E4F56]">{getPurchaseMessage(selectedType)}</p>
         </div>
     )
