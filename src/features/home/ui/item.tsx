@@ -23,10 +23,29 @@ export const Items = ({ product }: ItemsProps) => {
         );
     }
 
-    const formatPrice = (price: string | undefined) => {
-        if (!price) return "Цена не указана";
-        const numPrice = Number.parseFloat(price);
-        return new Intl.NumberFormat("ru-RU").format(numPrice) + " ₽";
+    const formatPrice = (priceData: { regular: string; discounted: string } | undefined) => {
+        if (!priceData) return "Цена не указана";
+
+        const regularPrice = Number.parseFloat(priceData.regular);
+        const discountedPrice = priceData.discounted ? Number.parseFloat(priceData.discounted) : null;
+
+        if (discountedPrice && discountedPrice < regularPrice) {
+            return (
+                <div className="flex items-baseline gap-2">
+                    <span className="text-[#161616] line-through">
+                        {new Intl.NumberFormat("ru-RU").format(regularPrice)} ₽
+                    </span>
+                    <span className="text-[#5069E8] font-semibold">
+                        {new Intl.NumberFormat("ru-RU").format(discountedPrice)} ₽
+                    </span>
+                </div>
+            );
+        }
+        return (
+            <span className="text-[#161616]">
+                {new Intl.NumberFormat("ru-RU").format(regularPrice)} ₽
+            </span>
+        );
     };
 
     const isBase64Image = (src: string | undefined) => {
@@ -99,7 +118,7 @@ export const Items = ({ product }: ItemsProps) => {
             </div>
             <div className="flex flex-col text-[#161616] sm:gap-[10px] gap-2">
                 <h3 className="md:text-[27px] sm:text-[20px] text-[16px] font-semibold">
-                    {formatPrice(product.pricesByDuration[0]?.price)} {/* Use first price */}
+                    {formatPrice(product.pricesByDuration[0]?.price)}
                 </h3>
                 <div className="flex font-medium md:text-[16px] sm:text-[14px] text-[12px] gap-1">
                     <div className="flex items-center gap-[6px] py-[4px] px-[6px] text-[#5069E8] bg-[#5F78EE26] rounded-[6px]">
