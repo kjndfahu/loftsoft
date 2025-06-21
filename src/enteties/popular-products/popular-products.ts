@@ -1,6 +1,7 @@
 "use server"
 
-import {prisma} from "../../../prisma/prisma-client";
+import { prisma } from "../../../prisma/prisma-client";
+import { Product } from "@/features/home/ui/items-grid";
 
 export async function addPopularProduct(itemId: number, position = 0) {
     try {
@@ -21,6 +22,9 @@ export async function addPopularProduct(itemId: number, position = 0) {
                 item: {
                     include: {
                         category: true,
+                        pricesByDuration: true,
+                        characteristics: true,
+                        distributives: true,
                     },
                 },
             },
@@ -52,6 +56,9 @@ export async function updatePopularProduct(popularProductId: number, newItemId: 
                 item: {
                     include: {
                         category: true,
+                        pricesByDuration: true,
+                        characteristics: true,
+                        distributives: true,
                     },
                 },
             },
@@ -81,6 +88,9 @@ export async function getPopularProducts() {
                                 quantity: true,
                             },
                         },
+                        pricesByDuration: true,
+                        characteristics: true,
+                        distributives: true,
                     },
                 },
             },
@@ -90,7 +100,7 @@ export async function getPopularProducts() {
             take: 4,
         });
 
-        const productsWithStats = popularProducts.map((popularProduct) => {
+        const productsWithStats = popularProducts.map((popularProduct): { id: number; itemId: number; position: number; item: Product } => {
             const reviews = Array.isArray(popularProduct.item.reviews)
                 ? popularProduct.item.reviews
                 : [];
@@ -105,8 +115,28 @@ export async function getPopularProducts() {
                 ...popularProduct,
                 item: {
                     ...popularProduct.item,
+                    pricesByDuration: popularProduct.item.pricesByDuration.map(p => ({
+                        durationId: p.durationId,
+                        price: JSON.parse(p.price as string) || { regular: "0", discounted: "0" }
+                    })) || [],
+                    photos: popularProduct.item.photos || [],
+                    type: popularProduct.item.type || [],
+                    licenseType: popularProduct.item.licenseType || [],
+                    deviceCounts: popularProduct.item.deviceCounts || [],
+                    characteristics: popularProduct.item.characteristics || [],
+                    distributives: popularProduct.item.distributives || [],
                     averageRating: Number(averageRating.toFixed(1)) || 0,
                     purchaseCount,
+                    category: popularProduct.item.category
+                        ? {
+                            id: popularProduct.item.category.id,
+                            title: popularProduct.item.category.title,
+                            photo: popularProduct.item.category.photo,
+                            description: popularProduct.item.category.description,
+                            createdAt: popularProduct.item.category.createdAt,
+                            updateAt: popularProduct.item.category.updateAt,
+                        }
+                        : null,
                 },
             };
         });
@@ -130,7 +160,7 @@ export async function removePopularProduct(id: number) {
         return { success: false, error: "Failed to remove popular product" }
     }
 }
-6
+
 export async function updatePopularProductPosition(id: number, position: number) {
     try {
         const updatedPopularProduct = await prisma.popularProduct.update({

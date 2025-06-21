@@ -488,17 +488,17 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                         <CategoryPopup onSelect={handleCategorySelect} selectedCategory={selectedCategory} />
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <label className="text-[14px] font-medium text-[#161616]">
-                            Автовыпуск:
-                            <input
-                                type="checkbox"
-                                checked={autorelease}
-                                onChange={(e) => setAutorelease(e.target.checked)}
-                                className="ml-2 h-5 w-5 text-[#161616] border-[#B9BCCB] rounded focus:ring-0"
-                            />
-                        </label>
-                    </div>
+                    {/*<div className="flex items-center gap-3">*/}
+                    {/*    <label className="text-[14px] font-medium text-[#161616]">*/}
+                    {/*        Автовыпуск:*/}
+                    {/*        <input*/}
+                    {/*            type="checkbox"*/}
+                    {/*            checked={autorelease}*/}
+                    {/*            onChange={(e) => setAutorelease(e.target.checked)}*/}
+                    {/*            className="ml-2 h-5 w-5 text-[#161616] border-[#B9BCCB] rounded focus:ring-0"*/}
+                    {/*        />*/}
+                    {/*    </label>*/}
+                    {/*</div>*/}
 
                     <div className="flex flex-col gap-3">
                         <SubscriptionTypePopup onSelect={handleSubscriptionTypeSelect} selectedTypes={selectedSubscriptionTypes} />

@@ -5,24 +5,14 @@ import { TitleDesc } from "@/shared/title-desc"
 import { NavBtn } from "@/features/home/ui/nav-btn"
 import { Items } from "@/features/home/ui/item"
 import Link from "next/link"
-import {getPopularProducts} from "@/enteties/popular-products/popular-products";
+import { getPopularProducts } from "@/enteties/popular-products/popular-products"
+import { Product } from "@/features/home/ui/items-grid"
 
 export type PopularProduct = {
     id: number;
     itemId: number;
     position: number;
-    item: {
-        id: number;
-        name: string;
-        price: string;
-        photo: string;
-        category: {
-            id: number;
-            name: string;
-        };
-        averageRating?: number;
-        purchaseCount?: number;
-    };
+    item: Product; // Use Product interface directly
 };
 
 export const PopularItems = () => {
@@ -75,13 +65,16 @@ export const PopularItems = () => {
                             <Items
                                 key={popularProduct.id}
                                 product={{
-                                    id: popularProduct.item.id,
-                                    name: popularProduct.item.name,
-                                    price: popularProduct.item.price,
-                                    photo: popularProduct.item.photo,
-                                    category: popularProduct.item.category.name,
-                                    averageRating: popularProduct.item.averageRating,
-                                    purchaseCount: popularProduct.item.purchaseCount
+                                    ...popularProduct.item,
+                                    photos: popularProduct.item.photos || [], // Ensure photos is an array
+                                    pricesByDuration: popularProduct.item.pricesByDuration || [], // Ensure pricesByDuration is an array
+                                    type: popularProduct.item.type || [],
+                                    licenseType: popularProduct.item.licenseType || [],
+                                    deviceCounts: popularProduct.item.deviceCounts || [],
+                                    characteristics: popularProduct.item.characteristics || [],
+                                    distributives: popularProduct.item.distributives || [],
+                                    averageRating: popularProduct.item.averageRating ?? 0,
+                                    purchaseCount: popularProduct.item.purchaseCount ?? 0,
                                 }}
                             />
                         ))
