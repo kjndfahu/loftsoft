@@ -15,16 +15,13 @@ type DistributiveProps = {
 }
 
 export const Distributive = ({ distributives }: DistributiveProps) => {
-    // Log incoming props for debugging
-    console.log("Distributives received:", distributives)
-
-    // Early return if distributives is invalid
-    if (!Array.isArray(distributives) || distributives.length === 0) {
-        console.log("No valid distributives provided, rendering null")
+    // Early return if no distributives are provided
+    if (!distributives || distributives.length === 0) {
+        console.log("No distributives provided, rendering null")
         return null
     }
 
-    // Validate URL helper
+    // Validate URL helper function
     const isValidUrl = (url: string): boolean => {
         try {
             new URL(url)
@@ -35,13 +32,14 @@ export const Distributive = ({ distributives }: DistributiveProps) => {
         }
     }
 
-    // Handle download with error handling
+    // Handle download with error handling and user feedback
     const handleDownload = (url: string, filename: string) => {
         console.log("Initiating download:", { url, filename })
 
+        // Validate URL before attempting download
         if (!isValidUrl(url)) {
             showToast("Ошибка загрузки", "error", {
-                secondaryMessage: "Недействительный URL файла.",
+                secondaryMessage: "Invalid or inaccessible file URL.",
             })
             console.error(`Download failed: Invalid URL - ${url}`)
             return
@@ -54,30 +52,32 @@ export const Distributive = ({ distributives }: DistributiveProps) => {
             document.body.appendChild(link)
             link.click()
             document.body.removeChild(link)
-            console.log(`Download triggered for: ${url}`)
+            console.log(`Download triggered successfully for: ${url}"`)
             showToast("Загрузка началась", "success", {
-                secondaryMessage: `Скачивание ${filename}`,
+                secondaryMessage: `Downloading ${filename}`,
             })
         } catch (error) {
             console.error("Download error:", error)
             showToast("Ошибка загрузки", "error", {
-                secondaryMessage: "Не удалось начать загрузку. Попробуйте снова.",
+                secondaryMessage: "Failed to initiate download. Please try again.",
             })
         }
     }
 
     return (
         <div className="flex flex-col gap-3">
-            <h4 className="text-[14px] text-[#161616]">Дистрибутивы</h4>
+            <h4 className="text-[14px] text-[#161616]">
+                Дистрибутивы
+            </h4>
             <div className="flex flex-col gap-2">
                 {distributives.map((distributive) => {
-                    // Validate distributive data
-                    if (!distributive?.id || !distributive?.fileUrl || !distributive?.displayName) {
-                        console.warn("Invalid distributive data:", distributive)
+                    // Validate required fields
+                    if (!distributive.fileUrl || !distributive.displayName) {
+                        console.warn(`Invalid distributive data:`, distributive)
                         return null
                     }
 
-                    // Fallback logo
+                    // Fallback logo if logoUrl is invalid or missing
                     const logoSrc = distributive.logoUrl && isValidUrl(distributive.logoUrl)
                         ? distributive.logoUrl
                         : "/placeholder.svg"
@@ -107,7 +107,7 @@ export const Distributive = ({ distributives }: DistributiveProps) => {
                             </div>
                         </div>
                     )
-                }).filter(Boolean)} {/* Filter out null entries */}
+                })}
             </div>
         </div>
     )
