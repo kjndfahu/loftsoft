@@ -31,11 +31,11 @@ export const Items = ({ product }: ItemsProps) => {
 
         if (discountedPrice && discountedPrice < regularPrice) {
             return (
-                <div className="flex items-baseline gap-2">
-                    <span className="text-[#161616] line-through">
+                <div className="flex gap-2">
+                    <span className="text-[#5069E8] font-semibold text-[27px]">
                         {new Intl.NumberFormat("ru-RU").format(regularPrice)} ₽
                     </span>
-                    <span className="text-[#5069E8] font-semibold">
+                    <span className="text-[#868686] font-semibold text-[16px]">
                         {new Intl.NumberFormat("ru-RU").format(discountedPrice)} ₽
                     </span>
                 </div>
