@@ -1,3 +1,4 @@
+// price-block.tsx
 "use client"
 
 import { useCartStore } from "../../../../store/use-cart-store"
@@ -5,23 +6,29 @@ import { Logos } from "@/shared/icons"
 import { showToast } from "@/shared/custom-toast"
 
 interface PriceBlockProps {
-    price?: string
+    regularPrice?: string
+    discountedPrice?: string
     id?: string
     name?: string
     photo?: string
     type?: string
     licenseType?: string
     deviceCount?: number
+    discountPercentage?: number
+    savings?: string
 }
 
 export const PriceBlock = ({
-                               price,
+                               regularPrice = "0",
+                               discountedPrice = "0",
                                id = "default-id",
                                name = "Лицензионный ключ",
                                photo,
                                type,
                                licenseType,
                                deviceCount,
+                               discountPercentage = 0,
+                               savings = "0",
                            }: PriceBlockProps) => {
     const addItem = useCartStore((state) => state.addItem)
 
@@ -29,7 +36,7 @@ export const PriceBlock = ({
         addItem({
             id,
             name,
-            price: price ? Number(price) : 0,
+            price: parseFloat(discountedPrice),
             photo,
             type,
             licenseType,
@@ -40,14 +47,24 @@ export const PriceBlock = ({
         })
     }
 
-    const displayedPrice = price ? Number(price) : 0
+    const regularNum = parseFloat(regularPrice)
+    const discountedNum = parseFloat(discountedPrice)
 
     return (
         <div className="flex flex-col bg-[#F5F7FF] rounded-[20px] gap-[30px] md:p-6 p-4">
-            <div className="flex items-end gap-2">
+            <div className="flex flex-col items-start gap-2">
                 <h4 className="md:text-[36px] md:leading-[40px] text-[27px] leading-[30px] font-semibold text-[#161616]">
-                    {displayedPrice.toLocaleString("ru-RU")} ₽
+                    {discountedNum.toLocaleString("ru-RU")} ₽
                 </h4>
+                <div className="flex items-center gap-2">
+                    <span className="text-[20px] line-through text-gray-500">
+                        {regularNum.toLocaleString("ru-RU")} ₽
+                    </span>
+                    <span className="text-[14px] text-red-500">-{discountPercentage}%</span>
+                </div>
+                <div className="text-[14px] text-green-600">
+                    Скидка <span className="font-medium">{savings} ₽</span>
+                </div>
             </div>
             <div className="flex flex-col w-full items-center self-center gap-[12px]">
                 <button

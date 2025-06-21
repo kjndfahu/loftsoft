@@ -1,3 +1,4 @@
+// purchase-block.tsx
 "use client"
 
 import { SubType } from "@/features/product-page/ui/sub-type"
@@ -8,14 +9,28 @@ import { useState } from "react"
 interface PurchaseBlockProps {
     id?: string
     name?: string
-    price: string
+    regularPrice: string
+    discountedPrice: string
     photos: string[]
     type: string[]
     licenseType: string
     deviceCounts: number[]
+    discountPercentage: number
+    savings: string
 }
 
-export const PurchaseBlock = ({ id, name, price, photos, type, licenseType, deviceCounts }: PurchaseBlockProps) => {
+export const PurchaseBlock = ({
+                                  id,
+                                  name,
+                                  regularPrice,
+                                  discountedPrice,
+                                  photos,
+                                  type,
+                                  licenseType,
+                                  deviceCounts,
+                                  discountPercentage,
+                                  savings,
+                              }: PurchaseBlockProps) => {
     const [selectedType, setSelectedType] = useState<string>(type[0] || "KEY")
 
     return (
@@ -23,11 +38,14 @@ export const PurchaseBlock = ({ id, name, price, photos, type, licenseType, devi
             <PriceBlock
                 id={id}
                 name={name}
-                price={price}
+                regularPrice={regularPrice}
+                discountedPrice={discountedPrice}
                 photo={photos[0]}
                 type={selectedType}
                 licenseType={licenseType}
                 deviceCount={deviceCounts[0] || 1}
+                discountPercentage={discountPercentage}
+                savings={savings}
             />
             <SubType
                 availableTypes={type}

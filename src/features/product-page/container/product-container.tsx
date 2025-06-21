@@ -46,7 +46,14 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     const selectedPriceObj = item.pricesByDuration.find(
         (price) => price.durationId === selectedDurationId
     ) || item.pricesByDuration[0]
-    const selectedPrice = selectedPriceObj?.price.discounted || selectedPriceObj?.price.regular || "0"
+    const regularPrice = selectedPriceObj?.price.regular || "0"
+    const discountedPrice = selectedPriceObj?.price.discounted || regularPrice
+
+    // Calculate discount percentage and savings
+    const regularNum = parseFloat(regularPrice)
+    const discountedNum = parseFloat(discountedPrice)
+    const discountPercentage = regularNum > 0 ? Math.round(((regularNum - discountedNum) / regularNum) * 100) : 0
+    const savings = regularNum > discountedNum ? (regularNum - discountedNum).toFixed(0) : "0"
 
     // Calculate star rating display
     const fullStars = Math.floor(item.averageRating)
@@ -170,11 +177,14 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             <PurchaseBlock
                 id={item.id.toString()}
                 name={item.name}
-                price={selectedPrice}
+                regularPrice={regularPrice}
+                discountedPrice={discountedPrice}
                 photos={item.photos}
                 type={item.type}
                 licenseType={selectedDurationId}
                 deviceCounts={[selectedDeviceCount]}
+                discountPercentage={discountPercentage}
+                savings={savings}
             />
         </div>
     )
