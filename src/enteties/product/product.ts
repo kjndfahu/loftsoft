@@ -1,7 +1,9 @@
 // /src/enteties/product/product.ts
 "use server";
 
-import { prisma } from "@/lib/prisma";
+
+
+import {prisma} from "../../../prisma/prisma-client";
 
 interface CreateProductData {
     name: string;
