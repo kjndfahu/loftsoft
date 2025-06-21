@@ -69,7 +69,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     }
 
     return (
-        <div className="flex flex-col items-center md:flex-row w-full md:gap-7 gap-4">
+        <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
             {/* Mobile Slider (below md breakpoint) */}
             <div className="md:hidden w-full">
                 {item.photos.length > 0 ? (
