@@ -68,14 +68,14 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     return (
         <div className="flex flex-col items-center md:flex-row w-full md:gap-7 gap-4">
             {/* Mobile Slider (below md breakpoint) */}
-            <div className="md:hidden w-full">
+            <div className="md:hidden w-full flex justify-center">
                 <div className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
-                    <div className="absolute inset-0">
+                    <div className="absolute inset-0 flex justify-center items-center">
                         <Image
                             src={item.photos[activeSlide] || "/placeholder.svg"}
                             alt={item.name}
                             fill
-                            className="object-cover rounded-[20px]"
+                            className="object-contain rounded-[20px]" // Changed to object-contain for centering
                         />
                     </div>
                     {/* Curved overlay effect */}

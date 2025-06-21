@@ -57,8 +57,8 @@ export const PriceBlock = ({
                     <h4 className="md:text-[36px] md:leading-[40px] text-[27px] leading-[30px] font-semibold text-[#161616]">
                         {discountedNum.toLocaleString("ru-RU")}<span className="text-[18px] font-medium">₽</span>
                     </h4>
-                    <div className="rounded-full px-[6px] bg-[#FEECEE] py-1 text-[11px] text-[#E71730]">-{discountPercentage}%</div>
-                    <span className="text-[20px] text-gray-500">/ {regularNum.toLocaleString("ru-RU")}₽</span>
+                    <div className="rounded-full px-[6px] font-semibold bg-[#FEECEE] py-1 text-[11px] text-[#E71730]">-{discountPercentage}%</div>
+                    <span className="text-[16px] line-through text-gray-500">/ {regularNum.toLocaleString("ru-RU")}₽</span>
                 </div>
             </div>
             <div className="flex flex-col w-full items-center self-center gap-[12px]">
