@@ -45,14 +45,20 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     const [activeSlide, setActiveSlide] = useState(0)
 
     // Логирование для отладки
-    console.log("item.photos:", item.photos)
+    console.log("ProductContainer item:", {
+        id: item.id,
+        name: item.name,
+        photos: item.photos,
+        distributives: item.distributives,
+        pricesByDuration: item.pricesByDuration,
+    })
 
     // Find the price for the selected duration (use discounted if available, else regular)
     const selectedPriceObj =
         item.pricesByDuration.find((price) => price.durationId === selectedDurationId) ||
-        item.pricesByDuration[0]
-    const regularPrice = selectedPriceObj?.price.regular || "0"
-    const discountedPrice = selectedPriceObj?.price.discounted || regularPrice
+        item.pricesByDuration[0] || { durationId: "", price: { regular: "0", discounted: "0" } }
+    const regularPrice = selectedPriceObj.price.regular || "0"
+    const discountedPrice = selectedPriceObj.price.discounted || regularPrice
 
     // Calculate discount percentage and savings
     const regularNum = parseFloat(regularPrice)

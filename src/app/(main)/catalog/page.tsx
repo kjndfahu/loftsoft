@@ -1,46 +1,45 @@
-"use client";
+// page.tsx (CatalogPage)
+"use client"
 
-import { useState, useEffect, useCallback } from "react";
-import { BreadcrumbNav } from "@/shared/breadcrumb-nav";
-import { CategoryFilter } from "@/features/catalog/container/container-filters";
-import { ItemsGrid, Product, Category } from "@/features/home/ui/items-grid";
-import {getProductsByCategory} from "@/enteties/product/product";
-import {getCategories} from "@/enteties/category/category";
-
+import { useState, useEffect, useCallback } from "react"
+import { BreadcrumbNav } from "@/shared/breadcrumb-nav"
+import { CategoryFilter } from "@/features/catalog/container/container-filters"
+import { ItemsGrid, Product, Category } from "@/features/home/ui/items-grid"
+import { getProductsByCategory } from "@/enteties/product/product"
+import { getCategories } from "@/enteties/category/category"
 
 export default function CatalogPage() {
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [products, setProducts] = useState<Product[]>([]); // Uses updated Product interface
-    const [isLoading, setIsLoading] = useState(true);
+    const [categories, setCategories] = useState<Category[]>([])
+    const [products, setProducts] = useState<Product[]>([])
+    const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const categoriesData = await getCategories();
-                setCategories(categoriesData);
+                const categoriesData = await getCategories()
+                setCategories(categoriesData)
 
-                const productsResponse = await getProductsByCategory(null);
+                const productsResponse = await getProductsByCategory(null)
                 if (productsResponse.success) {
-                    setProducts(productsResponse.products);
+                    setProducts(productsResponse.products)
                 }
             } catch (error) {
-                console.error("Error fetching data:", error);
+                console.error("Error fetching data:", error)
             } finally {
-                setIsLoading(false);
+                setIsLoading(false)
             }
-        };
+        }
 
-        fetchData();
-    }, []);
+        fetchData()
+    }, [])
 
     const handleProductsChange = useCallback((newProducts: Product[]) => {
-        setProducts(newProducts);
-    }, []);
+        setProducts(newProducts)
+    }, [])
 
     return (
         <div className="flex flex-col pb-20 md:pt-[150px] pt-[80px] xxl:px-[250px] xl:px-[150px] md:px-[100px] sm:px-[50px] px-[20px] gap-10">
             <BreadcrumbNav title="Каталог" />
-
             {isLoading ? (
                 <>
                     <div className="flex md:items-center justify-between md:flex-row flex-col md:gap-6 gap-3 w-full">
@@ -53,7 +52,6 @@ export default function CatalogPage() {
                         </div>
                         <div className="sm:w-[250px] w-full bg-gray-200 animate-pulse rounded-full h-10"></div>
                     </div>
-
                     <div className="grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 sm:gap-6 gap-4 w-full">
                         {[...Array(8)].map((_, index) => (
                             <div key={index} className="animate-pulse">
@@ -80,5 +78,5 @@ export default function CatalogPage() {
                 </>
             )}
         </div>
-    );
+    )
 }
