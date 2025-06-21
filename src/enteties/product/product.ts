@@ -1,3 +1,4 @@
+// product.ts
 "use server"
 
 import { prisma } from "../../../prisma/prisma-client"
@@ -243,7 +244,7 @@ export async function createProduct(data: CreateProductData) {
                     price: JSON.parse(p.price as string) || { regular: "0", discounted: "0" }
                 })),
                 averageRating: Number(averageRating.toFixed(1)),
-                purchaseCount: 0, // New product, no purchases yet
+                purchaseCount: 0,
                 reviews: product.reviews || [],
             },
         }
@@ -371,16 +372,16 @@ export async function getSortedProducts(categoryId: number | null, filter: strin
                 orderBy = { reviews: { _count: "desc" } }
                 break
             case "popularity":
-                orderBy = { orderItems: { _count: "desc" } } // Fixed: Align with purchaseCount
+                orderBy = { orderItems: { _count: "desc" } }
                 break
             case "purchases":
                 orderBy = { orderItems: { _count: "desc" } }
                 break
             case "price_asc":
-                orderBy = { pricesByDuration: { _min: { price: "asc" } } } // Simplified
+                orderBy = { pricesByDuration: { _min: { price: "asc" } } }
                 break
             case "price_desc":
-                orderBy = { pricesByDuration: { _max: { price: "desc" } } } // Simplified
+                orderBy = { pricesByDuration: { _max: { price: "desc" } } }
                 break
             default:
                 orderBy = { createdAt: "desc" }

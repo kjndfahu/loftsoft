@@ -1,3 +1,4 @@
+// search-bar.tsx
 "use client"
 
 import type React from "react"
@@ -61,7 +62,7 @@ export const SearchBar: FC<Props> = () => {
                 setIsOpen={setIsOpen}
                 isLoading={isLoading}
                 searchQuery={searchQuery}
-                setShowForm={setShowForm} // Pass callback to control form visibility
+                setShowForm={setShowForm}
             />
 
             {showForm && (

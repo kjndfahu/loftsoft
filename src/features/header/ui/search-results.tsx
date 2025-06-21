@@ -1,3 +1,4 @@
+// search-results.tsx
 "use client"
 
 import { AnimatePresence, motion } from "framer-motion"
@@ -18,7 +19,7 @@ interface Product {
     id: number
     name: string
     price: string
-    photo: string
+    photos: string[] // Changed from photo: string
     description: string
     categoryId: number
     category: Category
@@ -33,7 +34,7 @@ interface Props {
     products: Product[]
     isLoading: boolean
     searchQuery: string
-    setShowForm: (show: boolean) => void // Add callback prop
+    setShowForm: (show: boolean) => void
 }
 
 export const SearchResults: FC<Props> = ({ isOpen, setIsOpen, categories, products, isLoading, searchQuery, setShowForm }) => {
@@ -121,7 +122,7 @@ export const SearchResults: FC<Props> = ({ isOpen, setIsOpen, categories, produc
                                                                 <div className="flex items-center gap-2 py-2 hover:bg-gray-50 cursor-pointer">
                                                                     <div className="w-10 h-10 flex-shrink-0 relative overflow-hidden rounded-sm">
                                                                         <Image
-                                                                            src={product.photo[0] || "/placeholder.svg"}
+                                                                            src={product.photos[0] || "/placeholder.svg"} // Changed from product.photo
                                                                             alt={product.name}
                                                                             fill
                                                                             className="object-cover"
@@ -172,7 +173,7 @@ export const SearchResults: FC<Props> = ({ isOpen, setIsOpen, categories, produc
                                                                     <div className="flex items-center gap-2 py-2 hover:bg-gray-50 cursor-pointer">
                                                                         <div className="w-10 h-10 flex-shrink-0 relative overflow-hidden rounded-sm">
                                                                             <Image
-                                                                                src={product.photo || "/placeholder.svg"}
+                                                                                src={product.photos[0] || "/placeholder.svg"} // Changed from product.photo
                                                                                 alt={product.name}
                                                                                 fill
                                                                                 className="object-cover"

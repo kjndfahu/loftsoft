@@ -19,7 +19,7 @@ interface Product {
     id: number;
     name: string;
     price: string;
-    photo: string;
+    photos: string[]; // Changed from photo: string
     description: string;
     categoryId: number;
     category?: Category;
@@ -97,8 +97,24 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const productsResult = await getProductsByCategory(null);
             if (productsResult && productsResult.success) {
                 const fetchedProducts = productsResult.products || [];
-                setAllProducts(fetchedProducts);
-                setProducts(fetchedProducts.slice(0, 5));
+                // Map to ensure compatibility with Product interface
+                const mappedProducts: Product[] = fetchedProducts.map((p: any) => ({
+                    id: p.id,
+                    name: p.name,
+                    price: p.pricesByDuration[0]?.price?.regular || "0",
+                    photos: p.photos || [], // Use photos array
+                    description: p.description || "",
+                    categoryId: p.categoryId,
+                    category: p.category,
+                    characteristics: p.characteristics || [],
+                    distributives: p.distributives || [],
+                    type: p.type,
+                    licenseType: p.licenseType,
+                    createdAt: p.createdAt,
+                    updatedAt: p.updatedAt,
+                }));
+                setAllProducts(mappedProducts);
+                setProducts(mappedProducts.slice(0, 5));
             } else {
                 console.error("Failed to fetch products:", productsResult?.error);
                 setAllProducts([]);
@@ -142,8 +158,23 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 if (query.trim()) {
                     const result = await searchProductsAndCategories(query);
                     if (result.success) {
+                        const mappedProducts: Product[] = (result.products || []).map((p: any) => ({
+                            id: p.id,
+                            name: p.name,
+                            price: p.pricesByDuration[0]?.price?.regular || "0",
+                            photos: p.photos || [], // Use photos array
+                            description: p.description || "",
+                            categoryId: p.categoryId,
+                            category: p.category,
+                            characteristics: p.characteristics || [],
+                            distributives: p.distributives || [],
+                            type: p.type,
+                            licenseType: p.licenseType,
+                            createdAt: p.createdAt,
+                            updatedAt: p.updatedAt,
+                        }));
                         setFilteredCategories(result.categories || []);
-                        setFilteredProducts(result.products || []);
+                        setFilteredProducts(mappedProducts);
                     } else {
                         setFilteredCategories([]);
                         setFilteredProducts([]);
