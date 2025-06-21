@@ -1,20 +1,47 @@
+// page.tsx
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
 import { PopularProductBlock } from "@/features/popular-products/ui/popular-product-block"
 import { getPopularProducts } from "@/enteties/popular-products/popular-products"
 
+interface Product {
+    id: number
+    name: string
+    price: string
+    photos: string[] // Changed from photo: string
+    category?: {
+        id: number
+        title: string
+    }
+}
+
+interface PopularProduct {
+    id: number
+    item: Product
+}
+
 export default function PopularProductsPage() {
-    const [popularProducts, setPopularProducts] = useState([])
+    const [popularProducts, setPopularProducts] = useState<PopularProduct[]>([])
     const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+    const [error, setError] = useState<string | null>(null)
 
     const fetchPopularProducts = useCallback(async () => {
         try {
             setLoading(true)
             const { popularProducts = [], success } = (await getPopularProducts()) || {}
             if (success) {
-                setPopularProducts(popularProducts)
+                const mappedProducts: PopularProduct[] = popularProducts.map((p: any) => ({
+                    id: p.id,
+                    item: {
+                        id: p.item.id,
+                        name: p.item.name,
+                        price: p.item.pricesByDuration[0]?.price?.regular || "0",
+                        photos: p.item.photos || [], // Use photos array
+                        category: p.item.category,
+                    },
+                }))
+                setPopularProducts(mappedProducts)
             } else {
                 setError("Не удалось загрузить популярные товары")
             }
@@ -29,7 +56,6 @@ export default function PopularProductsPage() {
         fetchPopularProducts()
     }, [fetchPopularProducts])
 
-    // Expose a function to child components to trigger a refresh
     const handleProductChange = useCallback(() => {
         fetchPopularProducts()
     }, [fetchPopularProducts])

@@ -12,7 +12,7 @@ interface Product {
     id: number
     name: string
     price: string
-    photo: string
+    photos: string[] // Changed from photo: string
     category?: {
         id: number
         title: string
@@ -25,7 +25,7 @@ interface PopularProductProps {
         item: Product
     }
     isEditable?: boolean
-    onProductChange?: () => void // Added to notify parent of changes
+    onProductChange?: () => void
 }
 
 export const PopularProductBlock = ({ product, isEditable = true, onProductChange }: PopularProductProps) => {
@@ -39,8 +39,8 @@ export const PopularProductBlock = ({ product, isEditable = true, onProductChang
         if (confirm("Вы уверены, что хотите удалить этот товар из популярных?")) {
             startTransition(async () => {
                 await removePopularProduct(product.id)
-                onProductChange?.() // Trigger re-fetch
-                router.refresh() // Fallback in case re-fetch fails
+                onProductChange?.()
+                router.refresh()
             })
         }
     }
@@ -49,7 +49,7 @@ export const PopularProductBlock = ({ product, isEditable = true, onProductChang
         return (
             <div className="flex flex-col w-full border-[1px] border-[#DBDEEF] rounded-[16px] overflow-hidden">
                 <div className="relative w-full h-[150px]">
-                    <Image src={product.item.photo || "/placeholder.svg"} alt={product.item.photo} fill className="object-cover" />
+                    <Image src={product.item.photos[0] || "/placeholder.svg"} alt={product.item.name} fill className="object-cover" />
                 </div>
                 <div className="p-3 text-black">
                     <p className="text-sm font-medium">{product.item.name}</p>

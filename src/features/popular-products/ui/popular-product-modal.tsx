@@ -11,14 +11,14 @@ interface Props {
     setIsClicked: (arg: boolean) => void
     productId?: number
     product?: Product
-    onProductChange?: () => void // Added to notify parent of changes
+    onProductChange?: () => void
 }
 
 interface Product {
     id: number
     name: string
     price: string
-    photo: string
+    photos: string[] // Changed from photo: string
     category?: {
         id: number
         title: string
@@ -39,7 +39,14 @@ export const PopularProductModal: FC<Props> = ({ setIsClicked, productId, produc
                 setIsSearching(true)
                 const result = await searchProductsAndCategories(searchQuery)
                 if (result.success) {
-                    setSearchResults(result.products)
+                    const mappedProducts: Product[] = (result.products || []).map((p: any) => ({
+                        id: p.id,
+                        name: p.name,
+                        price: p.pricesByDuration[0]?.price?.regular || "0",
+                        photos: p.photos || [], // Use photos array
+                        category: p.category,
+                    }));
+                    setSearchResults(mappedProducts)
                 }
                 setIsSearching(false)
             } else {
@@ -73,7 +80,7 @@ export const PopularProductModal: FC<Props> = ({ setIsClicked, productId, produc
 
             if (result.success) {
                 setIsClicked(false)
-                onProductChange?.() // Trigger re-fetch
+                onProductChange?.()
             } else {
                 setError(result.error || "Failed to save popular product")
             }
@@ -117,7 +124,7 @@ export const PopularProductModal: FC<Props> = ({ setIsClicked, productId, produc
                                     onClick={() => handleProductSelect(product)}
                                 >
                                     <div className="w-10 h-10 flex-shrink-0 relative overflow-hidden rounded-sm">
-                                        <Image src={product.photo || "/placeholder.svg"} alt={product.name} fill className="object-cover" />
+                                        <Image src={product.photos[0] || "/placeholder.svg"} alt={product.name} fill className="object-cover" />
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium">{product.name}</p>
@@ -142,7 +149,7 @@ export const PopularProductModal: FC<Props> = ({ setIsClicked, productId, produc
                     >
                         {selectedProduct && (
                             <Image
-                                src={selectedProduct.photo || "/placeholder.svg"}
+                                src={selectedProduct.photos[0] || "/placeholder.svg"}
                                 alt={selectedProduct.name}
                                 fill
                                 className="object-cover"
