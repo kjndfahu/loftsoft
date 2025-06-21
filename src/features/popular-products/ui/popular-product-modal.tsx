@@ -1,3 +1,4 @@
+// popular-product-modal.tsx
 "use client"
 
 import { CrossLogo, SearchLogo } from "@/shared/icons"
@@ -5,13 +6,23 @@ import { type FC, useState, useEffect } from "react"
 import Image from "next/image"
 import { searchProductsAndCategories } from "@/enteties/product/product"
 import { addPopularProduct, updatePopularProduct } from "@/enteties/popular-products/popular-products"
-import { Product } from "@/features/home/ui/items-grid"
 
 interface Props {
     setIsClicked: (arg: boolean) => void
     productId?: number
     product?: Product
-    onProductChange?: () => void
+    onProductChange?: () => void // Added to notify parent of changes
+}
+
+interface Product {
+    id: number
+    name: string
+    price: string
+    photo: string
+    category?: {
+        id: number
+        title: string
+    }
 }
 
 export const PopularProductModal: FC<Props> = ({ setIsClicked, productId, product, onProductChange }) => {
@@ -29,9 +40,6 @@ export const PopularProductModal: FC<Props> = ({ setIsClicked, productId, produc
                 const result = await searchProductsAndCategories(searchQuery)
                 if (result.success) {
                     setSearchResults(result.products)
-                } else {
-                    console.error("Search failed:", result.error)
-                    setError(result.error || "Не удалось выполнить поиск")
                 }
                 setIsSearching(false)
             } else {
@@ -47,31 +55,6 @@ export const PopularProductModal: FC<Props> = ({ setIsClicked, productId, produc
         setSelectedProduct(product)
         setSearchQuery("")
         setSearchResults([])
-    }
-
-    const formatPrice = (priceData: { regular: string; discounted: string } | undefined) => {
-        if (!priceData) return "Цена не указана"
-
-        const regularPrice = Number.parseFloat(priceData.regular)
-        const discountedPrice = priceData.discounted ? Number.parseFloat(priceData.discounted) : null
-
-        if (discountedPrice && discountedPrice < regularPrice) {
-            return (
-                <span>
-                    <span className="text-[#161616] line-through">
-                        {new Intl.NumberFormat("ru-RU").format(regularPrice)} ₽
-                    </span>{" "}
-                    <span className="text-[#5069E8] font-semibold">
-                        {new Intl.NumberFormat("ru-RU").format(discountedPrice)} ₽
-                    </span>
-                </span>
-            )
-        }
-        return (
-            <span className="text-[#161616]">
-                {new Intl.NumberFormat("ru-RU").format(regularPrice)} ₽
-            </span>
-        )
     }
 
     const handleSubmit = async () => {
@@ -90,7 +73,7 @@ export const PopularProductModal: FC<Props> = ({ setIsClicked, productId, produc
 
             if (result.success) {
                 setIsClicked(false)
-                onProductChange?.()
+                onProductChange?.() // Trigger re-fetch
             } else {
                 setError(result.error || "Failed to save popular product")
             }
@@ -134,23 +117,12 @@ export const PopularProductModal: FC<Props> = ({ setIsClicked, productId, produc
                                     onClick={() => handleProductSelect(product)}
                                 >
                                     <div className="w-10 h-10 flex-shrink-0 relative overflow-hidden rounded-sm">
-                                        <Image
-                                            src={product.photos[0] || "/placeholder.svg"}
-                                            alt={product.name}
-                                            fill
-                                            className="object-cover"
-                                            onError={(e) => {
-                                                console.error(`Failed to load image for ${product.name}: ${product.photos[0]}`)
-                                                e.currentTarget.src = "/placeholder.svg"
-                                            }}
-                                        />
+                                        <Image src={product.photo || "/placeholder.svg"} alt={product.name} fill className="object-cover" />
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium">{product.name}</p>
                                         <p className="text-xs text-gray-500">{product.category?.title || "Категория"}</p>
-                                        <p className="text-xs font-semibold">
-                                            {formatPrice(product.pricesByDuration[0]?.price)}
-                                        </p>
+                                        <p className="text-xs font-semibold">{product.price} ₽</p>
                                     </div>
                                 </div>
                             ))}
@@ -170,21 +142,17 @@ export const PopularProductModal: FC<Props> = ({ setIsClicked, productId, produc
                     >
                         {selectedProduct && (
                             <Image
-                                src={selectedProduct.photos[0] || "/placeholder.svg"}
+                                src={selectedProduct.photo || "/placeholder.svg"}
                                 alt={selectedProduct.name}
                                 fill
                                 className="object-cover"
-                                onError={(e) => {
-                                    console.error(`Failed to load image for ${selectedProduct.name}: ${selectedProduct.photos[0]}`)
-                                    e.currentTarget.src = "/placeholder.svg"
-                                }}
                             />
                         )}
                     </div>
                     <div className="flex flex-col text-black gap-2">
                         <h2>Название: {selectedProduct?.name || ""}</h2>
                         <h2>Категория: {selectedProduct?.category?.title || ""}</h2>
-                        <h2>Цена: {selectedProduct ? formatPrice(selectedProduct.pricesByDuration[0]?.price) : ""}</h2>
+                        <h2>Цена: {selectedProduct?.price || ""} ₽</h2>
                     </div>
                 </div>
 
