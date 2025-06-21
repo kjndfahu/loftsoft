@@ -1,63 +1,41 @@
 // /src/features/create-product/ui/distributive-item.tsx
-"use client";
-
-import type React from "react";
-import { useState } from "react";
+import { FC } from "react";
 import { X } from "lucide-react";
 
 interface DistributiveDetailsProps {
     index: number;
     displayName: string;
     fileUrl: string;
-    logoUrl?: string;
-    onUpdate: (index: number, displayName: string, iconUrl?: string, logoUrl?: string) => void;
+    onUpdate: (index: number, displayName: string) => void;
     onRemove: (index: number) => void;
 }
 
-export const DistributiveDetails: React.FC<DistributiveDetailsProps> = ({ index, displayName, fileUrl, logoUrl, onUpdate, onRemove }) => {
-    const [customName, setCustomName] = useState(displayName);
-    const [iconUrl, setIconUrl] = useState("");
-    const [newLogoUrl, setNewLogoUrl] = useState(logoUrl || "");
-
-    const handleUpdate = () => {
-        onUpdate(index, customName, iconUrl || undefined, newLogoUrl || undefined);
-    };
-
+export const DistributiveDetails: FC<DistributiveDetailsProps> = ({
+                                                                      index,
+                                                                      displayName,
+                                                                      fileUrl,
+                                                                      onUpdate,
+                                                                      onRemove,
+                                                                  }) => {
     return (
-        <div className="mt-2 p-3 border-[1px] border-[#B9BCCB] rounded-[10px]">
+        <div className="flex flex-col gap-2 p-[10px] border-[1px] border-[#E9EBF6] rounded-[10px]">
             <div className="flex items-center justify-between">
-                <h5 className="text-[14px] font-semibold text-[#161616]">Детали дистрибутива</h5>
-                <button type="button" onClick={() => onRemove(index)} className="text-[#161616]">
+                <input
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => onUpdate(index, e.target.value)}
+                    placeholder="Название дистрибутива"
+                    className="px-3 py-1 border-[1px] border-[#B9BCCB] rounded-[10px] w-full"
+                />
+                <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="text-[#161616]"
+                >
                     <X className="w-4 h-4" />
                 </button>
             </div>
-            <div className="mt-2 space-y-2">
-                <input
-                    type="text"
-                    placeholder="Название дистрибутива"
-                    value={customName}
-                    onChange={(e) => setCustomName(e.target.value)}
-                    onBlur={handleUpdate}
-                    className="w-full px-3 py-2 border-[1px] border-[#B9BCCB] rounded-[10px]"
-                />
-                <input
-                    type="text"
-                    placeholder="URL иконки (необязательно)"
-                    value={iconUrl}
-                    onChange={(e) => setIconUrl(e.target.value)}
-                    onBlur={handleUpdate}
-                    className="w-full px-3 py-2 border-[1px] border-[#B9BCCB] rounded-[10px]"
-                />
-                <input
-                    type="text"
-                    placeholder="URL логотипа (необязательно)"
-                    value={newLogoUrl}
-                    onChange={(e) => setNewLogoUrl(e.target.value)}
-                    onBlur={handleUpdate}
-                    className="w-full px-3 py-2 border-[1px] border-[#B9BCCB] rounded-[10px]"
-                />
-                <div className="text-[12px] text-[#161616] truncate">Файл: {fileUrl}</div>
-            </div>
+            <p className="text-[12px] text-[#333438] break-all">{fileUrl}</p>
         </div>
     );
-};
+}

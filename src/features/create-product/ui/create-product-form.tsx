@@ -43,7 +43,7 @@ interface DistributiveFile {
     file: File | null;
     displayName: string;
     fileUrl?: string;
-    iconUrl?: string;
+    logoFile?: File;
     logoUrl?: string;
     customName?: string;
     isUrl?: boolean;
@@ -104,7 +104,14 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     const [selectedDeviceCounts, setSelectedDeviceCounts] = useState<number[]>([]);
     const [characteristics, setCharacteristics] = useState<Characteristic[]>([{ title: "", value: "" }]);
     const [questions, setQuestions] = useState<QuestionAnswer[]>([{ question: "", answer: "" }]);
-    const [distributiveFiles, setDistributiveFiles] = useState<DistributiveFile[]>([{ file: null, displayName: "", fileUrl: "", isUrl: false }]);
+    const [distributiveFiles, setDistributiveFiles] = useState<DistributiveFile[]>([{
+        file: null,
+        displayName: "",
+        fileUrl: "",
+        isUrl: false,
+        logoFile: null,
+        logoUrl: ""
+    }]);
     const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
     const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -113,6 +120,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     const [error, setError] = useState<string | null>(null);
     const [autorelease, setAutorelease] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const logoInputRef = useRef<HTMLInputElement>(null);
 
     const CLOUDINARY_UPLOAD_URL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
     const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
@@ -246,7 +254,14 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     };
 
     const handleAddFile = () => {
-        setDistributiveFiles([...distributiveFiles, { file: null, displayName: "", fileUrl: "", isUrl: false }]);
+        setDistributiveFiles([...distributiveFiles, {
+            file: null,
+            displayName: "",
+            fileUrl: "",
+            isUrl: false,
+            logoFile: null,
+            logoUrl: ""
+        }]);
     };
 
     const handleRemoveFile = (index: number) => {
@@ -271,10 +286,32 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
         });
     };
 
-    const handleUpdateDistributive = (index: number, displayName: string, iconUrl?: string, logoUrl?: string) => {
+    const handleLogoChange = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            try {
+                const logoUrl = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+                setDistributiveFiles(prev => {
+                    const newFiles = [...prev];
+                    newFiles[index] = { ...newFiles[index], logoFile: file, logoUrl };
+                    return newFiles;
+                });
+            } catch (error) {
+                console.error("Ошибка при конвертации логотипа:", error);
+                setError("Не удалось загрузить логотип");
+            }
+        }
+    };
+
+    const handleUpdateDistributive = (index: number, displayName: string) => {
         setDistributiveFiles(prev => {
             const newFiles = [...prev];
-            newFiles[index] = { ...newFiles[index], customName: displayName, iconUrl, logoUrl };
+            newFiles[index] = { ...newFiles[index], customName: displayName };
             return newFiles;
         });
     };
@@ -341,7 +378,6 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                 .map((dist) => ({
                     displayName: dist.customName || dist.displayName || "Distributive",
                     fileUrl: dist.fileUrl!,
-                    iconUrl: dist.iconUrl,
                     logoUrl: dist.logoUrl,
                 }));
 
@@ -363,7 +399,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                 licenseType: selectedLicenseDurations.map(
                     (duration) => licenseDurationMap[duration.id as keyof typeof licenseDurationMap]
                 ),
-                deviceCounts: selectedDeviceCounts, // No length check, making it optional
+                deviceCounts: selectedDeviceCounts,
                 characteristics: characteristics.filter((char) => char.title && char.value),
                 questions: questions.filter((q) => q.question && q.answer),
                 distributives: uploadedDistributives,
@@ -583,7 +619,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                         </div>
                         <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
                             {distributiveFiles.map((file, index) => (
-                                <div key={index}>
+                                <div key={index} className="flex flex-col gap-2">
                                     <FileUploadItem
                                         index={index}
                                         fileName={file.displayName}
@@ -592,12 +628,36 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                                         onRemove={handleRemoveFile}
                                         onUploadSuccess={handleUploadSuccess}
                                     />
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => logoInputRef.current?.click()}
+                                            className="px-3 py-1 border-[1px] border-[#B9BCCB] rounded-[10px] text-[14px]"
+                                        >
+                                            Загрузить логотип
+                                        </button>
+                                        <input
+                                            type="file"
+                                            ref={logoInputRef}
+                                            onChange={(e) => handleLogoChange(index, e)}
+                                            accept="image/*"
+                                            className="hidden"
+                                        />
+                                        {file.logoUrl && (
+                                            <Image
+                                                src={file.logoUrl}
+                                                alt="Logo preview"
+                                                width={40}
+                                                height={40}
+                                                className="rounded-[4px]"
+                                            />
+                                        )}
+                                    </div>
                                     {file.fileUrl && (
                                         <DistributiveDetails
                                             index={index}
                                             displayName={file.customName || file.displayName}
                                             fileUrl={file.fileUrl}
-                                            logoUrl={file.logoUrl}
                                             onUpdate={handleUpdateDistributive}
                                             onRemove={handleRemoveDistributive}
                                         />
