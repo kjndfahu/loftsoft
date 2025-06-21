@@ -1,3 +1,4 @@
+// product-container.tsx
 "use client"
 
 import { ReviewStar } from "@/shared/icons"
@@ -12,7 +13,7 @@ interface ProductContainerProps {
     item: {
         id: number
         name: string
-        pricesByDuration: { durationId: string; price: string }[]
+        pricesByDuration: { durationId: string; price: { regular: string; discounted: string } }[]
         photos: string[]
         description?: string | null
         type: string[]
@@ -27,24 +28,25 @@ interface ProductContainerProps {
 
 // Helper function to convert durationId to Russian label
 const getDurationLabel = (durationId: string): string => {
-    const years = parseInt(durationId.replace("years", ""));
-    const lastDigit = years % 10;
-    const lastTwoDigits = years % 100;
-    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) return `${years} лет`;
-    if (lastDigit === 1) return `${years} год`;
-    if (lastDigit >= 2 && lastDigit <= 4) return `${years} года`;
-    return `${years} лет`;
-};
+    const years = parseInt(durationId.replace("years", ""))
+    const lastDigit = years % 10
+    const lastTwoDigits = years % 100
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) return `${years} лет`
+    if (lastDigit === 1) return `${years} год`
+    if (lastDigit >= 2 && lastDigit <= 4) return `${years} года`
+    return `${years} лет`
+}
 
 export const ProductContainer = ({ item }: ProductContainerProps) => {
     const [selectedDurationId, setSelectedDurationId] = useState<string>(item.pricesByDuration[0]?.durationId || "")
     const [selectedDeviceCount, setSelectedDeviceCount] = useState<number>(item.deviceCounts[0] || 1)
     const [activeSlide, setActiveSlide] = useState(0)
 
-    // Find the price for the selected duration
-    const selectedPrice = item.pricesByDuration.find(
+    // Find the price for the selected duration (use discounted if available, else regular)
+    const selectedPriceObj = item.pricesByDuration.find(
         (price) => price.durationId === selectedDurationId
-    )?.price || item.pricesByDuration[0]?.price || "0"
+    ) || item.pricesByDuration[0]
+    const selectedPrice = selectedPriceObj?.price.discounted || selectedPriceObj?.price.regular || "0"
 
     // Calculate star rating display
     const fullStars = Math.floor(item.averageRating)
@@ -60,7 +62,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
         <div className="flex flex-col items-center md:flex-row w-full md:gap-7 gap-4">
             {/* Mobile Slider (below md breakpoint) */}
             <div className="md:hidden w-full">
-                <div className="relative  mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
+                <div className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
                     <div className="absolute inset-0">
                         <Image
                             src={item.photos[activeSlide] || "/placeholder.svg"}
