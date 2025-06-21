@@ -51,19 +51,14 @@ export const PriceBlock = ({
     const discountedNum = parseFloat(discountedPrice)
 
     return (
-        <div className="flex flex-col bg-[#F5F7FF] rounded-[20px] gap-[30px] md:p-6 p-4">
+        <div className="flex flex-col bg-[#F5F7FF] rounded-[20px] gap-[20px] md:p-6 p-4">
             <div className="flex flex-col items-start gap-2">
-                <h4 className="md:text-[36px] md:leading-[40px] text-[27px] leading-[30px] font-semibold text-[#161616]">
-                    {discountedNum.toLocaleString("ru-RU")} ₽
-                </h4>
-                <div className="flex items-center gap-2">
-                    <span className="text-[20px] line-through text-gray-500">
-                        {regularNum.toLocaleString("ru-RU")} ₽
-                    </span>
-                    <span className="text-[14px] text-red-500">-{discountPercentage}%</span>
-                </div>
-                <div className="text-[14px] text-green-600">
-                    Скидка <span className="font-medium">{savings} ₽</span>
+                <div className="flex items-baseline gap-2">
+                    <h4 className="md:text-[36px] md:leading-[40px] text-[27px] leading-[30px] font-semibold text-[#161616]">
+                        {discountedNum.toLocaleString("ru-RU")} ₽
+                    </h4>
+                    <span className="text-[16px] text-red-500">-{discountPercentage}%</span>
+                    <span className="text-[20px] text-gray-500">/ {regularNum.toLocaleString("ru-RU")} ₽</span>
                 </div>
             </div>
             <div className="flex flex-col w-full items-center self-center gap-[12px]">
@@ -73,7 +68,12 @@ export const PriceBlock = ({
                 >
                     Добавить в корзину
                 </button>
-                <Logos />
+                <div className="flex justify-center gap-2">
+                    <Logos name="visa" className="w-6 h-6 text-gray-400" />
+                    <Logos name="mastercard" className="w-6 h-6 text-gray-400" />
+                    <Logos name="mir" className="w-6 h-6 text-gray-400" />
+                    <Logos name="applePay" className="w-6 h-6 text-gray-400" />
+                </div>
             </div>
         </div>
     )
