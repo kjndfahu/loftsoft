@@ -112,7 +112,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             </div>
 
             {/* Desktop Thumbnail Layout (above md breakpoint) */}
-            <div className="hidden md:flex h-[536px] w-[384px] flex-row gap-4">
+            <div className="hidden md:flex h-[536px] w-[480px] flex-row gap-4">
                 {item.photos.length > 1 && (
                     <div className="flex flex-col gap-2">
                         {item.photos.slice(1).map((photo, index) => (
