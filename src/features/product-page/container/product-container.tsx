@@ -7,7 +7,7 @@ import ProductSpecifications from "@/features/product-page/ui/product-specificat
 import { Distributive } from "@/features/product-page/ui/distributive"
 import { PurchaseBlock } from "@/features/product-page/ui/purchase-block"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface ProductContainerProps {
     item: {
@@ -42,6 +42,11 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     const [selectedDeviceCount, setSelectedDeviceCount] = useState<number>(item.deviceCounts[0] || 1)
     const [activeSlide, setActiveSlide] = useState(0)
 
+    // Debug: Log the photos array to check its contents
+    useEffect(() => {
+        console.log("Photos array:", item.photos)
+    }, [item.photos])
+
     // Find the price for the selected duration (use discounted if available, else regular)
     const selectedPriceObj = item.pricesByDuration.find(
         (price) => price.durationId === selectedDurationId
@@ -65,6 +70,9 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
         setActiveSlide(index)
     }
 
+    // Fallback image URL (adjust path based on your project structure)
+    const getFallbackImage = () => "/placeholder.svg"
+
     return (
         <div className="flex flex-col items-center md:flex-row w-full md:gap-7 gap-4">
             {/* Mobile Slider (below md breakpoint) */}
@@ -72,10 +80,15 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                 <div className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
                     <div className="absolute inset-0 flex justify-center items-center">
                         <Image
-                            src={item.photos[activeSlide] || "/placeholder.svg"}
-                            alt={item.name}
+                            src={item.photos[activeSlide] || getFallbackImage()}
+                            alt={item.name || "Product Image"}
                             fill
-                            className="object-contain rounded-[20px]" // Changed to object-contain for centering
+                            className="object-contain rounded-[20px]"
+                            onError={(e) => {
+                                const target = e.target as HTMLImageElement
+                                target.src = getFallbackImage() // Fallback on error
+                                console.error("Image failed to load, using fallback:", item.photos[activeSlide])
+                            }}
                         />
                     </div>
                     {/* Curved overlay effect */}
@@ -103,20 +116,30 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                             className="relative bg-gray-400 w-[76px] h-[76px] rounded-[8px] overflow-hidden"
                         >
                             <Image
-                                src={photo || "/placeholder.svg"}
+                                src={photo || getFallbackImage()}
                                 alt={`${item.name} thumbnail ${index + 1}`}
                                 fill
                                 className="object-cover rounded-[8px]"
+                                onError={(e) => {
+                                    const target = e.target as HTMLImageElement
+                                    target.src = getFallbackImage() // Fallback on error
+                                    console.error("Thumbnail failed to load, using fallback:", photo)
+                                }}
                             />
                         </div>
                     ))}
                 </div>
                 <div style={{ aspectRatio: 384 / 537 }} className="relative bg-gray-400 rounded-[20px] overflow-hidden">
                     <Image
-                        src={item.photos[0] || "/placeholder.svg"}
-                        alt={item.name}
+                        src={item.photos[0] || getFallbackImage()}
+                        alt={item.name || "Product Image"}
                         fill
                         className="object-cover rounded-[20px]"
+                        onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.src = getFallbackImage() // Fallback on error
+                            console.error("Main image failed to load, using fallback:", item.photos[0])
+                        }}
                     />
                 </div>
             </div>
