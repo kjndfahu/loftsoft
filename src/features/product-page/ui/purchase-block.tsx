@@ -1,22 +1,22 @@
-// purchase-block.tsx
-"use client"
+// /src/features/product-page/ui/purchase-block.tsx
+"use client";
 
-import { SubType } from "@/features/product-page/ui/sub-type"
-import { PriceBlock } from "@/features/product-page/ui/price-block"
-import { PostBlock } from "@/features/product-page/ui/post-block"
-import { useState } from "react"
+import { SubType } from "@/features/product-page/ui/sub-type";
+import { PriceBlock } from "@/features/product-page/ui/price-block";
+import { PostBlock } from "@/features/product-page/ui/post-block";
+import { useState } from "react";
 
 interface PurchaseBlockProps {
-    id?: string
-    name?: string
-    regularPrice: string
-    discountedPrice: string
-    photos: string[]
-    type: string[]
-    licenseType: string
-    deviceCounts: number[]
-    discountPercentage: number
-    savings: string
+    id?: string;
+    name?: string;
+    regularPrice: string;
+    discountedPrice: string;
+    photos: string[];
+    type: string[];
+    licenseType: string;
+    deviceCounts: number[];
+    discountPercentage: number;
+    savings: string;
 }
 
 export const PurchaseBlock = ({
@@ -31,7 +31,9 @@ export const PurchaseBlock = ({
                                   discountPercentage,
                                   savings,
                               }: PurchaseBlockProps) => {
-    const [selectedType, setSelectedType] = useState<string>(type[0] || "KEY")
+    const [selectedType, setSelectedType] = useState<string>(type[0] || "KEY");
+    const [selectedLicenseType, setSelectedLicenseType] = useState<string>(licenseType);
+    const [selectedDeviceCount, setSelectedDeviceCount] = useState<number>(deviceCounts[0] || 1);
 
     return (
         <div className="flex md:w-[27%] w-full flex-col gap-[10px]">
@@ -42,8 +44,8 @@ export const PurchaseBlock = ({
                 discountedPrice={discountedPrice}
                 photo={photos[0]}
                 type={selectedType}
-                licenseType={licenseType}
-                deviceCount={deviceCounts[0] || 1}
+                licenseType={selectedLicenseType}
+                deviceCount={selectedDeviceCount}
                 discountPercentage={discountPercentage}
                 savings={savings}
             />
@@ -51,14 +53,14 @@ export const PurchaseBlock = ({
                 availableTypes={type}
                 selectedType={selectedType}
                 setSelectedType={setSelectedType}
-                licenseTypes={[]}
-                selectedLicenseType={licenseType}
-                setSelectedLicenseType={() => {}}
-                deviceCounts={[]}
-                selectedDeviceCount={deviceCounts[0] || 1}
-                setSelectedDeviceCount={() => {}}
+                licenseTypes={[licenseType]} // Передаем массив с текущим licenseType
+                selectedLicenseType={selectedLicenseType}
+                setSelectedLicenseType={setSelectedLicenseType}
+                deviceCounts={deviceCounts}
+                selectedDeviceCount={selectedDeviceCount}
+                setSelectedDeviceCount={setSelectedDeviceCount}
             />
             <PostBlock />
         </div>
-    )
-}
+    );
+};
