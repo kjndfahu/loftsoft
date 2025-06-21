@@ -121,7 +121,7 @@ export const SearchResults: FC<Props> = ({ isOpen, setIsOpen, categories, produc
                                                                 <div className="flex items-center gap-2 py-2 hover:bg-gray-50 cursor-pointer">
                                                                     <div className="w-10 h-10 flex-shrink-0 relative overflow-hidden rounded-sm">
                                                                         <Image
-                                                                            src={product.photo || "/placeholder.svg"}
+                                                                            src={product.photo[0] || "/placeholder.svg"}
                                                                             alt={product.name}
                                                                             fill
                                                                             className="object-cover"
