@@ -7,7 +7,7 @@ import ProductSpecifications from "@/features/product-page/ui/product-specificat
 import { Distributive } from "@/features/product-page/ui/distributive"
 import { PurchaseBlock } from "@/features/product-page/ui/purchase-block"
 import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 
 interface ProductContainerProps {
     item: {
@@ -42,12 +42,6 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     const [selectedDeviceCount, setSelectedDeviceCount] = useState<number>(item.deviceCounts[0] || 1)
     const [activeSlide, setActiveSlide] = useState(0)
 
-    // Debug: Log the photos array and item data
-    useEffect(() => {
-        console.log("Full item data:", item)
-        console.log("Photos array:", item.photos)
-    }, [item])
-
     // Find the price for the selected duration (use discounted if available, else regular)
     const selectedPriceObj = item.pricesByDuration.find(
         (price) => price.durationId === selectedDurationId
@@ -71,31 +65,17 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
         setActiveSlide(index)
     }
 
-    // Fallback image URL (adjust path or use external URL for testing)
-    const getFallbackImage = () => {
-        // Use an external placeholder for testing if local fallback fails
-        return process.env.NODE_ENV === "development"
-            ? "https://via.placeholder.com/236x537"
-            : "/placeholder.svg"
-    }
-
     return (
         <div className="flex flex-col items-center md:flex-row w-full md:gap-7 gap-4">
             {/* Mobile Slider (below md breakpoint) */}
-            <div className="md:hidden w-full flex justify-center">
+            <div className="md:hidden w-full">
                 <div className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
-                    <div className="absolute inset-0 flex justify-center items-center">
+                    <div className="absolute inset-0">
                         <Image
-                            src={item.photos[activeSlide] || getFallbackImage()}
-                            alt={item.name || "Product Image"}
+                            src={item.photos[activeSlide] || "/placeholder.svg"}
+                            alt={item.name}
                             fill
-                            className="object-contain rounded-[20px]"
-                            onError={(e) => {
-                                const target = e.target as HTMLImageElement
-                                target.src = getFallbackImage() // Fallback on error
-                                console.error("Mobile image failed to load, fallback applied. Original src:", item.photos[activeSlide])
-                            }}
-                            onLoadingComplete={(img) => console.log("Mobile image loaded:", img.src)}
+                            className="object-cover rounded-[20px]"
                         />
                     </div>
                     {/* Curved overlay effect */}
@@ -103,17 +83,13 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                 </div>
                 {/* Navigation dots */}
                 <div className="flex justify-center gap-2 mt-2">
-                    {item.photos.length > 0 ? (
-                        item.photos.map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => handleSlideChange(index)}
-                                className={`w-2 h-2 rounded-full ${activeSlide === index ? "bg-[#5069E8]" : "bg-gray-300"}`}
-                            ></button>
-                        ))
-                    ) : (
-                        <span className="text-red-500 text-sm">No photos available</span>
-                    )}
+                    {item.photos.map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => handleSlideChange(index)}
+                            className={`w-2 h-2 rounded-full ${activeSlide === index ? "bg-[#5069E8]" : "bg-gray-300"}`}
+                        ></button>
+                    ))}
                 </div>
             </div>
 
@@ -127,32 +103,20 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                             className="relative bg-gray-400 w-[76px] h-[76px] rounded-[8px] overflow-hidden"
                         >
                             <Image
-                                src={photo || getFallbackImage()}
+                                src={photo || "/placeholder.svg"}
                                 alt={`${item.name} thumbnail ${index + 1}`}
                                 fill
                                 className="object-cover rounded-[8px]"
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement
-                                    target.src = getFallbackImage() // Fallback on error
-                                    console.error("Desktop thumbnail failed to load, fallback applied. Original src:", photo)
-                                }}
-                                onLoadingComplete={(img) => console.log("Desktop thumbnail loaded:", img.src)}
                             />
                         </div>
                     ))}
                 </div>
                 <div style={{ aspectRatio: 384 / 537 }} className="relative bg-gray-400 rounded-[20px] overflow-hidden">
                     <Image
-                        src={item.photos[0] || getFallbackImage()}
-                        alt={item.name || "Product Image"}
+                        src={item.photos[0] || "/placeholder.svg"}
+                        alt={item.name}
                         fill
                         className="object-cover rounded-[20px]"
-                        onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            target.src = getFallbackImage() // Fallback on error
-                            console.error("Desktop main image failed to load, fallback applied. Original src:", item.photos[0])
-                        }}
-                        onLoadingComplete={(img) => console.log("Desktop main image loaded:", img.src)}
                     />
                 </div>
             </div>
