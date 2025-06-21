@@ -125,7 +125,6 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                 setFilteredProducts(products);
             } catch (error) {
                 console.error("Error fetching products:", error);
-                setError("Не удалось загрузить связанные товары");
             }
         };
         fetchProducts();
@@ -138,37 +137,44 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         if (files.length) {
-            setImageFiles((prev) => [...prev, ...files]);
+            setImageFiles(prev => [...prev, ...files]);
             try {
                 const uploadPromises = files.map(async (file) => {
                     const formData = new FormData();
-                    if (!CLOUDINARY_UPLOAD_PRESET || !CLOUDINARY_UPLOAD_URL) {
+                    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+                    const uploadUrl = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
+
+                    if (!uploadPreset || !uploadUrl) {
                         throw new Error("Cloudinary configuration is missing");
                     }
+
                     formData.append("file", file);
-                    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-                    const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+                    formData.append("upload_preset", uploadPreset);
+
+                    const response = await fetch(uploadUrl, {
                         method: "POST",
                         body: formData,
                     });
+
                     const data = await response.json();
-                    if (!data.secure_url) {
-                        throw new Error(`Failed to upload image: ${file.name}`);
+                    if (data.secure_url) {
+                        return data.secure_url;
                     }
-                    return data.secure_url;
+                    throw new Error("Failed to upload image");
                 });
+
                 const newImageUrls = await Promise.all(uploadPromises);
-                setImages((prev) => [...prev, ...newImageUrls]);
-            } catch (error: any) {
-                console.error("Ошибка при загрузке изображений:", error.message, error.stack);
-                setError("Не удалось загрузить изображения: " + error.message);
+                setImages(prev => [...prev, ...newImageUrls]);
+            } catch (error) {
+                console.error("Ошибка при загрузке изображений:", error);
+                setError("Не удалось загрузить изображения");
             }
         }
     };
 
     const handleRemoveImage = (index: number) => {
-        setImages((prev) => prev.filter((_, i) => i !== index));
-        setImageFiles((prev) => prev.filter((_, i) => i !== index));
+        setImages(prev => prev.filter((_, i) => i !== index));
+        setImageFiles(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleCategorySelect = (category: Category) => {
@@ -186,21 +192,18 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     const handleLicenseDurationSelect = (duration: LicenseDuration) => {
         setSelectedLicenseDurations((prev) => {
             if (prev.some((d) => d.id === duration.id)) {
-                setPricesByDuration((prevPrices) => prevPrices.filter((p) => p.durationId !== duration.id));
+                setPricesByDuration(prevPrices => prevPrices.filter(p => p.durationId !== duration.id));
                 return prev.filter((d) => d.id !== duration.id);
             } else {
-                setPricesByDuration((prevPrices) => [
-                    ...prevPrices,
-                    { durationId: duration.id, regularPrice: "", discountedPrice: "" },
-                ]);
+                setPricesByDuration(prevPrices => [...prevPrices, { durationId: duration.id, regularPrice: "", discountedPrice: "" }]);
                 return [...prev, duration];
             }
         });
     };
 
-    const handlePriceByDurationChange = (durationId: string, field: "regularPrice" | "discountedPrice", price: string) => {
-        setPricesByDuration((prev) =>
-            prev.map((p) => (p.durationId === durationId ? { ...p, [field]: price } : p))
+    const handlePriceByDurationChange = (durationId: string, field: 'regularPrice' | 'discountedPrice', price: string) => {
+        setPricesByDuration(prev =>
+            prev.map(p => p.durationId === durationId ? { ...p, [field]: price } : p)
         );
     };
 
@@ -215,11 +218,11 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     };
 
     const handleRemoveCharacteristic = (index: number) => {
-        setCharacteristics((prev) => prev.filter((_, i) => i !== index));
+        setCharacteristics(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleChangeCharacteristic = (index: number, title: string, value: string) => {
-        setCharacteristics((prev) => {
+        setCharacteristics(prev => {
             const newChars = [...prev];
             newChars[index] = { title, value };
             return newChars;
@@ -231,11 +234,11 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     };
 
     const handleRemoveQuestion = (index: number) => {
-        setQuestions((prev) => prev.filter((_, i) => i !== index));
+        setQuestions(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleChangeQuestion = (index: number, question: string, answer: string) => {
-        setQuestions((prev) => {
+        setQuestions(prev => {
             const newQuestions = [...prev];
             newQuestions[index] = { question, answer };
             return newQuestions;
@@ -247,11 +250,11 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     };
 
     const handleRemoveFile = (index: number) => {
-        setDistributiveFiles((prev) => prev.filter((_, i) => i !== index));
+        setDistributiveFiles(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleChangeFile = (index: number, file: File | null, displayName: string, fileUrl?: string, isUrl?: boolean) => {
-        setDistributiveFiles((prev) => {
+        setDistributiveFiles(prev => {
             const newFiles = [...prev];
             newFiles[index] = { ...newFiles[index], file, displayName, fileUrl, isUrl };
             return newFiles;
@@ -259,7 +262,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     };
 
     const handleUploadSuccess = (index: number, fileUrl: string) => {
-        setDistributiveFiles((prev) => {
+        setDistributiveFiles(prev => {
             const newFiles = [...prev];
             if (!newFiles[index].fileUrl) {
                 newFiles[index] = { ...newFiles[index], fileUrl, isUrl: false };
@@ -269,7 +272,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     };
 
     const handleUpdateDistributive = (index: number, displayName: string, iconUrl?: string, logoUrl?: string) => {
-        setDistributiveFiles((prev) => {
+        setDistributiveFiles(prev => {
             const newFiles = [...prev];
             newFiles[index] = { ...newFiles[index], customName: displayName, iconUrl, logoUrl };
             return newFiles;
@@ -277,7 +280,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     };
 
     const handleRemoveDistributive = (index: number) => {
-        setDistributiveFiles((prev) => prev.filter((_, i) => i !== index));
+        setDistributiveFiles(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleRelatedProductSelect = (product: Product) => {
@@ -293,25 +296,19 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
     };
 
     const handleRemoveRelatedProduct = (productId: number) => {
-        setRelatedProducts((prev) => prev.filter((p) => p.id !== productId));
+        setRelatedProducts(prev => prev.filter(p => p.id !== productId));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
 
-        // Validation
         if (!title) {
             setError("Введите название товара");
             return;
         }
 
-        if (
-            pricesByDuration.some(
-                (p) => !p.regularPrice || !p.discountedPrice || isNaN(Number(p.regularPrice)) || isNaN(Number(p.discountedPrice))
-            )
-        ) {
-            setError("Введите корректные цены (обычную и скидочную) для каждого срока лицензии");
+        if (pricesByDuration.some(p => !p.regularPrice || !p.discountedPrice)) {
+            setError("Введите обе цены (обычную и скидочную) для каждого выбранного срока лицензии");
             return;
         }
 
@@ -335,48 +332,30 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
             return;
         }
 
-        // Validate distributives
-        const uploadedDistributives = distributiveFiles
-            .filter((dist) => dist.fileUrl && isValidUrl(dist.fileUrl) && dist.displayName)
-            .map((dist) => ({
-                displayName: dist.customName || dist.displayName || "Distributive",
-                fileUrl: dist.fileUrl!,
-                iconUrl: dist.iconUrl && isValidUrl(dist.iconUrl) ? dist.iconUrl : undefined,
-                logoUrl: dist.logoUrl && isValidUrl(dist.logoUrl) ? dist.logoUrl : undefined,
-            }));
-
-        if (distributiveFiles.some((dist) => dist.fileUrl && !isValidUrl(dist.fileUrl))) {
-            setError("Один или несколько URL дистрибутивов недействительны");
-            return;
-        }
-
-        if (distributiveFiles.some((dist) => dist.fileUrl && !dist.displayName)) {
-            setError("Укажите название для всех дистрибутивов");
-            return;
-        }
-
         try {
             setIsSubmitting(true);
-            console.log("Submitting product:", {
-                name: title,
-                pricesByDuration,
-                photos: images,
-                categoryId: selectedCategory.id,
-                type: selectedSubscriptionTypes,
-                licenseType: selectedLicenseDurations,
-                deviceCounts: selectedDeviceCounts,
-                distributives: uploadedDistributives,
-            });
+            setError(null);
+
+            const uploadedDistributives = distributiveFiles
+                .filter((dist) => dist.fileUrl && isValidUrl(dist.fileUrl))
+                .map((dist) => ({
+                    displayName: dist.customName || dist.displayName || "Distributive",
+                    fileUrl: dist.fileUrl!,
+                    iconUrl: dist.iconUrl,
+                    logoUrl: dist.logoUrl,
+                }));
+
+            if (distributiveFiles.some(dist => dist.fileUrl && !isValidUrl(dist.fileUrl))) {
+                setError("Один или несколько URL дистрибутивов недействительны");
+                setIsSubmitting(false);
+                return;
+            }
 
             const result = await createProduct({
                 name: title,
-                pricesByDuration: pricesByDuration.map((p) => ({
-                    durationId: p.durationId,
-                    regularPrice: p.regularPrice,
-                    discountedPrice: p.discountedPrice,
-                })),
+                pricesByDuration: pricesByDuration,
                 photos: images,
-                description: description || undefined,
+                description,
                 categoryId: Number.parseInt(selectedCategory.id),
                 type: selectedSubscriptionTypes.map(
                     (type) => subscriptionTypeMap[type.id as keyof typeof subscriptionTypeMap]
@@ -384,7 +363,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                 licenseType: selectedLicenseDurations.map(
                     (duration) => licenseDurationMap[duration.id as keyof typeof licenseDurationMap]
                 ),
-                deviceCounts: selectedDeviceCounts,
+                deviceCounts: selectedDeviceCounts, // No length check, making it optional
                 characteristics: characteristics.filter((char) => char.title && char.value),
                 questions: questions.filter((q) => q.question && q.answer),
                 distributives: uploadedDistributives,
@@ -399,7 +378,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                 throw new Error(result.error || "Ошибка при создании товара");
             }
         } catch (error: any) {
-            console.error("Error creating product:", error.message, error.stack);
+            console.error("Error creating product:", error);
             setError(error.message || "Произошла ошибка при создании товара");
         } finally {
             setIsSubmitting(false);
@@ -408,7 +387,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
 
     return (
         <form
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
             onSubmit={handleSubmit}
             className="flex flex-col w-[800px] pt-4 pb-7 px-6 bg-white rounded-[16px] max-h-[90vh] overflow-y-auto"
         >
@@ -437,9 +416,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                             </div>
                         ))}
                         <div
-                            className={`relative w-[100px] h-[100px] rounded-[16px] overflow-hidden bg-[#B9BCCB] cursor-pointer transition-all duration-200 ${
-                                isHovering ? "bg-[#A4A8BA]" : ""
-                            } flex items-center justify-center`}
+                            className={`relative w-[100px] h-[100px] rounded-[16px] overflow-hidden bg-[#B9BCCB] cursor-pointer transition-all duration-200 ${isHovering ? "bg-[#A4A8BA]" : ""} flex items-center justify-center`}
                             onClick={handleImageClick}
                             onMouseEnter={() => setIsHovering(true)}
                             onMouseLeave={() => setIsHovering(false)}
@@ -488,22 +465,12 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                     </div>
 
                     <div className="flex flex-col gap-3">
-                        <SubscriptionTypePopup
-                            onSelect={handleSubscriptionTypeSelect}
-                            selectedTypes={selectedSubscriptionTypes}
-                        />
+                        <SubscriptionTypePopup onSelect={handleSubscriptionTypeSelect} selectedTypes={selectedSubscriptionTypes} />
                         <div>
                             <h4 className="text-[14px] font-semibold text-[#161616] mb-2">Срок лицензии:</h4>
-                            <LicenseDurationPopup
-                                onSelect={handleLicenseDurationSelect}
-                                selectedDurations={selectedLicenseDurations}
-                            />
+                            <LicenseDurationPopup onSelect={handleLicenseDurationSelect} selectedDurations={selectedLicenseDurations} />
                             {selectedLicenseDurations.map((duration) => {
-                                const priceData =
-                                    pricesByDuration.find((p) => p.durationId === duration.id) || {
-                                        regularPrice: "",
-                                        discountedPrice: "",
-                                    };
+                                const priceData = pricesByDuration.find(p => p.durationId === duration.id) || { regularPrice: "", discountedPrice: "" };
                                 return (
                                     <div key={duration.id} className="flex items-center gap-2 mt-2">
                                         <span>{duration.title}</span>
@@ -511,18 +478,14 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                                             type="number"
                                             placeholder="Обычная цена"
                                             value={priceData.regularPrice}
-                                            onChange={(e) =>
-                                                handlePriceByDurationChange(duration.id, "regularPrice", e.target.value)
-                                            }
+                                            onChange={(e) => handlePriceByDurationChange(duration.id, 'regularPrice', e.target.value)}
                                             className="px-3 py-1 border-[1px] border-[#B9BCCB] rounded-[10px] w-[100px]"
                                         />
                                         <input
                                             type="number"
                                             placeholder="Скидочная цена"
                                             value={priceData.discountedPrice}
-                                            onChange={(e) =>
-                                                handlePriceByDurationChange(duration.id, "discountedPrice", e.target.value)
-                                            }
+                                            onChange={(e) => handlePriceByDurationChange(duration.id, 'discountedPrice', e.target.value)}
                                             className="px-3 py-1 border-[1px] border-[#B9BCCB] rounded-[10px] w-[100px]"
                                         />
                                     </div>
@@ -530,19 +493,13 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                             })}
                         </div>
                         <div className="flex flex-wrap gap-2">
-                            <h4 className="text-[14px] font-semibold text-[#161616] w-full">
-                                Количество устройств (необязательно):
-                            </h4>
+                            <h4 className="text-[14px] font-semibold text-[#161616] w-full">Количество устройств (необязательно):</h4>
                             {deviceCountOptions.map((count) => (
                                 <button
                                     key={count}
                                     type="button"
                                     onClick={() => handleDeviceCountSelect(count)}
-                                    className={`px-4 py-2 border-[1px] border-[#B9BCCB] rounded-[20px] ${
-                                        selectedDeviceCounts.includes(count)
-                                            ? "bg-[#161616] text-white"
-                                            : "bg-white text-[#161616]"
-                                    }`}
+                                    className={`px-4 py-2 border-[1px] border-[#B9BCCB] rounded-[20px] ${selectedDeviceCounts.includes(count) ? "bg-[#161616] text-white" : "bg-white text-[#161616]"}`}
                                 >
                                     {count}
                                 </button>
@@ -672,15 +629,8 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                                                 key={product.id}
                                                 type="button"
                                                 onClick={() => handleRelatedProductSelect(product)}
-                                                className={`w-full text-left px-4 py-2 border-b-[1px] border-[#B9BCCB] last:border-b-0 ${
-                                                    relatedProducts.some((p) => p.id === product.id)
-                                                        ? "bg-[#161616] text-white"
-                                                        : "bg-white text-[#161616]"
-                                                }`}
-                                                disabled={
-                                                    relatedProducts.length >= 4 &&
-                                                    !relatedProducts.some((p) => p.id === product.id)
-                                                }
+                                                className={`w-full text-left px-4 py-2 border-b-[1px] border-[#B9BCCB] last:border-b-0 ${relatedProducts.some((p) => p.id === product.id) ? "bg-[#161616] text-white" : "bg-white text-[#161616]"}`}
+                                                disabled={relatedProducts.length >= 4 && !relatedProducts.some((p) => p.id === product.id)}
                                             >
                                                 {product.name}
                                             </button>
@@ -733,4 +683,4 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
             </div>
         </form>
     );
-};
+}
