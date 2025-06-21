@@ -15,14 +15,15 @@ type DistributiveProps = {
 }
 
 export const Distributive = ({ distributives }: DistributiveProps) => {
-    // Early return if no distributives are provided
-    if (!distributives || distributives.length === 0) {
-        console.log("No distributives provided, rendering null")
+    // Early return if no distributives are provided or invalid
+    if (!distributives || !Array.isArray(distributives) || distributives.length === 0) {
+        console.log("No valid distributives provided, rendering null")
         return null
     }
 
     // Validate URL helper function
-    const isValidUrl = (url: string): boolean => {
+    const isValidUrl = (url: string | undefined | null): boolean => {
+        if (!url || typeof url !== "string") return false
         try {
             new URL(url)
             return true
@@ -34,9 +35,13 @@ export const Distributive = ({ distributives }: DistributiveProps) => {
 
     // Handle download with error handling and user feedback
     const handleDownload = (url: string, filename: string) => {
+        if (typeof window === "undefined") {
+            console.warn("Download attempted on server-side, aborting.")
+            return
+        }
+
         console.log("Initiating download:", { url, filename })
 
-        // Validate URL before attempting download
         if (!isValidUrl(url)) {
             showToast("Ошибка загрузки", "error", {
                 secondaryMessage: "Invalid or inaccessible file URL.",
@@ -52,7 +57,7 @@ export const Distributive = ({ distributives }: DistributiveProps) => {
             document.body.appendChild(link)
             link.click()
             document.body.removeChild(link)
-            console.log(`Download triggered successfully for: ${url}"`)
+            console.log(`Download triggered successfully for: ${url}`)
             showToast("Загрузка началась", "success", {
                 secondaryMessage: `Downloading ${filename}`,
             })
@@ -71,16 +76,25 @@ export const Distributive = ({ distributives }: DistributiveProps) => {
             </h4>
             <div className="flex flex-col gap-2">
                 {distributives.map((distributive) => {
-                    // Validate required fields
-                    if (!distributive.fileUrl || !distributive.displayName) {
+                    // Проверка всех необходимых полей
+                    if (
+                        !distributive ||
+                        typeof distributive !== "object" ||
+                        !distributive.id ||
+                        !distributive.fileUrl ||
+                        !distributive.displayName
+                    ) {
                         console.warn(`Invalid distributive data:`, distributive)
                         return null
                     }
 
                     // Fallback logo if logoUrl is invalid or missing
-                    const logoSrc = distributive.logoUrl && isValidUrl(distributive.logoUrl)
-                        ? distributive.logoUrl
-                        : "/placeholder.svg"
+                    const logoSrc =
+                        distributive.logoUrl &&
+                        typeof distributive.logoUrl === "string" &&
+                        isValidUrl(distributive.logoUrl)
+                            ? distributive.logoUrl
+                            : "/placeholder.svg"
 
                     return (
                         <div

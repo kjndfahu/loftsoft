@@ -20,7 +20,7 @@ interface ProductContainerProps {
         licenseType: string[]
         deviceCounts: number[]
         characteristics: { id: number; title: string; value: string }[]
-        distributives: { id: number; displayName: string; fileUrl: string }[]
+        distributives: { id: number; displayName: string; fileUrl: string; logoUrl?: string }[]
         averageRating: number
         reviews: { id: number; grade: number }[]
     }
@@ -38,7 +38,9 @@ const getDurationLabel = (durationId: string): string => {
 }
 
 export const ProductContainer = ({ item }: ProductContainerProps) => {
-    const [selectedDurationId, setSelectedDurationId] = useState<string>(item.pricesByDuration[0]?.durationId || "")
+    const [selectedDurationId, setSelectedDurationId] = useState<string>(
+        item.pricesByDuration[0]?.durationId || ""
+    )
     const [selectedDeviceCount, setSelectedDeviceCount] = useState<number>(item.deviceCounts[0] || 1)
     const [activeSlide, setActiveSlide] = useState(0)
 
@@ -46,9 +48,9 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     console.log("item.photos:", item.photos)
 
     // Find the price for the selected duration (use discounted if available, else regular)
-    const selectedPriceObj = item.pricesByDuration.find(
-        (price) => price.durationId === selectedDurationId
-    ) || item.pricesByDuration[0]
+    const selectedPriceObj =
+        item.pricesByDuration.find((price) => price.durationId === selectedDurationId) ||
+        item.pricesByDuration[0]
     const regularPrice = selectedPriceObj?.price.regular || "0"
     const discountedPrice = selectedPriceObj?.price.discounted || regularPrice
 
@@ -63,6 +65,13 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     const hasHalfStar = item.averageRating % 1 >= 0.5
     const reviewCount = item.reviews.length
 
+    // Filter valid distributives
+    const validDistributives = Array.isArray(item.distributives)
+        ? item.distributives.filter(
+            (dist) => dist && typeof dist === "object" && dist.id && dist.fileUrl && dist.displayName
+        )
+        : []
+
     // Handle slide change
     const handleSlideChange = (index: number) => {
         setActiveSlide(index)
@@ -74,14 +83,21 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             <div className="md:hidden w-full">
                 {item.photos.length > 0 ? (
                     <>
-                        <div className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
+                        <div
+                            className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]"
+                            style={{ aspectRatio: 384 / 537 }}
+                        >
                             <div className="absolute inset-0">
                                 <Image
                                     src={item.photos[activeSlide] || "/placeholder.svg"}
                                     alt={item.name}
                                     fill
                                     className="object-cover rounded-[20px]"
-                                    onError={() => console.error(`Failed to load image: ${item.photos[activeSlide] || "/placeholder.svg"}`)}
+                                    onError={() =>
+                                        console.error(
+                                            `Failed to load image: ${item.photos[activeSlide] || "/placeholder.svg"}`
+                                        )
+                                    }
                                 />
                             </div>
                             {/* Curved overlay effect */}
@@ -93,13 +109,18 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                                 <button
                                     key={index}
                                     onClick={() => handleSlideChange(index)}
-                                    className={`w-2 h-2 rounded-full ${activeSlide === index ? "bg-[#5069E8]" : "bg-gray-300"}`}
+                                    className={`w-2 h-2 rounded-full ${
+                                        activeSlide === index ? "bg-[#5069E8]" : "bg-gray-300"
+                                    }`}
                                 ></button>
                             ))}
                         </div>
                     </>
                 ) : (
-                    <div className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
+                    <div
+                        className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]"
+                        style={{ aspectRatio: 384 / 537 }}
+                    >
                         <Image
                             src="/placeholder.svg"
                             alt="Placeholder"
@@ -126,7 +147,9 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                                     alt={`${item.name} thumbnail ${index + 1}`}
                                     fill
                                     className="object-cover rounded-[8px]"
-                                    onError={() => console.error(`Failed to load thumbnail: ${photo || "/placeholder.svg"}`)}
+                                    onError={() =>
+                                        console.error(`Failed to load thumbnail: ${photo || "/placeholder.svg"}`)
+                                    }
                                 />
                             </div>
                         ))}
@@ -138,7 +161,9 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                         alt={item.name}
                         fill
                         className="object-cover rounded-[20px]"
-                        onError={() => console.error(`Failed to load main image: ${item.photos[0] || "/placeholder.svg"}`)}
+                        onError={() =>
+                            console.error(`Failed to load main image: ${item.photos[0] || "/placeholder.svg"}`)
+                        }
                     />
                 </div>
             </div>
@@ -147,17 +172,25 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                 <div className="flex flex-col gap-[10px]">
                     <h3 className="md:text-[24px] text-[20px] font-semibold text-[#161616]">{item.name}</h3>
                     <div className="flex items-center gap-2">
-                        <span className="md:text-[16px] text-[14px] text-[#FFAC33]">{item.averageRating.toFixed(1)}</span>
+                        <span className="md:text-[16px] text-[14px] text-[#FFAC33]">
+                            {item.averageRating.toFixed(1)}
+                        </span>
                         <div className="flex gap-[6px]">
                             {[...Array(5)].map((_, index) => (
                                 <ReviewStar
                                     key={index}
                                     className="w-[14px] h-[14px]"
-                                    color={index < fullStars || (index === fullStars && hasHalfStar) ? "#FFAC33" : "#CECDCC"}
+                                    color={
+                                        index < fullStars || (index === fullStars && hasHalfStar)
+                                            ? "#FFAC33"
+                                            : "#CECDCC"
+                                    }
                                 />
                             ))}
                         </div>
-                        <span className="text-[16px] text-[#6A6B75]">{reviewCount} отзыв{reviewCount !== 1 ? "ов" : ""}</span>
+                        <span className="text-[16px] text-[#6A6B75]">
+                            {reviewCount} отзыв{reviewCount !== 1 ? "ов" : ""}
+                        </span>
                     </div>
                 </div>
                 <div className="flex flex-col gap-3">
@@ -194,7 +227,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                 </div>
                 <ProductDescription description={item.description || ""} />
                 <ProductSpecifications characteristics={item.characteristics} />
-                <Distributive distributives={item.distributives} />
+                <Distributive distributives={validDistributives} />
             </div>
             <PurchaseBlock
                 id={item.id.toString()}
