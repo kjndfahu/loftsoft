@@ -100,11 +100,11 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
             {/* Mobile Slider */}
-            <div className="md:hidden w-full">
+            <div className="md:hidden w-full flex justify-center">
                 {validPhotos.length > 0 ? (
                     <>
                         <div className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
-                            <div className="absolute inset-0">
+                            <div className="absolute inset-0 flex justify-center">
                                 <Image
                                     src={getSafeImageUrl(activeSlide)}
                                     alt={item.name}
@@ -126,7 +126,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                         </div>
                     </>
                 ) : (
-                    <div className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
+                    <div className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px] flex justify-center" style={{ aspectRatio: 384 / 537 }}>
                         <Image
                             src={placeholderImage}
                             alt="Placeholder"
@@ -139,7 +139,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             </div>
 
             {/* Desktop Thumbnail Layout */}
-            <div className="hidden md:flex h-[536px] w-[480px] flex-row gap-4">
+            <div className="hidden md:flex h-[536px] w-[480px] flex-row gap-4 justify-center">
                 {validPhotos.length > 1 && (
                     <div className="flex flex-col gap-2">
                         {validPhotos.slice(1).map((photo, index) => (
