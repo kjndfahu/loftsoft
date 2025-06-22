@@ -5,25 +5,25 @@ import { TitleDesc } from "@/shared/title-desc"
 import { NavBtn } from "@/features/home/ui/nav-btn"
 import { Items } from "@/features/home/ui/item"
 import Link from "next/link"
-import {getPopularProducts} from "@/enteties/popular-products/popular-products";
+import { getPopularProducts } from "@/enteties/popular-products/popular-products"
 
 export type PopularProduct = {
-    id: number;
-    itemId: number;
-    position: number;
+    id: number
+    itemId: number
+    position: number
     item: {
-        id: number;
-        name: string;
-        price: string;
-        photo: string;
+        id: number
+        name: string
+        pricesByDuration: { price: { regular: string; discounted: string | null } }[]
+        photos: string[]
         category: {
-            id: number;
-            name: string;
-        };
-        averageRating?: number;
-        purchaseCount?: number;
-    };
-};
+            id: number
+            title: string
+        }
+        averageRating?: number
+        purchaseCount?: number
+    }
+}
 
 export const PopularItems = () => {
     const [popularProducts, setPopularProducts] = useState<PopularProduct[]>([])
@@ -77,11 +77,11 @@ export const PopularItems = () => {
                                 product={{
                                     id: popularProduct.item.id,
                                     name: popularProduct.item.name,
-                                    price: popularProduct.item.price,
-                                    photo: popularProduct.item.photo,
-                                    category: popularProduct.item.category.name,
+                                    pricesByDuration: popularProduct.item.pricesByDuration,
+                                    photos: popularProduct.item.photos,
+                                    category: popularProduct.item.category.title,
                                     averageRating: popularProduct.item.averageRating,
-                                    purchaseCount: popularProduct.item.purchaseCount
+                                    purchaseCount: popularProduct.item.purchaseCount,
                                 }}
                             />
                         ))
