@@ -6,7 +6,7 @@ import ProductSpecifications from "@/features/product-page/ui/product-specificat
 import { Distributive } from "@/features/product-page/ui/distributive"
 import { PurchaseBlock } from "@/features/product-page/ui/purchase-block"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface ProductContainerProps {
     item: {
@@ -42,6 +42,10 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     const [isFullScreen, setIsFullScreen] = useState(false)
     const [fullScreenIndex, setFullScreenIndex] = useState(0)
 
+    // Проверка валидности массива photos
+    const validPhotos = item.photos?.filter((photo) => photo && typeof photo === "string") || []
+    const placeholderImage = "/placeholder.svg"
+
     const selectedPriceObj = item.pricesByDuration.find((price) => price.durationId === selectedDurationId) || item.pricesByDuration[0]
     const regularPrice = selectedPriceObj?.price.regular || "0"
     const discountedPrice = selectedPriceObj?.price.discounted || regularPrice
@@ -57,9 +61,13 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     }
 
     const openFullScreen = (index: number) => {
-        console.log("Opening fullscreen for index:", index)
-        setFullScreenIndex(index)
-        setIsFullScreen(true)
+        if (validPhotos.length > 0 && index >= 0 && index < validPhotos.length) {
+            console.log("Opening fullscreen for index:", index, "URL:", validPhotos[index])
+            setFullScreenIndex(index)
+            setIsFullScreen(true)
+        } else {
+            console.error("Invalid index or no valid photos:", index, validPhotos)
+        }
     }
 
     const closeFullScreen = () => {
@@ -69,27 +77,36 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
 
     const nextImage = () => {
         console.log("Next image, current index:", fullScreenIndex)
-        setFullScreenIndex((prev) => (prev + 1) % item.photos.length)
+        setFullScreenIndex((prev) => (prev + 1) % validPhotos.length)
     }
 
     const prevImage = () => {
         console.log("Previous image, current index:", fullScreenIndex)
-        setFullScreenIndex((prev) => (prev - 1 + item.photos.length) % item.photos.length)
+        setFullScreenIndex((prev) => (prev - 1 + validPhotos.length) % validPhotos.length)
     }
 
-    // Проверка доступности изображений
-    console.log("Photos array:", item.photos)
+    // Сброс fullScreenIndex, если он выходит за пределы validPhotos
+    useEffect(() => {
+        if (validPhotos.length > 0 && fullScreenIndex >= validPhotos.length) {
+            setFullScreenIndex(0)
+        }
+    }, [fullScreenIndex, validPhotos.length])
+
+    // Получение безопасного URL для изображения
+    const getSafeImageUrl = (index: number) => {
+        return validPhotos[index] || placeholderImage
+    }
 
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
             {/* Mobile Slider */}
             <div className="md:hidden w-full">
-                {item.photos.length > 0 ? (
+                {validPhotos.length > 0 ? (
                     <>
                         <div className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
                             <div className="absolute inset-0">
                                 <Image
-                                    src={item.photos[activeSlide] || "/placeholder.svg"}
+                                    src={getSafeImageUrl(activeSlide)}
                                     alt={item.name}
                                     fill
                                     className="object-cover rounded-[20px]"
@@ -99,7 +116,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-[20px]"></div>
                         </div>
                         <div className="flex justify-center gap-2 mt-2">
-                            {item.photos.map((_, index) => (
+                            {validPhotos.map((_, index) => (
                                 <button
                                     key={index}
                                     onClick={() => handleSlideChange(index)}
@@ -111,7 +128,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                 ) : (
                     <div className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
                         <Image
-                            src="/placeholder.svg"
+                            src={placeholderImage}
                             alt="Placeholder"
                             fill
                             className="object-cover rounded-[20px]"
@@ -123,9 +140,9 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
 
             {/* Desktop Thumbnail Layout */}
             <div className="hidden md:flex h-[536px] w-[480px] flex-row gap-4">
-                {item.photos.length > 1 && (
+                {validPhotos.length > 1 && (
                     <div className="flex flex-col gap-2">
-                        {item.photos.slice(1).map((photo, index) => (
+                        {validPhotos.slice(1).map((photo, index) => (
                             <div
                                 key={index}
                                 style={{ aspectRatio: 1 / 1 }}
@@ -133,7 +150,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                                 onClick={() => openFullScreen(index + 1)}
                             >
                                 <Image
-                                    src={photo || "/placeholder.svg"}
+                                    src={photo}
                                     alt={`${item.name} thumbnail ${index + 1}`}
                                     fill
                                     className="object-cover rounded-[8px]"
@@ -145,7 +162,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                 )}
                 <div style={{ aspectRatio: 384 / 537 }} className="relative bg-gray-400 rounded-[20px] overflow-hidden cursor-pointer" onClick={() => openFullScreen(0)}>
                     <Image
-                        src={item.photos[0] || "/placeholder.svg"}
+                        src={getSafeImageUrl(0)}
                         alt={item.name}
                         fill
                         className="object-cover rounded-[20px]"
@@ -155,22 +172,25 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             </div>
 
             {/* Full-Screen Slider */}
-            {isFullScreen && (
+            {isFullScreen && validPhotos.length > 0 && (
                 <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[500]">
                     <button onClick={closeFullScreen} className="absolute top-4 right-4 text-white text-2xl">&times;</button>
                     <button onClick={prevImage} className="absolute left-4 text-white text-4xl">&lt;</button>
-                    <div className="relative" style={{ aspectRatio: 384 / 537, maxWidth: "90vw", maxHeight: "90vh" }}>
+                    <div className="relative w-[90vw] h-[90vh]">
                         <Image
-                            src={item.photos[fullScreenIndex] || "/placeholder.svg"}
+                            src={getSafeImageUrl(fullScreenIndex)}
                             alt={`${item.name} full screen`}
                             fill
                             className="object-contain"
-                            onError={(e) => console.error(`Failed to load full-screen image at index ${fullScreenIndex}:`, e)}
+                            onError={(e) => {
+                                console.error(`Failed to load full-screen image at index ${fullScreenIndex}:`, e)
+                                setFullScreenIndex(0) // Сброс на первое изображение при ошибке
+                            }}
                         />
                     </div>
                     <button onClick={nextImage} className="absolute right-4 text-white text-4xl">&gt;</button>
-                    <div className="flex justify-center gap-2 mt-4">
-                        {item.photos.map((_, index) => (
+                    <div className="absolute bottom-4 flex justify-center gap-2">
+                        {validPhotos.map((_, index) => (
                             <button
                                 key={index}
                                 onClick={() => setFullScreenIndex(index)}
@@ -207,7 +227,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                 name={item.name}
                 regularPrice={regularPrice}
                 discountedPrice={discountedPrice}
-                photos={item.photos}
+                photos={validPhotos}
                 type={item.type}
                 licenseType={selectedDurationId}
                 deviceCounts={[selectedDeviceCount]}
