@@ -103,7 +103,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             <div className="md:hidden flex flex-col items-center justify-center w-full">
                 {validPhotos.length > 0 ? (
                     <>
-                        <div className="relative h-[500px] mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
+                        <div className="relative sml:h-[500px] h-[350px] mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
                             <div className="absolute w-full inset-0">
                                 <Image
                                     src={getSafeImageUrl(activeSlide)}
