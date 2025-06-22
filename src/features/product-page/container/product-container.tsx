@@ -100,18 +100,19 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
             {/* Mobile Slider */}
-            <div className="md:hidden w-full flex justify-center">
+            <div className="md:hidden w-full">
                 {validPhotos.length > 0 ? (
                     <>
                         <div className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
-                            <Image
-                                src={getSafeImageUrl(activeSlide)}
-                                alt={item.name}
-                                width={236}
-                                height={537 * (236 / 384)}
-                                className="object-cover rounded-[20px]"
-                                onError={(e) => console.error(`Failed to load image at index ${activeSlide}:`, e)}
-                            />
+                            <div className="absolute inset-0">
+                                <Image
+                                    src={getSafeImageUrl(activeSlide)}
+                                    alt={item.name}
+                                    fill
+                                    className="object-cover rounded-[20px]"
+                                    onError={(e) => console.error(`Failed to load image at index ${activeSlide}:`, e)}
+                                />
+                            </div>
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-[20px]"></div>
                         </div>
                         <div className="flex justify-center gap-2 mt-2">
@@ -129,8 +130,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                         <Image
                             src={placeholderImage}
                             alt="Placeholder"
-                            width={236}
-                            height={537 * (236 / 384)}
+                            fill
                             className="object-cover rounded-[20px]"
                             onError={(e) => console.error("Failed to load placeholder image:", e)}
                         />
@@ -139,7 +139,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             </div>
 
             {/* Desktop Thumbnail Layout */}
-            <div className="hidden md:flex h-[536px] w-[480px] flex-row gap-4 justify-center">
+            <div className="hidden md:flex h-[536px] w-[480px] flex-row gap-4">
                 {validPhotos.length > 1 && (
                     <div className="flex flex-col gap-2">
                         {validPhotos.slice(1).map((photo, index) => (
@@ -152,8 +152,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                                 <Image
                                     src={photo}
                                     alt={`${item.name} thumbnail ${index + 1}`}
-                                    width={76}
-                                    height={76}
+                                    fill
                                     className="object-cover rounded-[8px]"
                                     onError={(e) => console.error(`Failed to load thumbnail at index ${index + 1}:`, e)}
                                 />
@@ -165,8 +164,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                     <Image
                         src={getSafeImageUrl(0)}
                         alt={item.name}
-                        width={480}
-                        height={536}
+                        fill
                         className="object-cover rounded-[20px]"
                         onError={(e) => console.error(`Failed to load main image:`, e)}
                     />
@@ -176,8 +174,8 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             {/* Full-Screen Slider */}
             {isFullScreen && validPhotos.length > 0 && (
                 <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[500]">
-                    <button onClick={closeFullScreen} className="absolute z-[600] top-4 right-4 text-white text-2xl">×</button>
-                    <button onClick={prevImage} className="absolute z-[600] left-4 text-white text-4xl"><</button>
+                    <button onClick={closeFullScreen} className="absolute z-[600] top-4 right-4 text-white text-2xl">&times;</button>
+                    <button onClick={prevImage} className="absolute z-[600] left-4 text-white text-4xl">&lt;</button>
                     <div className="relative w-[90vw] h-[90vh]">
                         <Image
                             src={getSafeImageUrl(fullScreenIndex)}
@@ -190,7 +188,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                             }}
                         />
                     </div>
-                    <button onClick={nextImage} className="absolute right-4 text-white text-4xl">></button>
+                    <button onClick={nextImage} className="absolute right-4 text-white text-4xl">&gt;</button>
                     <div className="absolute bottom-4 flex justify-center gap-2">
                         {validPhotos.map((_, index) => (
                             <button
