@@ -3,30 +3,12 @@
 import { useEffect, useState } from "react"
 import { TitleDesc } from "@/shared/title-desc"
 import { NavBtn } from "@/features/home/ui/nav-btn"
-import { Items } from "@/features/home/ui/item"
+import { ItemsGrid, Product } from "@/features/home/ui/items-grid"
 import Link from "next/link"
 import { getPopularProducts } from "@/enteties/popular-products/popular-products"
 
-export type PopularProduct = {
-    id: number
-    itemId: number
-    position: number
-    item: {
-        id: number
-        name: string
-        pricesByDuration: { price: { regular: string; discounted: string | null } }[]
-        photos: string[]
-        category: {
-            id: number
-            title: string
-        }
-        averageRating?: number
-        purchaseCount?: number
-    }
-}
-
 export const PopularItems = () => {
-    const [popularProducts, setPopularProducts] = useState<PopularProduct[]>([])
+    const [popularProducts, setPopularProducts] = useState<Product[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
@@ -37,7 +19,32 @@ export const PopularItems = () => {
                 const response = await getPopularProducts()
 
                 if (response.success) {
-                    setPopularProducts(response.popularProducts)
+                    // Маппинг данных для соответствия интерфейсу Product
+                    const mappedProducts: Product[] = response.popularProducts.map((p: any) => ({
+                        id: p.item.id,
+                        name: p.item.name,
+                        pricesByDuration: p.item.pricesByDuration.map((price: any) => ({
+                            durationId: price.durationId,
+                            price: JSON.parse(price.price as string) || { regular: "0", discounted: "0" },
+                        })),
+                        photos: p.item.photos || [],
+                        description: p.item.description || null,
+                        categoryId: p.item.category?.id || null,
+                        type: p.item.type || [],
+                        licenseType: p.item.licenseType || [],
+                        deviceCounts: p.item.deviceCounts || [],
+                        createdAt: p.item.createdAt,
+                        updatedAt: p.item.updatedAt,
+                        category: p.item.category
+                            ? { id: p.item.category.id, title: p.item.category.title, photo: "", description: "", createdAt: new Date(), updateAt: new Date() }
+                            : null,
+                        characteristics: p.item.characteristics || [],
+                        distributives: p.item.distributives || [],
+                        averageRating: p.item.averageRating || 0,
+                        purchaseCount: p.item.purchaseCount || 0,
+                        reviews: p.item.reviews || [],
+                    }))
+                    setPopularProducts(mappedProducts)
                 } else {
                     setError(response.error || "Не удалось загрузить популярные товары")
                 }
@@ -53,14 +60,17 @@ export const PopularItems = () => {
     }, [])
 
     return (
-        <div className="flex flex-col items-center mds:gap-10 gap-6">
+        <div className="flex flex-col pb-20 md:pt-[150px] pt-[80px] xxl:px-[250px] xl:px-[150px] md:px-[100px] sm:px-[50px] px-[20px] gap-10">
             <TitleDesc title="Популярные товары" description="Выберите нужный товар" />
 
             {isLoading ? (
-                <div className="grid md:grid-cols-4 grid-cols-2 justify-between md:gap-6 gap-4 w-full">
-                    {[...Array(4)].map((_, index) => (
+                <div className="grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 sm:gap-6 gap-4 w-full">
+                    {[...Array(8)].map((_, index) => (
                         <div key={index} className="animate-pulse">
-                            <div className="w-full bg-gray-200 rounded-[16px]" style={{ aspectRatio: "312/415" }}></div>
+                            <div
+                                className="w-full bg-gray-200 rounded-[16px]"
+                                style={{ aspectRatio: "312/415" }}
+                            ></div>
                             <div className="mt-4 h-4 bg-gray-200 rounded w-3/4"></div>
                             <div className="mt-2 h-4 bg-gray-200 rounded w-1/2"></div>
                         </div>
@@ -69,25 +79,8 @@ export const PopularItems = () => {
             ) : error ? (
                 <div className="text-red-500 text-center py-8">{error}</div>
             ) : (
-                <div className="grid md:grid-cols-4 grid-cols-2 justify-between md:gap-6 gap-4 w-full">
-                    {popularProducts.length > 0 ? (
-                        popularProducts.map((popularProduct) => (
-                            <Items
-                                key={popularProduct.id}
-                                product={{
-                                    id: popularProduct.item.id,
-                                    name: popularProduct.item.name,
-                                    pricesByDuration: popularProduct.item.pricesByDuration,
-                                    photos: popularProduct.item.photos,
-                                    category: popularProduct.item.category.title,
-                                    averageRating: popularProduct.item.averageRating,
-                                    purchaseCount: popularProduct.item.purchaseCount,
-                                }}
-                            />
-                        ))
-                    ) : (
-                        <div className="col-span-full text-center py-8 text-gray-500">Популярные товары не найдены</div>
-                    )}
+                <div className="grid md:grid-cols-4 sm:grid-cols-3 grid-cols-2 sm:gap-6 gap-4 w-full">
+                    <ItemsGrid products={popularProducts} />
                 </div>
             )}
 
