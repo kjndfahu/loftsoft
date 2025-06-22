@@ -75,7 +75,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
 
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
-            {/* Mobile Slider */}
+            {/* Mobile Slider (below md breakpoint) */}
             <div className="md:hidden w-full">
                 {item.photos.length > 0 ? (
                     <>
@@ -89,8 +89,10 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                                     onError={() => console.error(`Failed to load image: ${item.photos[activeSlide] || "/placeholder.svg"}`)}
                                 />
                             </div>
+                            {/* Curved overlay effect */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-[20px]"></div>
                         </div>
+                        {/* Navigation dots */}
                         <div className="flex justify-center gap-2 mt-2">
                             {item.photos.map((_, index) => (
                                 <button
@@ -114,7 +116,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                 )}
             </div>
 
-            {/* Desktop Thumbnail Layout */}
+            {/* Desktop Thumbnail Layout (above md breakpoint) */}
             <div className="hidden md:flex h-[536px] w-[480px] flex-row gap-4">
                 {item.photos.length > 1 && (
                     <div className="flex flex-col gap-2">
@@ -149,9 +151,9 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
 
             {/* Full-Screen Slider */}
             {isFullScreen && (
-                <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-                    <button onClick={closeFullScreen} className="absolute top-4 right-4 text-white text-2xl">&times;</button>
-                    <button onClick={prevImage} className="absolute left-4 text-white text-4xl">&lt;</button>
+                <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[500]">
+                    <button onClick={closeFullScreen} className="absolute top-4 right-4 text-white text-2xl">×</button>
+                    <button onClick={prevImage} className="absolute left-4 text-white text-4xl"><</button>
                     <div className="relative" style={{ aspectRatio: 384 / 537, maxWidth: "90vw", maxHeight: "90vh" }}>
                         <Image
                             src={item.photos[fullScreenIndex] || "/placeholder.svg"}
@@ -161,7 +163,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                             onError={() => console.error(`Failed to load full-screen image: ${item.photos[fullScreenIndex] || "/placeholder.svg"}`)}
                         />
                     </div>
-                    <button onClick={nextImage} className="absolute right-4 text-white text-4xl">&gt;</button>
+                    <button onClick={nextImage} className="absolute right-4 text-white text-4xl">></button>
                     <div className="flex justify-center gap-2 mt-4">
                         {item.photos.map((_, index) => (
                             <button
@@ -175,7 +177,6 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             )}
 
             <div className="flex md:w-[37%] w-full flex-col md:gap-6 gap-4">
-                {/* Rest of your component remains unchanged */}
                 <div className="flex flex-col gap-[10px]">
                     <h3 className="md:text-[24px] text-[20px] font-semibold text-[#161616]">{item.name}</h3>
                     <div className="flex items-center gap-2">
@@ -192,7 +193,38 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                         <span className="text-[16px] text-[#6A6B75]">{reviewCount} отзыв{reviewCount !== 1 ? "ов" : ""}</span>
                     </div>
                 </div>
-                {/* ... (other sections remain unchanged) */}
+                <div className="flex flex-col gap-3">
+                    <span className="md:text-[14px] text-[13px] text-[#161616]">Количество устройств:</span>
+                    <div className="flex flex-wrap gap-[10px]">
+                        {item.deviceCounts.map((count) => (
+                            <button
+                                key={count}
+                                onClick={() => setSelectedDeviceCount(count)}
+                                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors text-black border-[1px] ${
+                                    selectedDeviceCount === count ? "border-[#5069E8]" : "border-[#DBDEEF]"
+                                }`}
+                            >
+                                <span>{count} ПК</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+                <div className="flex flex-col gap-3">
+                    <span className="md:text-[14px] text-[13px] text-[#161616]">Срок лицензии:</span>
+                    <div className="flex flex-wrap gap-[10px]">
+                        {item.pricesByDuration.map(({ durationId }) => (
+                            <button
+                                key={durationId}
+                                onClick={() => setSelectedDurationId(durationId)}
+                                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors text-black border-[1px] ${
+                                    selectedDurationId === durationId ? "border-[#5069E8]" : "border-[#DBDEEF]"
+                                }`}
+                            >
+                                <span>{getDurationLabel(durationId)}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
                 <ProductDescription description={item.description || ""} />
                 <ProductSpecifications characteristics={item.characteristics} />
                 <Distributive distributives={item.distributives} />
