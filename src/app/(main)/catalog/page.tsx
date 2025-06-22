@@ -38,7 +38,7 @@ export default function CatalogPage() {
     }, []);
 
     return (
-        <div className="flex flex-col pb-20 md:pt-[150px] pt-[80px] xxl:px-[250px] xl:px-[150px] md:px-[100px] sm:px-[50px] px-[20px] gap-10">
+        <div className="flex flex-col pb-20 md:pt-[150px] pt-[80px] xxl:px-[250px] xl:px-[150px] md:px-[100px] sml:px-[50px] px-[20px] gap-10">
             <BreadcrumbNav title="Каталог" />
 
             {isLoading ? (
