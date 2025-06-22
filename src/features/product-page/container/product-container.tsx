@@ -100,11 +100,11 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
             {/* Mobile Slider */}
-            <div className="md:hidden w-full">
+            <div className="md:hidden flex flex-col items-center justify-center w-full">
                 {validPhotos.length > 0 ? (
                     <>
-                        <div className="relative mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
-                            <div className="absolute inset-0">
+                        <div className="relative h-[500px] mds:max-w-[540px] sml:max-w-[340px] max-w-[236px]" style={{ aspectRatio: 384 / 537 }}>
+                            <div className="absolute w-full inset-0">
                                 <Image
                                     src={getSafeImageUrl(activeSlide)}
                                     alt={item.name}
