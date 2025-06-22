@@ -57,21 +57,28 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     }
 
     const openFullScreen = (index: number) => {
+        console.log("Opening fullscreen for index:", index)
         setFullScreenIndex(index)
         setIsFullScreen(true)
     }
 
     const closeFullScreen = () => {
+        console.log("Closing fullscreen")
         setIsFullScreen(false)
     }
 
     const nextImage = () => {
+        console.log("Next image, current index:", fullScreenIndex)
         setFullScreenIndex((prev) => (prev + 1) % item.photos.length)
     }
 
     const prevImage = () => {
+        console.log("Previous image, current index:", fullScreenIndex)
         setFullScreenIndex((prev) => (prev - 1 + item.photos.length) % item.photos.length)
     }
+
+    // Проверка доступности изображений
+    console.log("Photos array:", item.photos)
 
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
@@ -86,7 +93,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                                     alt={item.name}
                                     fill
                                     className="object-cover rounded-[20px]"
-                                    onError={() => console.error(`Failed to load image: ${item.photos[activeSlide] || "/placeholder.svg"}`)}
+                                    onError={(e) => console.error(`Failed to load image at index ${activeSlide}:`, e)}
                                 />
                             </div>
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-[20px]"></div>
@@ -108,7 +115,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                             alt="Placeholder"
                             fill
                             className="object-cover rounded-[20px]"
-                            onError={() => console.error("Failed to load placeholder image")}
+                            onError={(e) => console.error("Failed to load placeholder image:", e)}
                         />
                     </div>
                 )}
@@ -123,14 +130,14 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                                 key={index}
                                 style={{ aspectRatio: 1 / 1 }}
                                 className="relative bg-gray-400 w-[76px] h-[76px] rounded-[8px] overflow-hidden cursor-pointer"
-                                onClick={() => openFullScreen(index + 1)} // Open full screen on thumbnail click
+                                onClick={() => openFullScreen(index + 1)}
                             >
                                 <Image
                                     src={photo || "/placeholder.svg"}
                                     alt={`${item.name} thumbnail ${index + 1}`}
                                     fill
                                     className="object-cover rounded-[8px]"
-                                    onError={() => console.error(`Failed to load thumbnail: ${photo || "/placeholder.svg"}`)}
+                                    onError={(e) => console.error(`Failed to load thumbnail at index ${index + 1}:`, e)}
                                 />
                             </div>
                         ))}
@@ -142,7 +149,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                         alt={item.name}
                         fill
                         className="object-cover rounded-[20px]"
-                        onError={() => console.error(`Failed to load main image: ${item.photos[0] || "/placeholder.svg"}`)}
+                        onError={(e) => console.error(`Failed to load main image:`, e)}
                     />
                 </div>
             </div>
@@ -158,7 +165,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                             alt={`${item.name} full screen`}
                             fill
                             className="object-contain"
-                            onError={() => console.error(`Failed to load full-screen image: ${item.photos[fullScreenIndex] || "/placeholder.svg"}`)}
+                            onError={(e) => console.error(`Failed to load full-screen image at index ${fullScreenIndex}:`, e)}
                         />
                     </div>
                     <button onClick={nextImage} className="absolute right-4 text-white text-4xl">&gt;</button>
@@ -175,7 +182,6 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             )}
 
             <div className="flex md:w-[37%] w-full flex-col md:gap-6 gap-4">
-                {/* Rest of your component remains unchanged */}
                 <div className="flex flex-col gap-[10px]">
                     <h3 className="md:text-[24px] text-[20px] font-semibold text-[#161616]">{item.name}</h3>
                     <div className="flex items-center gap-2">
@@ -192,7 +198,6 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                         <span className="text-[16px] text-[#6A6B75]">{reviewCount} отзыв{reviewCount !== 1 ? "ов" : ""}</span>
                     </div>
                 </div>
-                {/* ... (other sections remain unchanged) */}
                 <ProductDescription description={item.description || ""} />
                 <ProductSpecifications characteristics={item.characteristics} />
                 <Distributive distributives={item.distributives} />
