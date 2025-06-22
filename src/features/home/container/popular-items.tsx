@@ -60,7 +60,7 @@ export const PopularItems = () => {
     }, [])
 
     return (
-        <div className="flex flex-col pb-20 md:pt-[150px] pt-[80px] xxl:px-[250px] xl:px-[150px] md:px-[100px] sm:px-[50px] px-[20px] gap-10">
+        <div className="flex flex-col items-center mds:gap-10 gap-6">
             <TitleDesc title="Популярные товары" description="Выберите нужный товар" />
 
             {isLoading ? (
