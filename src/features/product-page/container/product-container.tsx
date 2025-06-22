@@ -6,7 +6,7 @@ import ProductSpecifications from "@/features/product-page/ui/product-specificat
 import { Distributive } from "@/features/product-page/ui/distributive"
 import { PurchaseBlock } from "@/features/product-page/ui/purchase-block"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface ProductContainerProps {
     item: {
@@ -42,6 +42,13 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     const [isFullScreen, setIsFullScreen] = useState(false)
     const [fullScreenIndex, setFullScreenIndex] = useState(0)
 
+    useEffect(() => {
+        console.log("Item photos:", item.photos)
+        if (!item.photos || item.photos.length === 0) {
+            console.warn("No photos available for this item")
+        }
+    }, [item.photos])
+
     const selectedPriceObj = item.pricesByDuration.find((price) => price.durationId === selectedDurationId) || item.pricesByDuration[0]
     const regularPrice = selectedPriceObj?.price.regular || "0"
     const discountedPrice = selectedPriceObj?.price.discounted || regularPrice
@@ -57,9 +64,13 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     }
 
     const openFullScreen = (index: number) => {
-        console.log("Opening fullscreen for index:", index)
-        setFullScreenIndex(index)
-        setIsFullScreen(true)
+        console.log("Opening fullscreen for index:", index, "Photos:", item.photos)
+        if (item.photos[index]) {
+            setFullScreenIndex(index)
+            setIsFullScreen(true)
+        } else {
+            console.error("No image at index:", index)
+        }
     }
 
     const closeFullScreen = () => {
@@ -76,9 +87,6 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
         console.log("Previous image, current index:", fullScreenIndex)
         setFullScreenIndex((prev) => (prev - 1 + item.photos.length) % item.photos.length)
     }
-
-    // Проверка доступности изображений
-    console.log("Photos array:", item.photos)
 
     return (
         <div className="flex flex-col md:flex-row w-full md:gap-7 gap-4">
@@ -157,8 +165,8 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             {/* Full-Screen Slider */}
             {isFullScreen && (
                 <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[500]">
-                    <button onClick={closeFullScreen} className="absolute top-4 right-4 text-white text-2xl">&times;</button>
-                    <button onClick={prevImage} className="absolute left-4 text-white text-4xl">&lt;</button>
+                    <button onClick={closeFullScreen} className="absolute top-4 right-4 text-white text-2xl">×</button>
+                    <button onClick={prevImage} className="absolute left-4 text-white text-4xl"><</button>
                     <div className="relative" style={{ aspectRatio: 384 / 537, maxWidth: "90vw", maxHeight: "90vh" }}>
                         <Image
                             src={item.photos[fullScreenIndex] || "/placeholder.svg"}
@@ -168,7 +176,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                             onError={(e) => console.error(`Failed to load full-screen image at index ${fullScreenIndex}:`, e)}
                         />
                     </div>
-                    <button onClick={nextImage} className="absolute right-4 text-white text-4xl">&gt;</button>
+                    <button onClick={nextImage} className="absolute right-4 text-white text-4xl">></button>
                     <div className="flex justify-center gap-2 mt-4">
                         {item.photos.map((_, index) => (
                             <button
