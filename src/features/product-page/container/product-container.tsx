@@ -149,7 +149,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
 
             {/* Full-Screen Slider */}
             {isFullScreen && (
-                <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
+                <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[500]">
                     <button onClick={closeFullScreen} className="absolute top-4 right-4 text-white text-2xl">&times;</button>
                     <button onClick={prevImage} className="absolute left-4 text-white text-4xl">&lt;</button>
                     <div className="relative" style={{ aspectRatio: 384 / 537, maxWidth: "90vw", maxHeight: "90vh" }}>
