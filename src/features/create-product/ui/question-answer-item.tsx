@@ -20,19 +20,17 @@ export const QuestionAnswerItem: FC<QuestionAnswerItemProps> = ({
     return (
         <div className="flex items-center gap-2">
             <div className="flex-1">
-                <input
-                    className="w-full px-3 py-2 border-[1px] border-[#B9BCCB] rounded-[10px] text-[#161616]"
+                <textarea
+                    className="w-full px-3 py-2 border-[1px] border-[#B9BCCB] rounded-[10px] text-[#161616] min-h-[44px] text-[16px] resize-y"
                     placeholder="Вопрос"
-                    type="text"
                     value={question}
                     onChange={(e) => onChange(index, e.target.value, answer)}
                 />
             </div>
             <div className="flex-1">
-                <input
-                    className="w-full px-3 py-2 border-[1px] border-[#B9BCCB] rounded-[10px] text-[#161616]"
+                <textarea
+                    className="w-full px-3 py-2 border-[1px] border-[#B9BCCB] rounded-[10px] text-[#161616] min-h-[44px] text-[16px] resize-y"
                     placeholder="Ответ"
-                    type="text"
                     value={answer}
                     onChange={(e) => onChange(index, question, e.target.value)}
                 />

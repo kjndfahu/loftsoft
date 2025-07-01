@@ -16,7 +16,7 @@ export const CharacteristicItem: React.FC<CharacteristicItemProps> = ({ index, o
         <div className="flex items-center gap-3 w-full">
             <div className="px-[15px] flex-1 py-[10px] border-[1px] border-[#B9BCCB] rounded-[20px]">
                 <input
-                    className="bg-transparent w-full outline-0 text-[#161616]"
+                    className="bg-transparent w-full outline-0 text-[#161616] min-h-[44px] text-[16px]"
                     placeholder="Название характеристики"
                     type="text"
                     value={title}
@@ -24,10 +24,9 @@ export const CharacteristicItem: React.FC<CharacteristicItemProps> = ({ index, o
                 />
             </div>
             <div className="px-[15px] flex-1 py-[10px] border-[1px] border-[#B9BCCB] rounded-[20px]">
-                <input
-                    className="bg-transparent w-full outline-0 text-[#161616]"
+                <textarea
+                    className="bg-transparent w-full outline-0 text-[#161616] min-h-[44px] text-[16px] resize-y"
                     placeholder="Значение"
-                    type="text"
                     value={value}
                     onChange={(e) => onChange(index, title, e.target.value)}
                 />

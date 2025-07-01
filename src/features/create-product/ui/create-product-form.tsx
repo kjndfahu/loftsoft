@@ -425,7 +425,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
         <form
             onClick={e => e.stopPropagation()}
             onSubmit={handleSubmit}
-            className="flex flex-col w-[800px] pt-4 pb-7 px-6 bg-white rounded-[16px] max-h-[90vh] overflow-y-auto"
+            className="flex flex-col gap-4 w-full max-w-[600px] sm:w-[500px] pt-4 pb-7 px-2 sm:px-6 bg-white rounded-[16px] max-h-[90vh] overflow-y-auto"
         >
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-[22px] font-bold text-[#161616]">Создать товар</h3>
@@ -546,7 +546,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
                     <div className="flex items-center gap-3">
                         <div className="px-[15px] w-full py-[10px] border-[1px] border-[#B9BCCB] rounded-[10px]">
                             <textarea
-                                className="bg-transparent w-full outline-0 text-[#161616] min-h-[100px]"
+                                className="bg-transparent w-full outline-0 text-[#161616] min-h-[80px] sm:min-h-[60px] resize-y"
                                 placeholder="Введите описание товара"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
