@@ -218,22 +218,24 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                         <span className="text-[16px] text-[#6A6B75]">{reviewCount} отзыв{reviewCount !== 1 ? "ов" : ""}</span>
                     </div>
                 </div>
-                <div className="flex flex-col gap-3">
-                    <span className="md:text-[14px] text-[13px] text-[#161616]">Количество устройств:</span>
-                    <div className="flex flex-wrap gap-[10px]">
-                        {item.deviceCounts.map((count) => (
-                            <button
-                                key={count}
-                                onClick={() => setSelectedDeviceCount(count)}
-                                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors text-black border-[1px] ${
-                                    selectedDeviceCount === count ? "border-[#5069E8]" : "border-[#DBDEEF]"
-                                }`}
-                            >
-                                <span>{count} ПК</span>
-                            </button>
-                        ))}
+                {item.deviceCounts.length > 0 && (
+                    <div className="flex flex-col gap-3">
+                        <span className="md:text-[14px] text-[13px] text-[#161616]">Количество устройств:</span>
+                        <div className="flex flex-wrap gap-[10px]">
+                            {item.deviceCounts.map((count) => (
+                                <button
+                                    key={count}
+                                    onClick={() => setSelectedDeviceCount(count)}
+                                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors text-black border-[1px] ${
+                                        selectedDeviceCount === count ? "border-[#5069E8]" : "border-[#DBDEEF]"
+                                    }`}
+                                >
+                                    <span>{count} ПК</span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                </div>
+                )}
                 <div className="flex flex-col gap-3">
                     <span className="md:text-[14px] text-[13px] text-[#161616]">Срок лицензии:</span>
                     <div className="flex flex-wrap gap-[10px]">
