@@ -20,22 +20,24 @@ interface Category {
 
 interface Props {
     categories: Category[]
+    isOpen: boolean
+    onOpen: () => void
+    onClose: () => void
 }
 
-export const SearchBar: FC<Props> = () => {
-    const [isOpen, setIsOpen] = useState(false)
+export const SearchBar: FC<Props> = ({ isOpen, onOpen, onClose, categories }) => {
     const [showForm, setShowForm] = useState(false)
     const { filteredCategories, filteredProducts, isLoading, searchQuery, setSearchQuery, fetchData } = useCatalog()
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(e.target.value)
         if (e.target.value.trim() !== "") {
-            setIsOpen(true)
+            onOpen()
         }
     }
 
     const handleInputFocus = () => {
-        setIsOpen(true)
+        onOpen()
         if (filteredProducts.length === 0 && !isLoading) {
             fetchData()
         }
@@ -59,7 +61,7 @@ export const SearchBar: FC<Props> = () => {
                 categories={filteredCategories}
                 products={filteredProducts}
                 isOpen={isOpen}
-                setIsOpen={setIsOpen}
+                setIsOpen={(open) => { if (!open) onClose(); else onOpen(); }}
                 isLoading={isLoading}
                 searchQuery={searchQuery}
                 setShowForm={setShowForm}

@@ -6,8 +6,7 @@ import { OpenSearchBar } from "@/features/header/ui/open-search-bar"
 import { AnimatePresence, motion } from "framer-motion"
 import { useCatalog } from "@/features/header/catalog-context"
 
-export const CatalogBtn = () => {
-    const [isOpen, setIsOpen] = useState(false)
+export const CatalogBtn = ({ isOpen, onOpen, onClose }: { isOpen: boolean, onOpen: () => void, onClose: () => void }) => {
     const { categories, allProducts, isLoading, selectedCategoryId, setSelectedCategoryId } = useCatalog()
 
     const handleCategorySelect = (categoryId: number) => {
@@ -18,7 +17,11 @@ export const CatalogBtn = () => {
         <div className="relative">
             <div
                 onClick={() => {
-                    setIsOpen(!isOpen)
+                    if (isOpen) {
+                        onClose()
+                    } else {
+                        onOpen()
+                    }
                 }}
                 className={`flex relative items-center gap-2 justify-center cursor-pointer text-[16px] py-3 px-6 ${isOpen ? 'bg-[#F5F7FF] text-[#5069E8]' : 'bg-[#5069E8] text-white'} rounded-full relative z-50`}
             >
@@ -50,7 +53,7 @@ export const CatalogBtn = () => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.3 }}
-                            onClick={() => setIsOpen(false)}
+                            onClick={onClose}
                         />
 
                         <OpenSearchBar
@@ -59,7 +62,7 @@ export const CatalogBtn = () => {
                             isLoading={isLoading}
                             selectedCategoryId={selectedCategoryId}
                             onCategorySelect={handleCategorySelect}
-                            onClose={() => setIsOpen(false)}
+                            onClose={onClose}
                         />
                     </>
                 )}
