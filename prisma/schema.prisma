@@ -36,7 +36,7 @@ model Item {
   category         Category?        @relation(fields: [categoryId], references: [id])
   type             String[] // Changed from Type[] to String[] for consistency
   licenseType      String[]         @default([])
-  deviceCounts     Int[]?           @default([])
+  deviceCounts     Int[]            @default([])
   characteristics  Characteristic[]
   distributives    Distributive[]
   questions        QuestionAnswer[]

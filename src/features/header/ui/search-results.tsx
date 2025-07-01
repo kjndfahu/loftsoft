@@ -151,7 +151,7 @@ export const SearchResults: FC<Props> = ({ isOpen, setIsOpen, categories, produc
                                                         <div className="mb-4">
                                                             {limitedCategories.map((category) => (
                                                                 <Link
-                                                                    href={`/category/${category.id}`}
+                                                                    href={`/catalog/${category.id}`}
                                                                     key={category.id}
                                                                     onClick={() => setIsOpen(false)}
                                                                 >

@@ -106,7 +106,7 @@ export const OpenSearchBar = ({
                 variants={clipVariants}
             />
             <motion.div
-                className="relative flex p-8 h-full"
+                className="relative flex md:p-8 p-4 h-full"
                 initial="hidden"
                 animate="visible"
                 exit="exit"
@@ -133,7 +133,7 @@ export const OpenSearchBar = ({
                                 <div className="flex gap-[144px]">
                                     {productColumns.map((column, columnIndex) => (
                                         <div key={columnIndex} className="flex flex-col gap-4">
-                                            {column.map((product) => (
+                                            {column.slice(0, 4).map((product) => (
                                                 <Link
                                                     key={product.id}
                                                     href={`/catalog/${product.id}`}
