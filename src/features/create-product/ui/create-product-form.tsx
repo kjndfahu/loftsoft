@@ -425,7 +425,7 @@ export const CreateProductForm: FC<Props> = ({ setIsOpen, refetchProducts }) => 
         <form
             onClick={e => e.stopPropagation()}
             onSubmit={handleSubmit}
-            className="flex flex-col gap-4 w-full max-w-[600px] sm:w-[500px] pt-4 pb-7 px-2 sm:px-6 bg-white rounded-[16px] max-h-[90vh] overflow-y-auto"
+            className="flex flex-col gap-4 w-full max-w-[600px] sm:max-w-[500px] max-[500px]:max-w-[95vw] pt-4 pb-7 px-2 sm:px-6 bg-white rounded-[16px] max-h-[90vh] overflow-y-auto"
         >
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-[22px] font-bold text-[#161616]">Создать товар</h3>
