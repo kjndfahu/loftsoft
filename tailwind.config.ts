@@ -33,7 +33,8 @@ const config: Config = {
         banner5: "url('/img/banner-5.avif')",
         guarantee: "url('/img/guarantee-bg.avif')",
         microsoft: "url('/img/microsoft-office-bg.avif')",
-        windows: "url('/img/microsoft-windows.avif')"
+        windows: "url('/img/microsoft-windows.avif')",
+        about: "url('/img/about.avif')",
       },
     },
   },
