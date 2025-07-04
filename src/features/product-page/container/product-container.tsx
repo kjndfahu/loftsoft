@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react";
 import { ReviewStar } from "@/shared/icons"
 import { ProductDescription } from "@/features/product-page/ui/product-description"
 import ProductSpecifications from "@/features/product-page/ui/product-specifications"
