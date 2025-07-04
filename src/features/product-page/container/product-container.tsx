@@ -178,7 +178,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                     {fullScreenIndex > 0 && (
                         <button onClick={(e) => { e.stopPropagation(); prevImage(); }} className="absolute z-[600] left-4 text-white text-4xl">&lt;</button>
                     )}
-                    <div className="relative w-[90vw] h-[90vh]" onClick={(e) => e.stopPropagation()}>
+                    <div className="relative w-[90vw] h-[90vh]">
                         <Image
                             src={getSafeImageUrl(fullScreenIndex)}
                             alt={`${item.name} full screen`}
