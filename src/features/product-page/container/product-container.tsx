@@ -1,6 +1,5 @@
 "use client"
 
-import React from "react";
 import { ReviewStar } from "@/shared/icons"
 import { ProductDescription } from "@/features/product-page/ui/product-description"
 import ProductSpecifications from "@/features/product-page/ui/product-specifications"
@@ -43,7 +42,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     const [isFullScreen, setIsFullScreen] = useState(false)
     const [fullScreenIndex, setFullScreenIndex] = useState(0)
 
-    // Проверка валидности массива photos
+    // П obscenение валидности массива photos
     const validPhotos = item.photos?.filter((photo) => photo && typeof photo === "string") || []
     const placeholderImage = "/placeholder.svg"
 
@@ -175,9 +174,9 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
             {/* Full-Screen Slider */}
             {isFullScreen && validPhotos.length > 0 && (
                 <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[500]" onClick={closeFullScreen}>
-                    <button onClick={(e) => { e.stopPropagation(); closeFullScreen(); }} className="absolute z-[600] top-4 right-4 text-white text-2xl">×</button>
+                    <button onClick={(e) => { e.stopPropagation(); closeFullScreen(); }} className="absolute z-[600] top-4 right-4 text-white text-2xl">&times;</button>
                     {fullScreenIndex > 0 && (
-                        <button onClick={(e) => { e.stopPropagation(); prevImage(); }} className="absolute z-[600] left-4 text-white text-4xl"><</button>
+                        <button onClick={(e) => { e.stopPropagation(); prevImage(); }} className="absolute z-[600] left-4 text-white text-4xl">&lt;</button>
                     )}
                     <div className="relative w-[90vw] h-[90vh]" onClick={(e) => e.stopPropagation()}>
                         <Image
@@ -192,7 +191,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                         />
                     </div>
                     {fullScreenIndex < validPhotos.length - 1 && (
-                        <button onClick={(e) => { e.stopPropagation(); nextImage(); }} className="absolute right-4 text-white text-4xl">></button>
+                        <button onClick={(e) => { e.stopPropagation(); nextImage(); }} className="absolute right-4 text-white text-4xl">&gt;</button>
                     )}
                     <div className="absolute bottom-4 flex justify-center gap-2">
                         {validPhotos.map((_, index) => (
