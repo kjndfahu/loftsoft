@@ -42,7 +42,7 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
     const [isFullScreen, setIsFullScreen] = useState(false)
     const [fullScreenIndex, setFullScreenIndex] = useState(0)
 
-    // Проверка валидности массива photos
+    // П obscenение валидности массива photos
     const validPhotos = item.photos?.filter((photo) => photo && typeof photo === "string") || []
     const placeholderImage = "/placeholder.svg"
 
@@ -173,10 +173,12 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
 
             {/* Full-Screen Slider */}
             {isFullScreen && validPhotos.length > 0 && (
-                <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[500]">
-                    <button onClick={closeFullScreen} className="absolute z-[600] top-4 right-4 text-white text-2xl">&times;</button>
-                    <button onClick={prevImage} className="absolute z-[600] left-4 text-white text-4xl">&lt;</button>
-                    <div className="relative w-[90vw] h-[90vh]">
+                <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[500]" onClick={closeFullScreen}>
+                    <button onClick={(e) => { e.stopPropagation(); closeFullScreen(); }} className="absolute z-[600] top-4 right-4 text-white text-2xl">&times;</button>
+                    {fullScreenIndex > 0 && (
+                        <button onClick={(e) => { e.stopPropagation(); prevImage(); }} className="absolute z-[600] left-4 text-white text-4xl">&lt;</button>
+                    )}
+                    <div className="relative w-[90vw] h-[90vh]" onClick={(e) => e.stopPropagation()}>
                         <Image
                             src={getSafeImageUrl(fullScreenIndex)}
                             alt={`${item.name} full screen`}
@@ -184,16 +186,18 @@ export const ProductContainer = ({ item }: ProductContainerProps) => {
                             className="object-contain"
                             onError={(e) => {
                                 console.error(`Failed to load full-screen image at index ${fullScreenIndex}:`, e)
-                                setFullScreenIndex(0) // Сброс на первое изображение при ошибке
+                                setFullScreenIndex(0)
                             }}
                         />
                     </div>
-                    <button onClick={nextImage} className="absolute right-4 text-white text-4xl">&gt;</button>
+                    {fullScreenIndex < validPhotos.length - 1 && (
+                        <button onClick={(e) => { e.stopPropagation(); nextImage(); }} className="absolute right-4 text-white text-4xl">&gt;</button>
+                    )}
                     <div className="absolute bottom-4 flex justify-center gap-2">
                         {validPhotos.map((_, index) => (
                             <button
                                 key={index}
-                                onClick={() => setFullScreenIndex(index)}
+                                onClick={(e) => { e.stopPropagation(); setFullScreenIndex(index); }}
                                 className={`w-3 h-3 rounded-full ${fullScreenIndex === index ? "bg-white" : "bg-gray-500"}`}
                             ></button>
                         ))}

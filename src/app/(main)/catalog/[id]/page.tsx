@@ -2,7 +2,6 @@ import { BreadcrumbNav } from "@/shared/breadcrumb-nav"
 import { ProductContainer } from "@/features/product-page/container/product-container"
 import { RecomendationList } from "@/features/product-page/ui/recomendation-list"
 import { notFound } from "next/navigation"
-
 import { ItemFaqBlock } from "@/features/product-page/ui/item-faq-block"
 import { ProductReviews } from "@/features/catalog/ui/product-review"
 import {getItemReviews} from "@/enteties/review/review";
