@@ -27,10 +27,16 @@ export const SectionsBar: React.FC<Props> = ({ sectionRefs, contentRef, setActiv
 
     const scrollToSection = (id: string) => {
         const element = sectionRefs.current[id]
-        if (element) {
-            element.scrollIntoView({ 
-                behavior: "smooth", 
-                block: "start" 
+        const container = contentRef.current
+        if (element && container) {
+            const elementTop = element.offsetTop
+            const containerTop = container.scrollTop
+            const containerHeight = container.clientHeight
+            
+            // Скроллим контейнер так, чтобы элемент был в начале видимой области
+            container.scrollTo({
+                top: elementTop,
+                behavior: "smooth"
             })
             setActiveSection(id)
         }
