@@ -29,7 +29,7 @@ export const SectionsBar: React.FC<Props> = ({ sectionRefs, contentRef, setActiv
         const element = sectionRefs.current[id]
         const container = contentRef.current
         if (element && container) {
-            const offsetTop = element.offsetTop - 200 // Отступ для видимости заголовка
+            const offsetTop = element.offsetTop - 50 // Уменьшенный отступ для точности
             // Проверяем, нужно ли скроллить
             if (Math.abs(container.scrollTop - offsetTop) > 10) { // Допуск 10px
                 container.scrollTo({ top: offsetTop, behavior: "smooth" })

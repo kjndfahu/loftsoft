@@ -15,20 +15,20 @@ export default function PrivacyPolicyPage() {
         if (!contentArea) return
 
         const handleScroll = () => {
-            const scrollPosition = contentArea.scrollTop + 100 // Отступ для точности
+            const scrollPosition = contentArea.scrollTop + 20 // Уменьшенный отступ для точности
 
             let currentSection = null
             Object.entries(sectionRefs.current).forEach(([id, element]) => {
                 if (element) {
                     const { offsetTop, offsetHeight } = element
-                    if (scrollPosition >= offsetTop - 50 && scrollPosition < offsetTop + offsetHeight) {
+                    if (scrollPosition >= offsetTop - 30 && scrollPosition < offsetTop + offsetHeight - 30) {
                         currentSection = id
                     }
                 }
             })
 
             // Если скролл в самом низу, выбираем последнюю секцию
-            if (!currentSection && contentArea.scrollHeight - contentArea.scrollTop <= contentArea.clientHeight + 50) {
+            if (!currentSection && contentArea.scrollHeight - contentArea.scrollTop <= contentArea.clientHeight + 30) {
                 const lastSectionId = Object.keys(sectionRefs.current).pop()
                 currentSection = lastSectionId || null
             }
