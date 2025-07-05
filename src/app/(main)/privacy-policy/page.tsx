@@ -14,45 +14,13 @@ export default function PrivacyPolicyPage() {
         const contentArea = contentRef.current
         if (!contentArea) return
 
-        const handleScroll = () => {
-            const scrollPosition = contentArea.scrollTop + 20 // Уменьшенный отступ для точности
+        // Убираем автоматическое определение активной секции по скроллу
+        // Теперь активная секция устанавливается только при клике
 
-            let currentSection = null
-            let minDistance = Infinity
-
-            Object.entries(sectionRefs.current).forEach(([id, element]) => {
-                if (element) {
-                    const { offsetTop } = element
-                    const distance = Math.abs(scrollPosition - offsetTop)
-                    
-                    if (distance < minDistance) {
-                        minDistance = distance
-                        currentSection = id
-                    }
-                }
-            })
-
-            // Если скролл в самом низу, выбираем последнюю секцию
-            if (!currentSection && contentArea.scrollHeight - contentArea.scrollTop <= contentArea.clientHeight + 30) {
-                const lastSectionId = Object.keys(sectionRefs.current).pop()
-                currentSection = lastSectionId || null
-            }
-
-            if (currentSection !== activeSection) {
-                setActiveSection(currentSection)
-            }
-        }
-
-        contentArea.addEventListener("scroll", handleScroll)
-        
-        // Добавляем задержку для корректной работы после скролла
-        const timeoutId = setTimeout(handleScroll, 100)
-        
         return () => {
-            contentArea.removeEventListener("scroll", handleScroll)
-            clearTimeout(timeoutId)
+            // Очистка не нужна, так как нет обработчиков событий
         }
-    }, [activeSection])
+    }, [])
 
     return (
         <div className="flex flex-col mds:pt-[150px] pt-20 xxl:px-[250px] xl:px-[150px] mdbvp:px-[100px] sml:px-[50px] px-[20px] gap-10">
