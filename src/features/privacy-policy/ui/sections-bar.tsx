@@ -29,13 +29,13 @@ export const SectionsBar: React.FC<Props> = ({ sectionRefs, contentRef, setActiv
         const element = sectionRefs.current[id]
         const container = contentRef.current
         if (element && container) {
-            const elementTop = element.offsetTop
-            const containerTop = container.scrollTop
-            const containerHeight = container.clientHeight
+            const elementRect = element.getBoundingClientRect()
+            const containerRect = container.getBoundingClientRect()
+            const relativeTop = elementRect.top - containerRect.top + container.scrollTop
             
             // Скроллим контейнер так, чтобы элемент был в начале видимой области
             container.scrollTo({
-                top: elementTop,
+                top: relativeTop,
                 behavior: "smooth"
             })
             setActiveSection(id)
