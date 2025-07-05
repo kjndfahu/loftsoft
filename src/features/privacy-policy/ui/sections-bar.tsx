@@ -29,11 +29,7 @@ export const SectionsBar: React.FC<Props> = ({ sectionRefs, contentRef, setActiv
         const element = sectionRefs.current[id]
         const container = contentRef.current
         if (element && container) {
-            // Находим первый параграф в секции для скролла к началу текста
-            const firstParagraph = element.querySelector('p')
-            const scrollTarget = firstParagraph || element
-            
-            const offsetTop = scrollTarget.offsetTop - 80 // Отступ для видимости начала текста
+            const offsetTop = element.offsetTop - 120 // Отступ для видимости заголовка и начала текста
             // Проверяем, нужно ли скроллить
             if (Math.abs(container.scrollTop - offsetTop) > 10) { // Допуск 10px
                 container.scrollTo({ top: offsetTop, behavior: "smooth" })
