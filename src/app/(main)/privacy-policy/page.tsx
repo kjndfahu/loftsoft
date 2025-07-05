@@ -18,10 +18,15 @@ export default function PrivacyPolicyPage() {
             const scrollPosition = contentArea.scrollTop + 20 // Уменьшенный отступ для точности
 
             let currentSection = null
+            let minDistance = Infinity
+
             Object.entries(sectionRefs.current).forEach(([id, element]) => {
                 if (element) {
-                    const { offsetTop, offsetHeight } = element
-                    if (scrollPosition >= offsetTop - 30 && scrollPosition < offsetTop + offsetHeight - 30) {
+                    const { offsetTop } = element
+                    const distance = Math.abs(scrollPosition - offsetTop)
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance
                         currentSection = id
                     }
                 }
@@ -39,10 +44,13 @@ export default function PrivacyPolicyPage() {
         }
 
         contentArea.addEventListener("scroll", handleScroll)
-        handleScroll() // Инициализация при загрузке
-
+        
+        // Добавляем задержку для корректной работы после скролла
+        const timeoutId = setTimeout(handleScroll, 100)
+        
         return () => {
             contentArea.removeEventListener("scroll", handleScroll)
+            clearTimeout(timeoutId)
         }
     }, [activeSection])
 

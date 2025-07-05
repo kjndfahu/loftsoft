@@ -27,10 +27,11 @@ export const SectionsBar: React.FC<Props> = ({ sectionRefs, contentRef, setActiv
 
     const scrollToSection = (id: string) => {
         const element = sectionRefs.current[id]
-        const container = contentRef.current
-        if (element && container) {
-            const offsetTop = element.offsetTop - 120 // Отступ для видимости заголовка и начала текста
-            container.scrollTo({ top: offsetTop, behavior: "smooth" })
+        if (element) {
+            element.scrollIntoView({ 
+                behavior: "smooth", 
+                block: "start" 
+            })
             setActiveSection(id)
         }
     }
@@ -41,18 +42,14 @@ export const SectionsBar: React.FC<Props> = ({ sectionRefs, contentRef, setActiv
             <ul className="space-y-2">
                 {sections.map((section) => (
                     <li key={section.id}>
-                        <a
-                            href={`#${section.id}`}
-                            onClick={(e) => {
-                                e.preventDefault()
-                                scrollToSection(section.id)
-                            }}
-                            className={`block py-1 hover:text-[#5069E8] transition-colors ${
+                        <button
+                            onClick={() => scrollToSection(section.id)}
+                            className={`block py-1 hover:text-[#5069E8] transition-colors text-left w-full ${
                                 activeSection === section.id ? "text-[#5069E8] font-medium" : "text-[#6A6B75]"
                             }`}
                         >
                             {section.id}. {section.title}
-                        </a>
+                        </button>
                     </li>
                 ))}
             </ul>
