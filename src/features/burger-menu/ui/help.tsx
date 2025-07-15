@@ -28,7 +28,7 @@ export const Help = () => {
                     <CrossLogo className="w-[20px] h-[20px]" />
                 </div>
                 <div className="flex relative flex-col">
-                <Link href="https://www.whatsapp.com/">
+                <Link href="https://t.me/loftsoft_support">
                         <div className="flex items-center justify-between cursor-pointer text-[#161616] py-[10px]">
                             <div className="flex items-center gap-[10px]">
                                 <TgLogo className="w-[20px] h-[20px]"/>
@@ -37,7 +37,7 @@ export const Help = () => {
                             <ChevronRight className="w-[15px] h-[15px]"/>
                         </div>
                     </Link>
-                    <Link href="https://www.whatsapp.com/">
+                    <Link href="https://wa.me/77070182926">
                         <div className="flex items-center justify-between cursor-pointer text-[#161616] py-[10px]">
                             <div className="flex items-center gap-[10px]">
                                 <WhatsUpLogo className="w-[18px] h-[18px]"/>

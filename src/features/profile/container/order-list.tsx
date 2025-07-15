@@ -4,22 +4,22 @@ import { useEffect, useState, useCallback } from "react";
 import { OrderBlock } from "@/features/profile/ui/order-block";
 import { getUserOrders } from "@/enteties/orders/orders";
 import { Order } from "@/kernel/types";
-import Cookies from "js-cookie"; // Import js-cookie
+import Cookies from "js-cookie";
 import { useUser } from "@/enteties/auth/use-user";
 
 export const OrderList = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { user } = useUser(); // Get user from useUser hook
-    const email = user?.email || Cookies.get("userEmail"); // Prioritize user.email, fallback to cookie
+    const { user } = useUser();
+    const email = user?.email || Cookies.get("userEmail");
 
     const fetchOrders = useCallback(async () => {
         setLoading(true);
         setError(null);
 
         if (!email) {
-            setError("На данный момент у вас нет заказов :(");
+            setError("Пожалуйста, войдите в аккаунт, чтобы просмотреть заказы.");
             setLoading(false);
             return;
         }
@@ -29,10 +29,11 @@ export const OrderList = () => {
             if (response.success && response.orders) {
                 setOrders(response.orders);
             } else {
-                setError(response.error || "На данный момент у вас нет заказов :(");
+                // Если заказов нет, не устанавливаем ошибку, а просто оставляем пустой массив
+                setOrders([]);
             }
         } catch (err) {
-            setError("На данный момент у вас нет заказов :(");
+            setError("Не удалось загрузить заказы. Попробуйте позже.");
         } finally {
             setLoading(false);
         }
