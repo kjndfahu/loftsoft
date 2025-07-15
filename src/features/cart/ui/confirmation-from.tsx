@@ -79,21 +79,10 @@ export const ConfirmationFrom = ({ items }: ConfirmationFromProps) => {
         setIsSubmitting(true);
         setError(null);
 
-        const result = await createOrder(email, items);
-
-        if (!result.success) {
-            setError(result.error || "Не удалось создать заказ");
-            setIsSubmitting(false);
-            return;
-        }
-
-        Cookies.set("userEmail", email, { expires: 7 });
-        await sendTelegramNotification(email, items);
-
         try {
-            const orderId = result.orderId || Date.now().toString();
+            // Сначала генерируем ссылку на оплату
+            const orderId = Date.now().toString(); // временный id для платежа
             const paymentUrl = await generatePaymentUrl(email, items, orderId);
-            console.log("Payment URL:", paymentUrl);
             window.location.href = paymentUrl;
         } catch (err) {
             console.error("Error generating payment URL:", err);
