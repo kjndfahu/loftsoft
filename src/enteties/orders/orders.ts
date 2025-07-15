@@ -315,7 +315,11 @@ export async function createOrder(email: string, items: OrderItem[]): Promise<Cr
 
 
 export async function getAllOrders() {
+    // Теперь фильтруем только оплаченные заказы (например, статус 'COMPLETED')
     const orders = await prisma.order.findMany({
+        where: {
+            status: 'COMPLETED',
+        },
         select: {
             id: true,
             email: true,
